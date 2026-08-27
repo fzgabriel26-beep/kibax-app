@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block title %}{{ paciente.full_name }}{% endblock %}
+
+{% macro tooth_icon(n, size='normal') %}
+  {% set layout = layouts[n] %}
+  {% set st = statuses.get(n, {}) %}
+  {% set general = st.get('', 'sano') %}
+  <button type="button" class="tooth-btn size-{{ size }}{% if general != 'sano' %} has-general{% endif %}" data-tooth="{{ n }}">
+    <svg viewBox="0 0 40 40" class="tooth-svg">
+      <polygon class="face status-{{ st.get(layout.top, 'sano') }}" data-surface="{{ layout.top }}" points="0,0 40,0 28,12 12,12"></polygon>
+      <polygon class="face status-{{ st.get(layout.right, 'sano') }}" data-surface="{{ layout.right }}" points="40,0 40,40 28,28 28,12"></polygon>
+      <polygon class="face status-{{ st.get(layout.bottom, 'sano') }}" data-surface="{{ layout.bottom }}" points="40,40 0,40 12,28 28,28"></polygon>
+      <polygon class="face status-{{ st.get(layout.left, 'sano') }}" data-surface="{{ layout.left }}" points="0,40 0,0 12,12 12,28"></polygon>
+      <polygon class="face status-{{ st.get('O', 'sano') }}" data-surface="O" points="12,12 28,12 28,28 12,28"></polygon>
+      {% if general != 'sano' %}
+      <rect class="tooth-overlay overlay-{{ general }}" x="0" y="0" width="40" height="40"></rect>
+      {% endif %}
+    </svg>
+    <span class="tooth-num">{{ n }}</span>
+  </button>
+{% endmacro %}
+
+{% block content %}
+<p class="eyebrow"><a href="{{ url_for('patients.list_patients') }}" class="back-link">← Pacientes</a></p>
+
+<div class="page-head">
+  <div>
+    <h1>{{ paciente.full_name }}</h1>
+    <p class="patient-meta">
+      {% if paciente.document_id %}Doc. {{ paciente.document_id }} · {% endif %}
+      {% if paciente.birth_date %}Nace {{ paciente.birth_date.strftime('%d/%m/%Y') }} · {% endif %}
+      {% if paciente.phone %}{{ paciente.phone }} · {% endif %}
+      {% if paciente.email %}{{ paciente.email }}{% endif %}
+    </p>
+  </div>
+  <form method="post" action="{{ url_for('patients.delete_patient', patient_id=paciente.id) }}"
+        onsubmit="return confirm('¿Eliminar a {{ paciente.full_name }} y toda su información (odontograma, historial y adjuntos)? Esta acción no se puede deshacer.');">
+    <button type="submit" class="btn-danger-ghost">Eliminar paciente</button>
+  </form>
+</div>
+
+{% if paciente.medical_notes %}
+<div class="notice-card mb-4">
+  <strong>Antecedentes:</strong> {{ paciente.medical_notes }}
+</div>
+{% endif %}
+
+<div class="odontogram-layout">
+<section class="panel odontogram-panel">
+  <div class="panel-head">
+    <h2>Odontograma</h2>
+    <p>Tocá una cara del diente (o el centro, para la cara oclusal) para ver su historial y anotar un arreglo o diagnóstico.</p>
+  </div>
+
+  <div class="legend">
+    {% for key, label in status_labels.items() %}
+    <span class="legend-item"><i class="tooth-dot status-{{ key }}"></i>{{ label }}</span>
+    {% endfor %}
+  </div>
+
+  <div class="arch-wrap">
+    <div class="arch-label">Superior · permanente</div>
+    <div class="arch-row">
+      {% for n in upper_row %}
+        {% if loop.index == 9 %}<div class="midline"></div>{% endif %}
+        {{ tooth_icon(n) }}
+      {% endfor %}
+    </div>
+    <div class="gum-line"></div>
+    <div class="arch-row">
+      {% for n in lower_row %}
+        {% if loop.index == 9 %}<div class="midline"></div>{% endif %}
+        {{ tooth_icon(n) }}
+      {% endfor %}
+    </div>
+    <div class="arch-label">Inferior · permanente</div>
+  </div>
+
+  <div class="arch-wrap arch-wrap-primary mt-3">
+    <div class="arch-label">Superior · de leche</div>
+    <div class="arch-row">
+      {% for n in primary_upper_row %}
+        {% if loop.index == 6 %}<div class="midline"></div>{% endif %}
+        {{ tooth_icon(n, size='small') }}
+      {% endfor %}
+    </div>
+    <div class="gum-line"></div>
+    <div class="arch-row">
+      {% for n in primary_lower_row %}
+        {% if loop.index == 6 %}<div class="midline"></div>{% endif %}
+        {{ tooth_icon(n, size='small') }}
+      {% endfor %}
+    </div>
+    <div class="arch-label">Inferior · de leche</div>
+  </div>
+
+  <p class="arch-footnote">Numeración FDI · cada diente se divide en 5 caras: vestibular, palatino/lingual, mesial, distal (bordes) y oclusal/incisal (centro)</p>
+</section>
+
+<section class="panel panoramic-panel">
+  <div class="panel-head">
+    <h2>Radiografía panorámica</h2>
+    <p>Se muestra el estudio más reciente marcado como "Panorámica".</p>
+  </div>
+
+  {% if panoramic %}
+  <a class="panoramic-frame" href="{{ url_for('patients.download_attachment', patient_id=paciente.id, attachment_id=panoramic.id) }}" target="_blank" rel="noopener">
+    {% if panoramic_is_image %}
+    <img src="{{ url_for('patients.download_attachment', patient_id=paciente.id, attachment_id=panoramic.id) }}" alt="Radiografía panorámica">
+    {% else %}
+    <div class="panoramic-pdf-placeholder">📄<br>Ver PDF</div>
+    {% endif %}
+  </a>
+  <p class="panoramic-caption">
+    Radiografía panorámica · {{ panoramic.uploaded_at.strftime('%d/%m/%Y') }}
+  </p>
+  <p class="arch-footnote">Click para ver en tamaño completo</p>
+  {% else %}
+  <div class="empty-inline">
+    Todavía no hay ninguna panorámica cargada. Subí un archivo abajo y marcalo como tipo de estudio <strong>"Panorámica"</strong> para que aparezca acá.
+  </div>
+  {% endif %}
+</section>
+</div>
+
+<section class="panel mb-4">
+  <div class="panel-head">
+    <h2>Estudios y documentación</h2>
+    <p>Radiografías, fotos clínicas o PDFs de estudios. Solo visibles para el odontólogo/a con sesión iniciada.</p>
+  </div>
+
+  <form method="post" action="{{ url_for('patients.upload_attachment', patient_id=paciente.id) }}"
+        enctype="multipart/form-data" class="upload-form">
+    <div class="upload-row">
+      <input type="file" name="file" accept=".jpg,.jpeg,.png,.webp,.pdf" required class="form-control">
+      <select name="category" class="form-select upload-tooth">
+        {% for key, label in attachment_categories.items() %}
+        <option value="{{ key }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="tooth_number" class="form-select upload-tooth">
+        <option value="">Sin diente asociado</option>
+        {% for n in all_teeth %}
+        <option value="{{ n }}">Diente {{ n }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <input type="text" name="description" class="form-control mb-2" placeholder="Descripción (opcional): panorámica, bitewing, foto intraoral…">
+    <button type="submit" class="btn-solid">Subir archivo</button>
+  </form>
+
+  {% if paciente.attachments %}
+  <ul class="attachment-list">
+    {% for a in paciente.attachments %}
+    <li>
+      <a href="{{ url_for('patients.download_attachment', patient_id=paciente.id, attachment_id=a.id) }}" target="_blank" rel="noopener">
+        {{ a.original_filename }}
+      </a>
+      <span class="attachment-meta">
+        {{ attachment_categories.get(a.category, 'Otro') }}
+        {% if a.tooth_number %} · Diente {{ a.tooth_number }}{% endif %}
+        {% if a.description %} · {{ a.description }}{% endif %}
+        · {{ a.uploaded_at.strftime('%d/%m/%Y %H:%M') }}
+      </span>
+      <form method="post" action="{{ url_for('patients.delete_attachment', patient_id=paciente.id, attachment_id=a.id) }}"
+            onsubmit="return confirm('¿Eliminar este archivo?');" class="attachment-delete">
+        <button type="submit" aria-label="Eliminar archivo">✕</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="empty-inline">Todavía no hay archivos adjuntos.</p>
+  {% endif %}
+</section>
+
+<!-- Modal diente -->
+<div class="modal fade" id="toothModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="toothModalTitle">Diente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="toothForm">
+          <div class="row">
+            <div class="col-md-5 mb-3">
+              <label class="form-label" for="toothSurface">Cara</label>
+              <select class="form-select" id="toothSurface" name="surface">
+                {% for key, label in surface_labels.items() %}
+                <option value="{{ key }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-7 mb-3">
+              <label class="form-label" for="toothStatus">Estado</label>
+              <select class="form-select" id="toothStatus" name="status">
+                {% for key, label in status_labels.items() %}
+                <option value="{{ key }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="toothNote">Anotación / arreglo realizado</label>
+            <textarea class="form-control" id="toothNote" name="note" rows="3" placeholder="Ej: Obturación con resina compuesta, cara oclusal." required></textarea>
+          </div>
+          <button type="submit" class="btn-solid">Guardar anotación</button>
+          <span id="toothFormError" class="text-danger ms-2"></span>
+        </form>
+
+        <hr>
+        <h6>Historial</h6>
+        <ul id="toothHistory" class="tooth-history"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.PATIENT_ID = {{ paciente.id }};
+</script>
+<script src="{{ url_for('static', filename='js/odontogram.js') }}"></script>
+{% endblock %}

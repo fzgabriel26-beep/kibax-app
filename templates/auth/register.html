@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Crear cuenta{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <p class="eyebrow">Solo para odontólogos/as</p>
+    <h1>Crear cuenta</h1>
+    <p class="auth-sub">Necesitás el código de registro del consultorio para poder crear tu usuario.</p>
+
+    <form method="post" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="full_name">Nombre completo</label>
+        <input class="form-control" type="text" id="full_name" name="full_name" value="{{ form.get('full_name', '') }}" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="license_number">Matrícula profesional (opcional)</label>
+        <input class="form-control" type="text" id="license_number" name="license_number" value="{{ form.get('license_number', '') }}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="email">Email</label>
+        <input class="form-control" type="email" id="email" name="email" value="{{ form.get('email', '') }}" required>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label" for="password">Contraseña</label>
+          <input class="form-control" type="password" id="password" name="password" required minlength="8">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label" for="password2">Repetir contraseña</label>
+          <input class="form-control" type="password" id="password2" name="password2" required minlength="8">
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="registration_code">Código de registro del consultorio</label>
+        <input class="form-control" type="password" id="registration_code" name="registration_code" required>
+        <div class="form-text">Te lo tiene que dar quien administra este sistema. Evita que cualquier visitante pueda crear una cuenta.</div>
+      </div>
+      <button type="submit" class="btn-solid w-100 py-2">Crear cuenta</button>
+    </form>
+
+    <p class="auth-foot">¿Ya tenés cuenta? <a href="{{ url_for('auth.login') }}">Iniciar sesión</a></p>
+  </div>
+</div>
+{% endblock %}

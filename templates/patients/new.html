@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Nuevo paciente{% endblock %}
+{% block content %}
+<p class="eyebrow"><a href="{{ url_for('patients.list_patients') }}" class="back-link">← Pacientes</a></p>
+<h1 class="mb-4">Dar de alta paciente</h1>
+
+<form method="post" class="form-card" novalidate>
+  <div class="row">
+    <div class="col-md-8 mb-3">
+      <label class="form-label" for="full_name">Nombre completo *</label>
+      <input class="form-control" type="text" id="full_name" name="full_name" value="{{ form.get('full_name','') }}" required autofocus>
+    </div>
+    <div class="col-md-4 mb-3">
+      <label class="form-label" for="document_id">Documento</label>
+      <input class="form-control" type="text" id="document_id" name="document_id" value="{{ form.get('document_id','') }}">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-4 mb-3">
+      <label class="form-label" for="birth_date">Fecha de nacimiento</label>
+      <input class="form-control" type="date" id="birth_date" name="birth_date" value="{{ form.get('birth_date','') }}">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label class="form-label" for="phone">Teléfono</label>
+      <input class="form-control" type="text" id="phone" name="phone" value="{{ form.get('phone','') }}">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label class="form-label" for="email">Email</label>
+      <input class="form-control" type="email" id="email" name="email" value="{{ form.get('email','') }}">
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label" for="address">Dirección</label>
+    <input class="form-control" type="text" id="address" name="address" value="{{ form.get('address','') }}">
+  </div>
+
+  <div class="mb-4">
+    <label class="form-label" for="medical_notes">Antecedentes médicos relevantes</label>
+    <textarea class="form-control" id="medical_notes" name="medical_notes" rows="3" placeholder="Alergias, medicación, condiciones a tener en cuenta…">{{ form.get('medical_notes','') }}</textarea>
+  </div>
+
+  <button type="submit" class="btn-solid px-4 py-2">Guardar paciente</button>
+</form>
+{% endblock %}

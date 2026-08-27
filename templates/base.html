@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Odontograma{% endblock %} · Consultorio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+  <nav class="app-navbar">
+    <div class="container d-flex align-items-center justify-content-between py-2">
+      <a class="brand" href="{{ url_for('index') }}">
+        <span class="brand-mark">◗</span> Odontograma
+      </a>
+      {% if current_user.is_authenticated %}
+      <div class="d-flex align-items-center gap-3">
+        <span class="navbar-user d-none d-sm-inline">Dr/a. {{ current_user.full_name }}</span>
+        <a class="btn-ghost" href="{{ url_for('patients.list_patients') }}">Pacientes</a>
+        <a class="btn-solid" href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
+      </div>
+      {% endif %}
+    </div>
+  </nav>
+
+  <main class="container py-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

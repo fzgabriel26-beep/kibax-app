@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Pacientes{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Consultorio</p>
+    <h1>Pacientes</h1>
+  </div>
+  <a href="{{ url_for('patients.new_patient') }}" class="btn-solid">+ Dar de alta paciente</a>
+</div>
+
+<form method="get" class="search-bar mb-4">
+  <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Buscar paciente por nombre…">
+  <button type="submit" class="btn-ghost">Buscar</button>
+</form>
+
+{% if pacientes %}
+<div class="patient-grid">
+  {% for p in pacientes %}
+  <a href="{{ url_for('patients.patient_detail', patient_id=p.id) }}" class="patient-card">
+    <div class="patient-card-avatar">{{ p.full_name[:1]|upper }}</div>
+    <div>
+      <h3>{{ p.full_name }}</h3>
+      <p>
+        {% if p.document_id %}Doc. {{ p.document_id }}{% endif %}
+        {% if p.phone %} · {{ p.phone }}{% endif %}
+      </p>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <p>{% if q %}No se encontraron pacientes para “{{ q }}”.{% else %}Todavía no hay pacientes cargados.{% endif %}</p>
+  <a href="{{ url_for('patients.new_patient') }}" class="btn-solid">Dar de alta el primer paciente</a>
+</div>
+{% endif %}
+{% endblock %}

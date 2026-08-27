@@ -1,0 +1,408 @@
+:root {
+  --bg: #F5F7F4;
+  --surface: #FFFFFF;
+  --ink: #1E2726;
+  --ink-soft: #5B6664;
+  --border: #E1E6E1;
+  --primary: #205E58;
+  --primary-dark: #143F3B;
+  --primary-tint: #E7F0EE;
+  --accent: #C17A2E;
+
+  --c-sano: #B9C2BE;
+  --c-caries: #C0392B;
+  --c-obturado: #2E6E9E;
+  --c-corona: #B8860B;
+  --c-endodoncia: #7B4B94;
+  --c-extraido: #7A8482;
+  --c-implante: #1F8A70;
+  --c-ausente: #C7CDC9;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+h1, h2, h3, .brand {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+}
+
+a { color: var(--primary); }
+
+/* ---------- Navbar ---------- */
+.app-navbar {
+  background: var(--primary-dark);
+  border-bottom: 1px solid var(--primary);
+}
+.brand {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+.brand-mark { color: var(--accent); font-size: 1.3rem; transform: rotate(90deg); display: inline-block; }
+.navbar-user { color: rgba(255,255,255,.75); font-size: .85rem; }
+.btn-ghost, .btn-solid, .btn-danger-ghost {
+  border-radius: 8px;
+  padding: .4rem .9rem;
+  font-size: .875rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-block;
+}
+.btn-ghost {
+  color: #fff;
+  border-color: rgba(255,255,255,.35);
+  background: transparent;
+}
+.btn-ghost:hover { background: rgba(255,255,255,.1); color: #fff; }
+.btn-solid {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.btn-solid:hover { background: #a9661f; color: #fff; }
+.btn-danger-ghost {
+  background: transparent;
+  border-color: #d9877c;
+  color: #a4362b;
+}
+.btn-danger-ghost:hover { background: #fbebe9; }
+
+/* ---------- Layout helpers ---------- */
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: .25rem;
+}
+.back-link { color: var(--ink-soft); text-decoration: none; font-size: .85rem; }
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.patient-meta { color: var(--ink-soft); font-size: .9rem; }
+
+/* ---------- Auth ---------- */
+.auth-wrap {
+  display: flex;
+  justify-content: center;
+  padding-top: 2rem;
+}
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2.25rem;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 10px 30px rgba(20, 63, 59, .06);
+}
+.auth-card h1 { font-size: 1.5rem; margin-bottom: .35rem; }
+.auth-sub { color: var(--ink-soft); font-size: .9rem; margin-bottom: 1.5rem; }
+.auth-foot { text-align: center; font-size: .875rem; color: var(--ink-soft); margin-top: 1rem; }
+
+/* ---------- Search + patient grid ---------- */
+.search-bar { display: flex; gap: .5rem; max-width: 480px; }
+.patient-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+.patient-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color .15s, transform .15s;
+}
+.patient-card:hover { border-color: var(--primary); transform: translateY(-2px); color: var(--ink); }
+.patient-card h3 { font-size: 1rem; margin: 0; }
+.patient-card p { margin: 0; font-size: .8rem; color: var(--ink-soft); }
+.patient-card-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--primary-tint); color: var(--primary-dark);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; flex-shrink: 0;
+}
+.empty-state, .empty-inline {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  padding: 2rem;
+  text-align: center;
+  color: var(--ink-soft);
+}
+.empty-inline { padding: 1rem; text-align: left; font-size: .875rem; }
+
+/* ---------- Forms ---------- */
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.75rem;
+  max-width: 780px;
+}
+.form-label { font-weight: 600; font-size: .85rem; color: var(--ink); }
+.form-control, .form-select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-tint);
+}
+.notice-card {
+  background: var(--primary-tint);
+  border: 1px solid #cfe1dd;
+  border-radius: 12px;
+  padding: .9rem 1.1rem;
+  font-size: .9rem;
+  color: var(--primary-dark);
+}
+
+/* ---------- Layout odontograma + panorámica ---------- */
+.container {
+  max-width: 1600px;
+}
+.odontogram-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+  margin-bottom: 1.5rem;
+}
+.odontogram-panel, .panoramic-panel { margin-bottom: 0; }
+.panoramic-panel {
+  display: flex;
+  flex-direction: column;
+}
+.panoramic-frame {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #111;
+  text-decoration: none;
+  flex: 1;
+  min-height: 320px;
+}
+.panoramic-frame img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  background: #111;
+}
+.panoramic-pdf-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 320px;
+  color: #fff;
+  font-size: 1.5rem;
+  gap: .4rem;
+  text-align: center;
+}
+.panoramic-caption {
+  font-size: .85rem;
+  font-weight: 600;
+  margin: .75rem 0 0;
+  color: var(--ink);
+}
+.panoramic-panel .empty-inline {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+}
+
+@media (max-width: 860px) {
+  .odontogram-layout { grid-template-columns: 1fr; }
+}
+
+
+/* ---------- Panels ---------- */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem 1.5rem 1.75rem;
+}
+.panel-head h2 { font-size: 1.15rem; margin-bottom: .2rem; }
+.panel-head p { color: var(--ink-soft); font-size: .85rem; margin-bottom: 1.1rem; }
+
+/* ---------- Legend ---------- */
+.legend {
+  display: flex; flex-wrap: wrap; gap: .9rem;
+  margin-bottom: 1.25rem;
+  font-size: .78rem; color: var(--ink-soft);
+}
+.legend-item { display: flex; align-items: center; gap: .35rem; }
+.tooth-dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+
+/* ---------- Odontogram: the signature element ---------- */
+.arch-wrap {
+  background: linear-gradient(180deg, #FBFCFA 0%, var(--bg) 100%);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.5rem 1rem 1.1rem;
+}
+.arch-label {
+  text-align: center;
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+.arch-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  padding: .6rem 0;
+  overflow-x: auto;
+}
+.arch-footnote { text-align: center; color: var(--ink-soft); font-size: .72rem; margin: .75rem 0 0; }
+.midline {
+  width: 1.5px;
+  height: 40px;
+  background: var(--primary);
+  opacity: .35;
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+.gum-line {
+  height: 2px;
+  margin: 0 auto;
+  max-width: 92%;
+  background: repeating-linear-gradient(90deg, var(--border) 0 6px, transparent 6px 11px);
+}
+.arch-wrap-primary {
+  background: linear-gradient(180deg, #FAFAF8 0%, #F0F2EF 100%);
+}
+.arch-wrap-primary .arch-label { color: var(--accent); }
+
+.tooth-btn {
+  width: 44px;
+  height: 56px;
+  border: none;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  cursor: pointer;
+  padding: 0;
+}
+.tooth-btn.size-small { width: 34px; height: 46px; }
+.tooth-svg {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+  overflow: visible;
+  transition: transform .12s, filter .12s;
+}
+.tooth-btn:hover .tooth-svg { transform: translateY(-3px); filter: drop-shadow(0 4px 8px rgba(20,63,59,.18)); }
+
+.face {
+  stroke: var(--border);
+  stroke-width: 1.4;
+  transition: fill .12s;
+}
+.face.status-sano { fill: var(--surface); }
+.face.status-caries { fill: var(--c-caries); }
+.face.status-obturado { fill: var(--c-obturado); }
+.face.status-corona { fill: var(--c-corona); }
+.face.status-endodoncia { fill: var(--c-endodoncia); }
+.face.status-extraido { fill: var(--c-extraido); }
+.face.status-implante { fill: var(--c-implante); }
+.face.status-ausente { fill: var(--surface); opacity: .4; }
+
+.tooth-overlay { stroke: none; opacity: .78; pointer-events: none; }
+.overlay-ausente { fill: none; stroke: var(--c-ausente); stroke-width: 2.5; stroke-dasharray: 4 3; opacity: 1; }
+.overlay-extraido { fill: var(--c-extraido); }
+.overlay-corona { fill: var(--c-corona); }
+.overlay-endodoncia { fill: var(--c-endodoncia); }
+.overlay-implante { fill: var(--c-implante); }
+
+.tooth-num { font-weight: 700; font-size: .78rem; line-height: 1; color: var(--ink); }
+.tooth-btn.size-small .tooth-num { font-size: .68rem; }
+
+.tooth-dot.status-sano { background: var(--c-sano); }
+.tooth-dot.status-caries { background: var(--c-caries); }
+.tooth-dot.status-obturado { background: var(--c-obturado); }
+.tooth-dot.status-corona { background: var(--c-corona); }
+.tooth-dot.status-endodoncia { background: var(--c-endodoncia); }
+.tooth-dot.status-extraido { background: var(--c-extraido); }
+.tooth-dot.status-implante { background: var(--c-implante); }
+.tooth-dot.status-ausente { background: var(--c-ausente); }
+
+/* ---------- Attachments ---------- */
+.upload-form { margin-bottom: 1.25rem; }
+.upload-row { display: flex; gap: .5rem; margin-bottom: .5rem; }
+.upload-tooth { max-width: 240px; }
+.attachment-list { list-style: none; padding: 0; margin: 0; }
+.attachment-list li {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .65rem 0; border-bottom: 1px solid var(--border);
+  font-size: .9rem;
+}
+.attachment-list li:last-child { border-bottom: none; }
+.attachment-list a { font-weight: 600; text-decoration: none; }
+.attachment-meta { color: var(--ink-soft); font-size: .78rem; margin-left: auto; }
+.attachment-delete button {
+  border: none; background: transparent; color: #a4362b;
+  font-size: .95rem; cursor: pointer; padding: 0 .25rem;
+}
+
+/* ---------- Tooth modal history ---------- */
+.tooth-history { list-style: none; padding: 0; margin: 0; max-height: 260px; overflow-y: auto; }
+.tooth-history li {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .6rem .8rem;
+  margin-bottom: .5rem;
+}
+.tooth-history .th-top {
+  display: flex; justify-content: space-between; font-size: .75rem;
+  color: var(--ink-soft); margin-bottom: .25rem;
+}
+.tooth-history .th-status {
+  font-weight: 700; color: var(--primary-dark);
+}
+.tooth-history-empty { color: var(--ink-soft); font-size: .85rem; }
+
+@media (max-width: 576px) {
+  .tooth-btn { width: 38px; height: 50px; }
+  .tooth-btn.size-small { width: 30px; height: 42px; }
+  .upload-row { flex-direction: column; }
+}

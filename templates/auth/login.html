@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Iniciar sesión{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <p class="eyebrow">Acceso privado</p>
+    <h1>Iniciar sesión</h1>
+    <p class="auth-sub">Solo el odontólogo/a registrado puede ver y editar los datos de los pacientes.</p>
+
+    <form method="post" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="email">Email</label>
+        <input class="form-control" type="email" id="email" name="email" required autofocus>
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="password">Contraseña</label>
+        <input class="form-control" type="password" id="password" name="password" required>
+      </div>
+      <button type="submit" class="btn-solid w-100 py-2">Ingresar</button>
+    </form>
+
+    <p class="auth-foot">¿No tenés cuenta todavía? <a href="{{ url_for('auth.register') }}">Registrarme</a></p>
+  </div>
+</div>
+{% endblock %}
