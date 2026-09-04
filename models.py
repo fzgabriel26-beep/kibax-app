@@ -50,6 +50,11 @@ class Patient(db.Model):
         cascade='all, delete-orphan',
         order_by='Attachment.uploaded_at.desc()'
     )
+    evolution_photos = db.relationship(
+        'TreatmentEvolutionPhoto', backref='patient', lazy=True,
+        cascade='all, delete-orphan',
+        order_by='TreatmentEvolutionPhoto.created_at.desc()'
+    )
 
 
 class ToothStatus(db.Model):
@@ -105,3 +110,21 @@ class Attachment(db.Model):
     tooth_number = db.Column(db.Integer, nullable=True)
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
     uploaded_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+
+class TreatmentEvolutionPhoto(db.Model):
+    """Registro fotográfico para el seguimiento evolutivo de tratamientos de un paciente
+    organizado por etapas del tipo 'Antes', 'Durante' y 'Después'."""
+
+    __tablename__ = 'treatment_evolution_photo'
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    treatment_type = db.Column(db.String(100), nullable=False)  # Ortodoncia, Conducto, Blanqueamiento, etc.
+    stage = db.Column(db.String(30), nullable=False)            # Antes, Durante, Después
+    original_filename = db.Column(db.String(255), nullable=False)
+    stored_filename = db.Column(db.String(255), nullable=False)
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    uploaded_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    dentist = db.relationship('User')

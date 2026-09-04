@@ -123,6 +123,7 @@
 </section>
 </div>
 
+<!-- Sección de Archivos y Estudios -->
 <section class="panel mb-4">
   <div class="panel-head">
     <h2>Estudios y documentación</h2>
@@ -174,54 +175,96 @@
   {% endif %}
 </section>
 
-<!-- Modal diente -->
-<div class="modal fade" id="toothModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="toothModalTitle">Diente</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        <form id="toothForm">
-          <div class="row">
-            <div class="col-md-5 mb-3">
-              <label class="form-label" for="toothSurface">Cara</label>
-              <select class="form-select" id="toothSurface" name="surface">
-                {% for key, label in surface_labels.items() %}
-                <option value="{{ key }}">{{ label }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-md-7 mb-3">
-              <label class="form-label" for="toothStatus">Estado</label>
-              <select class="form-select" id="toothStatus" name="status">
-                {% for key, label in status_labels.items() %}
-                <option value="{{ key }}">{{ label }}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="toothNote">Anotación / arreglo realizado</label>
-            <textarea class="form-control" id="toothNote" name="note" rows="3" placeholder="Ej: Obturación con resina compuesta, cara oclusal." required></textarea>
-          </div>
-          <button type="submit" class="btn-solid">Guardar anotación</button>
-          <span id="toothFormError" class="text-danger ms-2"></span>
-        </form>
+<!-- ===================================================================== -->
+<!-- NUEVA SECCIÓN: EVOLUCIÓN FOTOGRÁFICA DE TRATAMIENTOS                 -->
+<!-- ===================================================================== -->
+<section class="panel mb-4">
+  <div class="panel-head">
+    <h2>Evolución fotográfica de tratamientos</h2>
+    <p>Registrá y organizá de forma histórica el estado clínico (Antes, Durante y Después) de tratamientos específicos.</p>
+  </div>
 
-        <hr>
-        <h6>Historial</h6>
-        <ul id="toothHistory" class="tooth-history"></ul>
+  <!-- Formulario nativo simplificado -->
+  <form method="post" action="{{ url_for('patients.upload_evolution_photo', patient_id=paciente.id) }}"
+        enctype="multipart/form-data" class="upload-form">
+    
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+      <div style="flex: 1; min-width: 200px;">
+        <span class="form-label" style="display:block; margin-bottom:4px;">Fotografía clínica</span>
+        <input type="file" name="photo" accept=".jpg,.jpeg,.png,.webp" required class="form-control">
+      </div>
+      
+      <div style="flex: 1; min-width: 150px;">
+        <span class="form-label" style="display:block; margin-bottom:4px;">Tipo de tratamiento</span>
+        <select name="treatment_type" class="form-select" required style="width: 100%;">
+          <option value="" disabled selected>Seleccione...</option>
+          <option value="Ortodoncia">Ortodoncia</option>
+          <option value="Tratamiento de Conducto">Tratamiento de Conducto</option>
+          <option value="Blanqueamiento">Blanqueamiento</option>
+          <option value="Implante / Prótesis">Implante / Prótesis</option>
+        </select>
+      </div>
+
+      <div style="flex: 1; min-width: 150px;">
+        <span class="form-label" style="display:block; margin-bottom:4px;">Etapa actual</span>
+        <select name="stage" class="form-select" required style="width: 100%;">
+          <option value="" disabled selected>Seleccione...</option>
+          <option value="Antes">Antes</option>
+          <option value="Durante">Durante</option>
+          <option value="Después">Después</option>
+        </select>
+      </div>
+    </div>
+    
+    <input type="text" name="notes" class="form-control mb-2" placeholder="Descripción u observaciones opcionales (ej: Control de brackets mes 3...)">
+    <button type="submit" class="btn-solid">Subir fotografía evolutiva</button>
+  </form>
+
+  <!-- Galería fotográfica integrada -->
+  {% if paciente.evolution_photos %}
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-top: 20px;">
+    {% for photo in paciente.evolution_photos %}
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; position: relative;">
+      
+      <!-- Encabezado de la tarjeta con botón de eliminación integrado -->
+      <div style="padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: var(--bg); gap: 8px;">
+        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+          <span style="font-size: .75rem; font-weight: 700; color: var(--primary);">{{ photo.treatment_type }}</span>
+          <span style="font-size: .7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; background: var(--primary-tint);">{{ photo.stage }}</span>
+        </div>
+        
+        <!-- Formulario nativo de borrado rápido (mismo estilo que tus adjuntos) -->
+        <form method="post" action="{{ url_for('patients.delete_evolution_photo', patient_id=paciente.id, photo_id=photo.id) }}"
+              onsubmit="return confirm('¿Seguro que querés eliminar esta fotografía del historial de evolución? Esta acción no se puede deshacer.');" 
+              style="display: inline; margin: 0; padding: 0;">
+          <button type="submit" style="background: transparent; border: none; color: #a4362b; font-weight: bold; cursor: pointer; font-size: 0.9rem; padding: 2px 6px;" aria-label="Eliminar fotografía">✕</button>
+        </form>
+      </div>
+      
+      <a href="{{ url_for('patients.serve_evolution_photo', patient_id=paciente.id, photo_id=photo.id) }}" target="_blank" rel="noopener" style="background: #111; height: 180px; display: flex; justify-content: center; align-items: center; overflow: hidden; border-bottom: 1px solid var(--border);">
+        <img src="{{ url_for('patients.serve_evolution_photo', patient_id=paciente.id, photo_id=photo.id) }}" alt="Evolución clínica" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+      </a>
+      
+      <div style="padding: 12px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between;">
+        <p style="font-size: .85rem; color: var(--ink); margin: 0 0 10px 0; line-height: 1.4;">{{ photo.notes or 'Sin observaciones adicionales.' }}</p>
+        <div style="font-size: .75rem; color: var(--ink-soft); display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 8px;">
+          <span>📅 {{ photo.created_at.strftime('%d/%m/%Y') }}</span>
+          {% if photo.dentist %}
+          <span>🩺 Dr/a. {{ photo.dentist.full_name }}</span>
+          {% endif %}
+        </div>
+      </div>
+      
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-inline" style="margin-top: 20px;">Todavía no se registraron secuencias fotográficas de evolución para este paciente.</p>
+  {% endif %}
+</section>
+        </form>
       </div>
     </div>
   </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-  window.PATIENT_ID = {{ paciente.id }};
-</script>
-<script src="{{ url_for('static', filename='js/odontogram.js') }}"></script>
 {% endblock %}

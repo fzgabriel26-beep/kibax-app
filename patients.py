@@ -11,7 +11,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
 from extensions import db
-from models import Patient, ToothStatus, ProcedureLog, Attachment
+from models import Patient, ToothStatus, ProcedureLog, Attachment, TreatmentEvolutionPhoto
 
 bp = Blueprint('patients', __name__, url_prefix='/pacientes')
 
@@ -361,4 +361,94 @@ def delete_attachment(patient_id, attachment_id):
     db.session.delete(attachment)
     db.session.commit()
     flash('Archivo eliminado.', 'info')
+    return redirect(url_for('patients.patient_detail', patient_id=patient_id))
+
+# ---------------------------------------------------------------------
+# Evolución de Tratamientos: Gestión de fotografías históricas
+# ---------------------------------------------------------------------
+
+@bp.route('/<int:patient_id>/evolucion/subir', methods=['POST'])
+@login_required
+def upload_evolution_photo(patient_id):
+    """Procesa la subida de una imagen de evolución médica (Antes/Durante/Después)
+    para un tratamiento específico."""
+    paciente = Patient.query.get_or_404(patient_id)
+    
+    if 'photo' not in request.files:
+        flash('No se seleccionó ningún archivo de imagen.', 'danger')
+        return redirect(url_for('patients.patient_detail', patient_id=patient_id))
+        
+    file = request.files['photo']
+    treatment_type = request.form.get('treatment_type', '').strip()
+    stage = request.form.get('stage', '').strip()
+    notes = request.form.get('notes', '').strip()
+    
+    if not treatment_type or not stage:
+        flash('El tipo de tratamiento y la etapa son obligatorios.', 'danger')
+        return redirect(url_for('patients.patient_detail', patient_id=patient_id))
+
+    if file and allowed_file(file.filename):
+        original_filename = file.filename
+        ext = original_filename.rsplit('.', 1)[-1].lower() if '.' in original_filename else 'jpg'
+        
+        # Generamos un nombre único y seguro utilizando UUID para evitar colisiones
+        stored_filename = f"evo_{uuid.uuid4().hex}.{ext}"
+        
+        # Estructuramos la subcarpeta 'evolution' dentro del directorio del paciente
+        folder = os.path.join(patient_folder_path(patient_id), 'evolution')
+        os.makedirs(folder, exist_ok=True)
+        
+        # Guardamos físicamente el archivo
+        file.save(os.path.join(folder, stored_filename))
+        
+        # Registramos los datos en la base de datos relacional
+        photo = TreatmentEvolutionPhoto(
+            patient_id=paciente.id,
+            treatment_type=treatment_type,
+            stage=stage,
+            original_filename=original_filename,
+            stored_filename=stored_filename,
+            notes=notes if notes else None,
+            uploaded_by_id=current_user.id
+        )
+        
+        db.session.add(photo)
+        db.session.commit()
+        flash('Fotografía de evolución añadida correctamente.', 'success')
+    else:
+        flash('Archivo no permitido. Solo se aceptan formatos de imagen válidos.', 'danger')
+        
+    return redirect(url_for('patients.patient_detail', patient_id=patient_id))
+
+
+@bp.route('/<int:patient_id>/evolucion/foto/<int:photo_id>')
+@login_required
+def serve_evolution_photo(patient_id, photo_id):
+    """Sirve de manera segura las imágenes de evolución almacenadas
+    fuera del árbol público, validando sesión activa."""
+    photo = TreatmentEvolutionPhoto.query.filter_by(id=photo_id, patient_id=patient_id).first_or_404()
+    
+    folder = os.path.join(patient_folder_path(patient_id), 'evolution')
+    return send_from_directory(folder, photo.stored_filename)
+@bp.route('/<int:patient_id>/evolucion/eliminar/<int:photo_id>', methods=['POST'])
+@login_required
+def delete_evolution_photo(patient_id, photo_id):
+    """Elimina de forma segura el registro de la base de datos 
+    y el archivo físico del almacenamiento local."""
+    photo = TreatmentEvolutionPhoto.query.filter_by(id=photo_id, patient_id=patient_id).first_or_404()
+    
+    # 1. Intentar borrar el archivo físico del disco para no acumular basura
+    folder = os.path.join(patient_folder_path(patient_id), 'evolution')
+    file_path = os.path.join(folder, photo.stored_filename)
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+        except OSError:
+            pass # Si el archivo no existía físicamente por alguna razón, permitimos que continúe el borrado
+            
+    # 2. Borrar el registro lógico en la base de datos
+    db.session.delete(photo)
+    db.session.commit()
+    
+    flash('Fotografía de evolución eliminada correctamente.', 'info')
     return redirect(url_for('patients.patient_detail', patient_id=patient_id))
