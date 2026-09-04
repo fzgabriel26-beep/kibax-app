@@ -262,9 +262,104 @@
   <p class="empty-inline" style="margin-top: 20px;">Todavía no se registraron secuencias fotográficas de evolución para este paciente.</p>
   {% endif %}
 </section>
-        </form>
+
+<!-- Modal diente -->
+<div class="modal fade" id="toothModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="toothModalTitle">Diente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <form id="toothForm">
+              <div class="row">
+                <div class="col-md-5 mb-3">
+                  <label class="form-label" for="toothSurface">Cara</label>
+                  <select class="form-select" id="toothSurface" name="surface">
+                    {% for key, label in surface_labels.items() %}
+                    <option value="{{ key }}">{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-7 mb-3">
+                  <label class="form-label" for="toothStatus">Estado</label>
+                  <select class="form-select" id="toothStatus" name="status">
+                    {% for key, label in status_labels.items() %}
+                    <option value="{{ key }}">{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="toothNote">Anotación / arreglo realizado</label>
+                <textarea class="form-control" id="toothNote" name="note" rows="3" placeholder="Ej: Obturación con resina compuesta, cara oclusal." required></textarea>
+              </div>
+              <button type="submit" class="btn-solid">Guardar anotación</button>
+              <span id="toothFormError" class="text-danger ms-2"></span>
+            </form>
+          </div>
+
+          <div class="col-md-6 tooth-files-col">
+            <div class="tooth-preview" id="toothPreview">
+              <img id="toothPreviewImg" src="" alt="Vista previa del estudio">
+              <div id="toothPreviewPdf" class="tooth-preview-pdf" style="display:none;">
+                <span class="tooth-preview-pdf-icon">📄</span>
+                <span id="toothPreviewName" class="tooth-preview-pdf-name"></span>
+                <a id="toothPreviewOpen" href="#" target="_blank" rel="noopener" class="btn-solid">Abrir PDF</a>
+              </div>
+              <span id="toothPreviewEmpty" class="tooth-preview-empty">Cargando estudios…</span>
+              <span id="toothPreviewHint" class="tooth-preview-hint"></span>
+            </div>
+            <div id="toothFilesError" class="text-danger" style="font-size:.8rem;"></div>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row g-3">
+          <div class="col-md-5">
+            <h6 class="form-label">Historial</h6>
+            <ul id="toothHistory" class="tooth-history"></ul>
+          </div>
+
+          <div class="col-md-7 tooth-files-col">
+            <h6 class="form-label mb-2">Estudios cargados</h6>
+            <ul id="toothAttachments" class="tooth-attachments"></ul>
+
+            <hr>
+            <form id="toothUploadForm" enctype="multipart/form-data">
+              <input type="file" id="toothUploadFile" name="file"
+                     accept=".jpg,.jpeg,.png,.webp,.pdf" class="form-control form-control-sm mb-2" required>
+              <select id="toothUploadCategory" name="category" class="form-select form-select-sm mb-2">
+                {% for key, label in attachment_categories.items() %}
+                <option value="{{ key }}"{% if key == 'periapical' %} selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+              <input type="text" id="toothUploadDesc" name="description"
+                     class="form-control form-control-sm mb-2" placeholder="Descripción (opcional)">
+              <button type="submit" class="btn-solid w-100">Subir archivo</button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Lightbox para estudios del diente -->
+<div id="toothLightbox" class="tooth-lightbox" title="Cerrar">
+  <img id="toothLightboxImg" src="" alt="Estudio">
+  <span id="toothLightboxCaption" class="tooth-lightbox-caption"></span>
+  <button type="button" class="tooth-lightbox-close" aria-label="Cerrar">✕</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.PATIENT_ID = {{ paciente.id }};
+</script>
+<script src="{{ url_for('static', filename='js/odontogram.js') }}"></script>
 {% endblock %}

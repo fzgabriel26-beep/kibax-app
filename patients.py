@@ -363,6 +363,95 @@ def delete_attachment(patient_id, attachment_id):
     flash('Archivo eliminado.', 'info')
     return redirect(url_for('patients.patient_detail', patient_id=patient_id))
 
+
+# ---------------------------------------------------------------------
+# Adjuntos por diente (AJAX para el modal del odontograma)
+# ---------------------------------------------------------------------
+
+@bp.route('/<int:patient_id>/diente/<int:tooth_number>/adjuntos', methods=['GET'])
+@login_required
+def tooth_attachments(patient_id, tooth_number):
+    paciente = Patient.query.get_or_404(patient_id)
+    if tooth_number not in ALL_TEETH:
+        abort(404)
+
+    attachments = (Attachment.query
+                   .filter_by(patient_id=paciente.id, tooth_number=tooth_number)
+                   .order_by(Attachment.uploaded_at.desc())
+                   .all())
+
+    return jsonify({
+        'ok': True,
+        'attachments': [
+            {
+                'id': a.id,
+                'original_filename': a.original_filename,
+                'description': a.description or '',
+                'category': a.category,
+                'category_label': ATTACHMENT_CATEGORIES.get(a.category, 'Otro'),
+                'is_image': a.original_filename.rsplit('.', 1)[-1].lower() in IMAGE_EXTENSIONS,
+                'url': url_for('patients.download_attachment',
+                               patient_id=paciente.id, attachment_id=a.id),
+                'uploaded_at': a.uploaded_at.strftime('%d/%m/%Y %H:%M'),
+            } for a in attachments
+        ],
+    })
+
+
+@bp.route('/<int:patient_id>/diente/<int:tooth_number>/adjuntos', methods=['POST'])
+@login_required
+def upload_tooth_attachment(patient_id, tooth_number):
+    paciente = Patient.query.get_or_404(patient_id)
+    if tooth_number not in ALL_TEETH:
+        return jsonify({'ok': False, 'error': 'Diente inválido.'}), 400
+
+    file = request.files.get('file')
+    if not file or file.filename == '':
+        return jsonify({'ok': False, 'error': 'No se seleccionó ningún archivo.'}), 400
+    if not allowed_file(file.filename):
+        return jsonify({'ok': False, 'error': 'Tipo de archivo no permitido. Solo imágenes (jpg, png, webp) o PDF.'}), 400
+
+    original_name = secure_filename(file.filename)
+    ext = original_name.rsplit('.', 1)[-1].lower()
+    stored_name = f"{uuid.uuid4().hex}.{ext}"
+
+    folder = patient_folder_path(patient_id)
+    os.makedirs(folder, exist_ok=True)
+    file.save(os.path.join(folder, stored_name))
+
+    category = request.form.get('category', 'periapical')
+    if category not in ATTACHMENT_CATEGORIES:
+        category = 'periapical'
+
+    attachment = Attachment(
+        patient_id=paciente.id,
+        original_filename=original_name,
+        stored_filename=stored_name,
+        description=request.form.get('description', '').strip(),
+        category=category,
+        tooth_number=tooth_number,
+        uploaded_by_id=current_user.id,
+    )
+    db.session.add(attachment)
+    db.session.commit()
+    return jsonify({'ok': True, 'id': attachment.id})
+
+
+@bp.route('/<int:patient_id>/diente/<int:tooth_number>/adjuntos/<int:attachment_id>/eliminar', methods=['POST'])
+@login_required
+def delete_tooth_attachment(patient_id, tooth_number, attachment_id):
+    attachment = Attachment.query.filter_by(
+        id=attachment_id, patient_id=patient_id, tooth_number=tooth_number
+    ).first_or_404()
+
+    folder = patient_folder_path(patient_id)
+    filepath = os.path.join(folder, attachment.stored_filename)
+    if os.path.exists(filepath):
+        os.remove(filepath)
+    db.session.delete(attachment)
+    db.session.commit()
+    return jsonify({'ok': True})
+
 # ---------------------------------------------------------------------
 # Evolución de Tratamientos: Gestión de fotografías históricas
 # ---------------------------------------------------------------------

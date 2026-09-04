@@ -10,6 +10,46 @@ document.addEventListener('DOMContentLoaded', function () {
   const errorEl = document.getElementById('toothFormError');
   const historyList = document.getElementById('toothHistory');
 
+  const fileUploadForm = document.getElementById('toothUploadForm');
+  const fileInput = document.getElementById('toothUploadFile');
+  const fileDesc = document.getElementById('toothUploadDesc');
+  const fileCategory = document.getElementById('toothUploadCategory');
+  const attachmentsList = document.getElementById('toothAttachments');
+  const filesErrorEl = document.getElementById('toothFilesError');
+
+  const lightboxEl = document.getElementById('toothLightbox');
+  const lightboxImg = document.getElementById('toothLightboxImg');
+  const lightboxCaption = document.getElementById('toothLightboxCaption');
+
+  const previewImg = document.getElementById('toothPreviewImg');
+  const previewPdf = document.getElementById('toothPreviewPdf');
+  const previewPdfName = document.getElementById('toothPreviewName');
+  const previewPdfOpen = document.getElementById('toothPreviewOpen');
+  const previewEmpty = document.getElementById('toothPreviewEmpty');
+  const previewHint = document.getElementById('toothPreviewHint');
+
+  function openLightbox(url, caption) {
+    lightboxImg.src = url;
+    lightboxCaption.textContent = caption || '';
+    lightboxEl.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightboxEl.classList.remove('open');
+    lightboxImg.src = '';
+    document.body.style.overflow = '';
+  }
+
+  lightboxEl.addEventListener('click', function (e) {
+    if (e.target === lightboxEl || e.target.classList.contains('tooth-lightbox-close')) {
+      closeLightbox();
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeLightbox();
+  });
+
   let currentTooth = null;
   let currentStatuses = {}; // { '': 'sano', 'V': 'caries', ... } para el diente abierto
 
@@ -41,7 +81,9 @@ document.addEventListener('DOMContentLoaded', function () {
     noteField.value = '';
     modalTitle.textContent = 'Cargando diente ' + toothNumber + '…';
     historyList.innerHTML = '';
+    filesErrorEl.textContent = '';
     modal.show();
+    loadToothAttachments(toothNumber);
 
     fetch('/pacientes/' + patientId + '/diente/' + toothNumber)
       .then(function (r) { return r.json(); })
@@ -70,6 +112,149 @@ document.addEventListener('DOMContentLoaded', function () {
       const surface = target ? target.dataset.surface : '';
       openTooth(btn.dataset.tooth, surface);
     });
+  });
+
+  let previewFile = null;
+
+  function fileCaption(item) {
+    return item.original_filename + (item.description ? ' · ' + item.description : '');
+  }
+
+  function showPreviewEmpty(text) {
+    previewFile = null;
+    previewImg.style.display = 'none';
+    previewPdf.style.display = 'none';
+    previewEmpty.style.display = 'block';
+    previewEmpty.textContent = text;
+    previewHint.textContent = '';
+  }
+
+  function selectPreview(item, li) {
+    previewFile = item;
+    document.querySelectorAll('.tooth-file-item.selected').forEach(function (el) {
+      el.classList.remove('selected');
+    });
+    if (li) li.classList.add('selected');
+
+    previewEmpty.style.display = 'none';
+    if (item.is_image) {
+      previewImg.src = item.url;
+      previewImg.style.display = 'block';
+      previewPdf.style.display = 'none';
+      previewHint.textContent = '👁 Hacé clic en la imagen para verla en pantalla completa';
+    } else {
+      previewImg.style.display = 'none';
+      previewPdf.style.display = 'flex';
+      previewPdfName.textContent = item.original_filename;
+      previewPdfOpen.href = item.url;
+      previewHint.textContent = '';
+    }
+  }
+
+  previewImg.addEventListener('click', function () {
+    if (previewFile && previewFile.is_image) {
+      openLightbox(previewFile.url, fileCaption(previewFile));
+    }
+  });
+
+  function renderAttachments(list) {
+    attachmentsList.innerHTML = '';
+    if (!list.length) {
+      showPreviewEmpty('Sin estudios cargados para este diente.');
+      return;
+    }
+
+    list.forEach(function (item, idx) {
+      const li = document.createElement('li');
+      li.className = 'tooth-file-item';
+      li.title = item.original_filename;
+
+      if (item.is_image) {
+        const img = document.createElement('img');
+        img.className = 'tooth-file-thumb';
+        img.src = item.url;
+        img.alt = item.original_filename;
+        li.appendChild(img);
+      } else {
+        const ph = document.createElement('div');
+        ph.className = 'tooth-file-pdf';
+        ph.textContent = 'PDF';
+        li.appendChild(ph);
+      }
+
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'tooth-file-del';
+      del.setAttribute('aria-label', 'Eliminar archivo');
+      del.textContent = '✕';
+      del.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        if (!confirm('¿Eliminar ' + item.original_filename + '?')) return;
+        fetch('/pacientes/' + patientId + '/diente/' + currentTooth + '/adjuntos/' + item.id + '/eliminar', {
+          method: 'POST',
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data.ok) loadToothAttachments(currentTooth);
+          })
+          .catch(function () {
+            filesErrorEl.textContent = 'Error de conexión al eliminar.';
+          });
+      });
+      li.appendChild(del);
+
+      li.addEventListener('click', function () {
+        selectPreview(item, li);
+      });
+
+      attachmentsList.appendChild(li);
+
+      if (idx === 0) selectPreview(item, li);
+    });
+  }
+
+  function loadToothAttachments(toothNumber) {
+    showPreviewEmpty('Cargando estudios…');
+    fetch('/pacientes/' + patientId + '/diente/' + toothNumber + '/adjuntos')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        renderAttachments(data.attachments || []);
+      })
+      .catch(function () {
+        showPreviewEmpty('No se pudieron cargar los estudios.');
+      });
+  }
+
+  fileUploadForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    filesErrorEl.textContent = '';
+    if (!fileInput.files.length) {
+      filesErrorEl.textContent = 'Seleccioná un archivo primero.';
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('category', fileCategory.value);
+    formData.append('description', fileDesc.value.trim());
+
+    fetch('/pacientes/' + patientId + '/diente/' + currentTooth + '/adjuntos', {
+      method: 'POST',
+      body: formData,
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.ok) {
+          filesErrorEl.textContent = data.error || 'No se pudo subir el archivo.';
+          return;
+        }
+        fileInput.value = '';
+        fileDesc.value = '';
+        loadToothAttachments(currentTooth);
+      })
+      .catch(function () {
+        filesErrorEl.textContent = 'Error de conexión. Intentá nuevamente.';
+      });
   });
 
   function updateToothIcon(toothNumber, surface, status) {
