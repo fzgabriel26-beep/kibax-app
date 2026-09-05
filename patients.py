@@ -11,7 +11,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
 from extensions import db
-from models import Patient, ToothStatus, ProcedureLog, Attachment, TreatmentEvolutionPhoto
+from models import Patient, ToothStatus, ProcedureLog, Attachment, TreatmentEvolutionPhoto, ConsultationNote
 
 bp = Blueprint('patients', __name__, url_prefix='/pacientes')
 
@@ -114,13 +114,8 @@ def patient_folder_path(patient_id):
 @login_required
 def list_patients():
     q = request.args.get('q', '').strip()
-    query = Patient.query
-    if q:
-        query = query.filter(db.or_(
-            Patient.full_name.ilike(f'%{q}%'),
-            Patient.document_id.ilike(f'%{q}%'),
-        ))
-    pacientes = query.order_by(Patient.full_name).all()
+    # La búsqueda y el ordenado se hacen del lado del cliente (en vivo).
+    pacientes = Patient.query.order_by(Patient.full_name).all()
     return render_template('patients/list.html', pacientes=pacientes, q=q)
 
 
@@ -188,7 +183,31 @@ def patient_detail(patient_id):
         all_teeth=ALL_TEETH_ORDERED,
         attachment_categories=ATTACHMENT_CATEGORIES,
         panoramic=panoramic,
+        hoy=datetime.now().date(),
         panoramic_is_image=(panoramic and panoramic.original_filename.rsplit('.', 1)[-1].lower() in IMAGE_EXTENSIONS),
+    )
+
+
+@bp.route('/<int:patient_id>/exportar')
+@login_required
+def export_patient(patient_id):
+    paciente = Patient.query.get_or_404(patient_id)
+
+    statuses = {}
+    for ts in paciente.tooth_statuses:
+        statuses.setdefault(ts.tooth_number, {})[ts.surface] = ts.status
+
+    return render_template(
+        'patients/export.html',
+        paciente=paciente,
+        statuses=statuses,
+        status_labels=STATUS_LABELS,
+        upper_row=UPPER_ROW,
+        lower_row=LOWER_ROW,
+        primary_upper_row=PRIMARY_UPPER_ROW,
+        primary_lower_row=PRIMARY_LOWER_ROW,
+        layouts=TOOTH_LAYOUTS,
+        today=datetime.now(),
     )
 
 
@@ -364,6 +383,51 @@ def delete_attachment(patient_id, attachment_id):
     db.session.delete(attachment)
     db.session.commit()
     flash('Archivo eliminado.', 'info')
+    return redirect(url_for('patients.patient_detail', patient_id=patient_id))
+
+
+@bp.route('/<int:patient_id>/notas', methods=['POST'])
+@login_required
+def add_consultation_note(patient_id):
+    paciente = Patient.query.get_or_404(patient_id)
+
+    visit_date_raw = request.form.get('visit_date') or None
+    visit_date = None
+    if visit_date_raw:
+        try:
+            visit_date = datetime.strptime(visit_date_raw, '%Y-%m-%d').date()
+        except ValueError:
+            visit_date = None
+
+    reason = request.form.get('reason', '').strip()
+    treatment = request.form.get('treatment', '').strip()
+    indications = request.form.get('indications', '').strip()
+
+    if not reason and not treatment and not indications:
+        flash('Completá al menos un campo de la nota de consulta.', 'danger')
+        return redirect(url_for('patients.patient_detail', patient_id=patient_id))
+
+    note = ConsultationNote(
+        patient_id=paciente.id,
+        visit_date=visit_date or datetime.now().date(),
+        reason=reason or None,
+        treatment=treatment or None,
+        indications=indications or None,
+        created_by_id=current_user.id,
+    )
+    db.session.add(note)
+    db.session.commit()
+    flash('Nota de consulta guardada.', 'success')
+    return redirect(url_for('patients.patient_detail', patient_id=patient_id))
+
+
+@bp.route('/<int:patient_id>/notas/<int:note_id>/eliminar', methods=['POST'])
+@login_required
+def delete_consultation_note(patient_id, note_id):
+    note = ConsultationNote.query.filter_by(id=note_id, patient_id=patient_id).first_or_404()
+    db.session.delete(note)
+    db.session.commit()
+    flash('Nota de consulta eliminada.', 'info')
     return redirect(url_for('patients.patient_detail', patient_id=patient_id))
 
 

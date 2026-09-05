@@ -1,4 +1,5 @@
 import os
+from datetime import date
 
 from flask import Flask, redirect, url_for, request, flash
 from flask_login import current_user
@@ -26,8 +27,22 @@ def create_app():
 
     import auth
     import patients
+    import agenda
     app.register_blueprint(auth.bp)
     app.register_blueprint(patients.bp)
+    app.register_blueprint(agenda.bp)
+
+    @app.context_processor
+    def inject_agenda():
+        """Inyecta el conteo de turnos de hoy para la insignia del navbar."""
+        from models import Appointment
+        if current_user.is_authenticated:
+            hoy = date.today()
+            conteo = Appointment.query.filter_by(planned_date=hoy).filter(
+                Appointment.status != 'cancelado'
+            ).count()
+            return {'agenda_hoy': conteo, 'hoy': hoy}
+        return {}
 
     @app.route('/')
     def index():

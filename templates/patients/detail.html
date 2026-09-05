@@ -33,10 +33,13 @@
       {% if paciente.email %}{{ paciente.email }}{% endif %}
     </p>
   </div>
-  <form method="post" action="{{ url_for('patients.delete_patient', patient_id=paciente.id) }}"
-        onsubmit="return confirm('¿Eliminar a {{ paciente.full_name }} y toda su información (odontograma, historial y adjuntos)? Esta acción no se puede deshacer.');">
-    <button type="submit" class="btn-danger-ghost">Eliminar paciente</button>
-  </form>
+  <div class="d-flex align-items-center gap-2">
+    <a href="{{ url_for('patients.export_patient', patient_id=paciente.id) }}" target="_blank" rel="noopener" class="btn-outline">Imprimir / PDF</a>
+    <form method="post" action="{{ url_for('patients.delete_patient', patient_id=paciente.id) }}"
+          onsubmit="return confirm('¿Eliminar a {{ paciente.full_name }} y toda su información (odontograma, historial y adjuntos)? Esta acción no se puede deshacer.');">
+      <button type="submit" class="btn-danger-ghost">Eliminar paciente</button>
+    </form>
+  </div>
 </div>
 
 {% if paciente.medical_notes %}
@@ -123,12 +126,26 @@
 </section>
 </div>
 
-<!-- Sección de Archivos y Estudios -->
-<section class="panel mb-4">
-  <div class="panel-head">
-    <h2>Estudios y documentación</h2>
-    <p>Radiografías, fotos clínicas o PDFs de estudios. Solo visibles para el odontólogo/a con sesión iniciada.</p>
-  </div>
+<!-- Pestañas: estudios, evolución, notas -->
+<div class="section-tabs mt-4">
+  <ul class="nav nav-tabs" id="patientTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-estudios" data-bs-toggle="tab" data-bs-target="#pane-estudios" type="button" role="tab" aria-controls="pane-estudios">Estudios y documentación</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-evolucion" data-bs-toggle="tab" data-bs-target="#pane-evolucion" type="button" role="tab" aria-controls="pane-evolucion">Evolución fotográfica</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-notas" data-bs-toggle="tab" data-bs-target="#pane-notas" type="button" role="tab" aria-controls="pane-notas">Notas de consulta</button>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade" id="pane-estudios" role="tabpanel" aria-labelledby="tab-estudios">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Estudios y documentación</h2>
+          <p>Radiografías, fotos clínicas o PDFs de estudios. Solo visibles para el odontólogo/a con sesión iniciada.</p>
+        </div>
 
   <form method="post" action="{{ url_for('patients.upload_attachment', patient_id=paciente.id) }}"
         enctype="multipart/form-data" class="upload-form">
@@ -173,16 +190,15 @@
   {% else %}
   <p class="empty-inline">Todavía no hay archivos adjuntos.</p>
   {% endif %}
-</section>
+      </section>
+    </div>
 
-<!-- ===================================================================== -->
-<!-- NUEVA SECCIÓN: EVOLUCIÓN FOTOGRÁFICA DE TRATAMIENTOS                 -->
-<!-- ===================================================================== -->
-<section class="panel mb-4">
-  <div class="panel-head">
-    <h2>Evolución fotográfica de tratamientos</h2>
-    <p>Registrá y organizá de forma histórica el estado clínico (Antes, Durante y Después) de tratamientos específicos.</p>
-  </div>
+    <div class="tab-pane fade" id="pane-evolucion" role="tabpanel" aria-labelledby="tab-evolucion">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Evolución fotográfica de tratamientos</h2>
+          <p>Registrá y organizá de forma histórica el estado clínico (Antes, Durante y Después) de tratamientos específicos.</p>
+        </div>
 
   <!-- Formulario nativo simplificado -->
   <form method="post" action="{{ url_for('patients.upload_evolution_photo', patient_id=paciente.id) }}"
@@ -261,7 +277,65 @@
   {% else %}
   <p class="empty-inline" style="margin-top: 20px;">Todavía no se registraron secuencias fotográficas de evolución para este paciente.</p>
   {% endif %}
-</section>
+      </section>
+    </div>
+
+    <div class="tab-pane fade" id="pane-notas" role="tabpanel" aria-labelledby="tab-notas">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Notas de consulta</h2>
+          <p>Registro diario de la visita: motivo, tratamiento realizado e indicaciones.</p>
+        </div>
+
+        <form method="post" action="{{ url_for('patients.add_consultation_note', patient_id=paciente.id) }}" class="upload-form">
+          <div class="row g-2">
+            <div class="col-md-3">
+              <label class="form-label" for="nc-fecha">Fecha de la consulta</label>
+              <input type="date" class="form-control" id="nc-fecha" name="visit_date" value="{{ hoy.isoformat() }}" required>
+            </div>
+          </div>
+          <div class="row g-2 mt-0">
+            <div class="col-md-4">
+              <label class="form-label" for="nc-motivo">Motivo de la consulta</label>
+              <input type="text" class="form-control" id="nc-motivo" name="reason" placeholder="Ej: dolor en muela 26">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="nc-tratamiento">Tratamiento realizado</label>
+              <input type="text" class="form-control" id="nc-tratamiento" name="treatment" placeholder="Ej: obturación, endodoncia…">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="nc-indicaciones">Indicaciones</label>
+              <input type="text" class="form-control" id="nc-indicaciones" name="indications" placeholder="Ej: no comer durante 2h…">
+            </div>
+          </div>
+          <button type="submit" class="btn-solid mt-3">Guardar nota de consulta</button>
+        </form>
+
+        {% if paciente.consultation_notes %}
+        <ul class="notes-list">
+          {% for n in paciente.consultation_notes %}
+          <li class="note-item">
+            <div class="note-head">
+              <span class="note-date">{{ n.visit_date.strftime('%d/%m/%Y') }}</span>
+              {% if n.dentist %}<span class="note-dentist">🩺 Dr/a. {{ n.dentist.full_name }}</span>{% endif %}
+              <form method="post" action="{{ url_for('patients.delete_consultation_note', patient_id=paciente.id, note_id=n.id) }}"
+                    onsubmit="return confirm('¿Eliminar esta nota de consulta?');" class="note-delete">
+                <button type="submit" aria-label="Eliminar nota">✕</button>
+              </form>
+            </div>
+            {% if n.reason %}<p><strong>Motivo:</strong> {{ n.reason }}</p>{% endif %}
+            {% if n.treatment %}<p><strong>Tratamiento:</strong> {{ n.treatment }}</p>{% endif %}
+            {% if n.indications %}<p><strong>Indicaciones:</strong> {{ n.indications }}</p>{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-inline">Todavía no hay notas de consulta para este paciente.</p>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+</div>
 
 <!-- Modal diente -->
 <div class="modal fade" id="toothModal" tabindex="-1" aria-hidden="true">
@@ -360,6 +434,19 @@
 {% block scripts %}
 <script>
   window.PATIENT_ID = {{ paciente.id }};
+</script>
+<script>
+  (function () {
+    var saved = localStorage.getItem('patientTab');
+    if (saved && document.querySelector('#tab-' + saved)) {
+      bootstrap.Tab.getOrCreateInstance(document.querySelector('#tab-' + saved)).show();
+    }
+    document.querySelectorAll('#patientTabs [data-bs-toggle="tab"]').forEach(function (btn) {
+      btn.addEventListener('shown.bs.tab', function () {
+        localStorage.setItem('patientTab', btn.id.replace('tab-', ''));
+      });
+    });
+  })();
 </script>
 <script src="{{ url_for('static', filename='js/odontogram.js') }}"></script>
 {% endblock %}

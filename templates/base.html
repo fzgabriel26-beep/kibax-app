@@ -18,6 +18,9 @@
       {% if current_user.is_authenticated %}
       <div class="d-flex align-items-center gap-3">
         <span class="navbar-user d-none d-sm-inline">Dr/a. {{ current_user.full_name }}</span>
+        <a class="btn-ghost" href="{{ url_for('agenda.index') }}">Agenda
+          {% if agenda_hoy %}<span class="agenda-badge">{{ agenda_hoy }}</span>{% endif %}
+        </a>
         <a class="btn-ghost" href="{{ url_for('patients.list_patients') }}">Pacientes</a>
         <a class="btn-solid" href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
       </div>

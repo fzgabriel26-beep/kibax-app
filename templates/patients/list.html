@@ -9,15 +9,25 @@
   <a href="{{ url_for('patients.new_patient') }}" class="btn-solid">+ Dar de alta paciente</a>
 </div>
 
-<form method="get" class="search-bar mb-4">
-  <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por nombre o DNI…">
-  <button type="submit" class="btn-ghost">Buscar</button>
-</form>
+<div class="list-toolbar mb-3">
+  <form method="get" class="search-bar" onsubmit="return false;">
+    <input type="search" id="patientSearch" name="q" value="{{ q }}" class="form-control"
+           placeholder="Buscá por nombre o DNI…">
+  </form>
+  <select id="patientSort" class="form-select sort-select" aria-label="Ordenar pacientes">
+    <option value="nombre">Ordenar por nombre</option>
+    <option value="apellido">Ordenar por apellido</option>
+  </select>
+</div>
+<div id="patientCount" class="list-count">Mostrando {{ pacientes|length }} pacientes</div>
 
 {% if pacientes %}
-<div class="patient-grid">
+<div id="patientGrid" class="patient-grid">
   {% for p in pacientes %}
-  <a href="{{ url_for('patients.patient_detail', patient_id=p.id) }}" class="patient-card">
+  <a href="{{ url_for('patients.patient_detail', patient_id=p.id) }}" class="patient-card"
+     data-name="{{ p.full_name|lower }}"
+     data-last="{{ (p.full_name.split()|last)|lower }}"
+     data-dni="{{ (p.document_id or '')|lower }}">
     <div class="patient-card-avatar">{{ p.full_name[:1]|upper }}</div>
     <div>
       <h3>{{ p.full_name }}</h3>
@@ -29,10 +39,60 @@
   </a>
   {% endfor %}
 </div>
+<div id="patientNoResults" class="empty-state" style="display:none;">
+  <p>No se encontraron pacientes para tu búsqueda.</p>
+  <button type="button" class="btn-ghost" onclick="document.getElementById('patientSearch').value='';var e=new Event('input',{bubbles:true});document.getElementById('patientSearch').dispatchEvent(e);">Limpiar búsqueda</button>
+</div>
 {% else %}
 <div class="empty-state">
-  <p>{% if q %}No se encontraron pacientes para “{{ q }}”.{% else %}Todavía no hay pacientes cargados.{% endif %}</p>
+  <p>Todavía no hay pacientes cargados.</p>
   <a href="{{ url_for('patients.new_patient') }}" class="btn-solid">Dar de alta el primer paciente</a>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var input = document.getElementById('patientSearch');
+    var sort = document.getElementById('patientSort');
+    var grid = document.getElementById('patientGrid');
+    var count = document.getElementById('patientCount');
+    var empty = document.getElementById('patientNoResults');
+    if (!grid || !count) return;
+    var cards = Array.prototype.slice.call(grid.querySelectorAll('.patient-card'));
+
+    function apply() {
+      var q = (input.value || '').trim().toLowerCase();
+      var by = sort ? sort.value : 'nombre';
+
+      var visible = cards.filter(function (card) {
+        if (!q) return true;
+        return (card.dataset.name || '').indexOf(q) !== -1 ||
+               (card.dataset.last || '').indexOf(q) !== -1 ||
+               (card.dataset.dni || '').indexOf(q) !== -1;
+      });
+
+      visible.sort(function (a, b) {
+        var ka = by === 'apellido' ? (a.dataset.last || '') : (a.dataset.name || '');
+        var kb = by === 'apellido' ? (b.dataset.last || '') : (b.dataset.name || '');
+        return ka.localeCompare(kb, 'es');
+      });
+
+      visible.forEach(function (card) { grid.appendChild(card); });
+
+      cards.forEach(function (card) {
+        card.style.display = visible.indexOf(card) === -1 ? 'none' : '';
+      });
+
+      var total = cards.length;
+      count.textContent = 'Mostrando ' + visible.length + (visible.length !== total ? ' de ' + total : '') + ' pacientes';
+      if (empty) empty.style.display = cards.length && !visible.length ? '' : 'none';
+    }
+
+    input.addEventListener('input', apply);
+    if (sort) sort.addEventListener('change', apply);
+    apply();
+  })();
+</script>
 {% endblock %}

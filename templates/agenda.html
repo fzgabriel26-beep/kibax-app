@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% block title %}Agenda{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Consultorio</p>
+    <h1>Agenda de turnos</h1>
+  </div>
+</div>
+
+{% if todos_hoy %}
+<div class="notice-card mb-4">
+  <strong>Turnos de hoy ({{ today.strftime('%d/%m/%Y') }}):</strong>
+  {% for t in todos_hoy %}
+    <span class="agenda-hoy-chip">{{ t.time }} · {{ t.patient.full_name }}{% if t.reason %} — {{ t.reason }}{% endif %}</span>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="agenda-layout">
+  <!-- Calendario -->
+  <section class="panel">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div class="agenda-month">
+        <a class="btn-icon" href="{{ url_for('agenda.index', mes=prev_month[0] ~ '-' ~ '%02d'|format(prev_month[1])) }}" aria-label="Mes anterior">‹</a>
+        <strong>{{ month_name }} {{ year }}</strong>
+        <a class="btn-icon" href="{{ url_for('agenda.index', mes=next_month[0] ~ '-' ~ '%02d'|format(next_month[1])) }}" aria-label="Mes siguiente">›</a>
+      </div>
+      <a href="{{ url_for('agenda.index') }}" class="btn-outline">Hoy</a>
+    </div>
+
+    <table class="agenda-cal">
+      <thead>
+        <tr>
+          <th>Lun</th><th>Mar</th><th>Mié</th><th>Jue</th><th>Vie</th><th>Sáb</th><th>Dom</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for week in weeks %}
+        <tr>
+          {% for day in week %}
+          <td>
+            {% if day %}
+              {% set iso = "%04d-%02d-%02d"|format(year, month, day) %}
+              {% if iso == today.isoformat() %}
+              <a class="agenda-cell {{ 'agenda-today' if iso == today.isoformat() }}"
+                 href="{{ url_for('agenda.index', fecha=iso, mes='%04d-%02d'|format(year, month)) }}">
+              {% else %}
+              <a class="agenda-cell"
+                 href="{{ url_for('agenda.index', fecha=iso, mes='%04d-%02d'|format(year, month)) }}">
+              {% endif %}
+                <span class="agenda-day">{{ day }}</span>
+                {% if counts.get(iso) %}
+                <span class="agenda-dot">{{ counts[iso] }}</span>
+                {% endif %}
+              </a>
+            {% else %}
+              <div class="agenda-cell is-empty"></div>
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="arch-footnote">Los números en color indican cuántos turnos hay ese día. Hacé clic para verlos.</p>
+  </section>
+
+  <!-- Lista de turnos -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>{% if fecha %}Turnos del {{ fecha.strftime('%d/%m/%Y') }}{% else %}Próximos turnos{% endif %}</h2>
+      <p>Organizá la consulta y su recordatorio.</p>
+    </div>
+
+    <form method="post" action="{{ url_for('agenda.nuevo') }}" class="agenda-form">
+      <div class="row g-2">
+        <div class="col-md-5">
+          <label class="form-label" for="a-patient">Paciente</label>
+          <div class="autocomplete">
+            <input type="text" class="form-control" id="a-patient" autocomplete="off"
+                   placeholder="Buscá por nombre o DNI…">
+            <input type="hidden" name="patient_id" id="a-patient-id">
+            <ul class="autocomplete-list" id="a-patient-list" hidden></ul>
+          </div>
+          <div class="autocomplete-selected" id="a-selected" hidden></div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="a-fecha">Fecha</label>
+          <div class="datepicker-wrap">
+            <input type="text" class="form-control" id="a-fecha" name="fecha"
+                   value="{{ (fecha or today).strftime('%d/%m/%Y') }}"
+                   placeholder="dd/mm/aaaa" inputmode="numeric"
+                   pattern="\d{2}/\d{2}/\d{4}" title="Formato: día/mes/año" required>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="a-hora">Hora</label>
+          <input type="time" class="form-control" id="a-hora" name="hora" value="10:00" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="a-status">Estado</label>
+          <select class="form-select" id="a-status" name="status">
+            {% for key, label in statuses.items() %}
+            <option value="{{ key }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <input type="text" name="reason" class="form-control mt-2" placeholder="Motivo (opcional)">
+      <button type="submit" class="btn-solid mt-2 w-100">Agendar turno</button>
+    </form>
+
+    {% if list_appts %}
+    <ul class="agenda-list">
+      {% for a in list_appts %}
+      <li class="agenda-item status-{{ a.status }}">
+        <div class="agenda-item-main">
+          <div class="agenda-item-time">{{ a.time }}</div>
+          <div>
+            <div class="agenda-item-name">{{ a.patient.full_name }}</div>
+            <div class="agenda-item-meta">
+              {{ a.planned_date.strftime('%A %d/%m/%Y')|capitalize }}
+              {% if a.reason %} · {{ a.reason }}{% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="agenda-item-actions">
+          <form method="post" action="{{ url_for('agenda.estado', appt_id=a.id) }}" class="agenda-status-form">
+            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" aria-label="Estado del turno">
+              {% for key, label in statuses.items() %}
+              <option value="{{ key }}"{% if a.status == key %} selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </form>
+          <form method="post" action="{{ url_for('agenda.eliminar', appt_id=a.id) }}"
+                onsubmit="return confirm('¿Eliminar este turno?');">
+            <button type="submit" class="btn-danger-ghost" aria-label="Eliminar turno">✕</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty-inline">{% if fecha %}No hay turnos ese día.{% else %}Todavía no hay turnos próximos.{% endif %}</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var input = document.getElementById('a-patient');
+    var hidden = document.getElementById('a-patient-id');
+    var list = document.getElementById('a-patient-list');
+    var selected = document.getElementById('a-selected');
+    var timer = null;
+
+    function pick(item) {
+      input.value = item.full_name;
+      hidden.value = item.id;
+      list.hidden = true;
+      selected.hidden = false;
+      selected.textContent = item.document_id ? '✓ Doc. ' + item.document_id : '✓ Sin documento';
+      input.setCustomValidity('');
+    }
+
+    function clearSelection() {
+      hidden.value = '';
+      selected.hidden = true;
+      input.setCustomValidity('Seleccioná un paciente de la lista');
+    }
+
+    function show(items) {
+      list.innerHTML = '';
+      items.forEach(function (item) {
+        var li = document.createElement('li');
+        li.innerHTML = '<span class="ac-name"></span><span class="ac-doc"></span>';
+        li.querySelector('.ac-name').textContent = item.full_name;
+        li.querySelector('.ac-doc').textContent = item.document_id ? 'Doc. ' + item.document_id : 'Sin documento';
+        li.addEventListener('mousedown', function (e) { e.preventDefault(); pick(item); });
+        list.appendChild(li);
+      });
+      list.hidden = !items.length;
+    }
+
+    input.addEventListener('input', function () {
+      clearSelection();
+      var q = input.value.trim();
+      if (q.length < 2) { list.hidden = true; return; }
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        fetch('/agenda/pacientes?q=' + encodeURIComponent(q))
+          .then(function (r) { return r.json(); })
+          .then(function (data) { show(data.results || []); })
+          .catch(function () { list.hidden = true; });
+      }, 150);
+    });
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        var first = list.querySelector('li');
+        if (first) {
+          e.preventDefault();
+          first.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        }
+      }
+    });
+
+    input.addEventListener('blur', function () {
+      setTimeout(function () { list.hidden = true; }, 150);
+    });
+  })();
+
+  (function () {
+    var fechaInput = document.getElementById('a-fecha');
+    if (!fechaInput) return;
+
+    fechaInput.addEventListener('input', function () {
+      var v = fechaInput.value.replace(/\D/g, '').slice(0, 8);
+      var out = v.length > 4 ? v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
+              : v.length > 2 ? v.slice(0, 2) + '/' + v.slice(2)
+              : v;
+      fechaInput.value = out;
+    });
+
+    var form = fechaInput.closest('form');
+    if (form) {
+      form.addEventListener('submit', function () {
+        var parts = fechaInput.value.split('/');
+        if (parts.length === 3 && parts[2].length === 4) {
+          fechaInput.value = parts[2] + '-' + parts[0] + '-' + parts[1];
+        }
+      });
+    }
+  })();
+
+  (function () {
+    var input = document.getElementById('a-fecha');
+    if (!input) return;
+
+    var popup = document.createElement('div');
+    popup.className = 'datepicker-popup';
+    popup.hidden = true;
+    input.parentNode.appendChild(popup);
+
+    var MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    var weekdays = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'];
+    var open = false;
+
+    function parseValue(v) {
+      var parts = v.split('/');
+      if (parts.length !== 3) return null;
+      var d = parseInt(parts[0], 10), m = parseInt(parts[1], 10), y = parseInt(parts[2], 10);
+      if (!d || !m || !y) return null;
+      return new Date(y, m - 1, d);
+    }
+
+    function pad(n) { return ('0' + n).slice(-2); }
+
+    function fmt(d) {
+      return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
+    }
+
+    var viewDate = parseValue(input.value) || new Date();
+
+    function isToday(d) {
+      var t = new Date();
+      return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
+    }
+
+    function render() {
+      var y = viewDate.getFullYear(), m = viewDate.getMonth();
+      var startWeekday = new Date(y, m, 1).getDay();
+      var daysInMonth = new Date(y, m + 1, 0).getDate();
+      var sel = parseValue(input.value);
+
+      var html = '';
+      html += '<div class="dp-head">';
+      html += '<button type="button" class="dp-nav" data-delta="-1" tabindex="-1">&#8249;</button>';
+      html += '<span class="dp-title">' + MONTHS[m] + ' ' + y + '</span>';
+      html += '<button type="button" class="dp-nav" data-delta="1" tabindex="-1">&#8250;</button>';
+      html += '</div><div class="dp-grid">';
+      weekdays.forEach(function (w) { html += '<span class="dp-dow">' + w + '</span>'; });
+      for (var i = 0; i < startWeekday; i++) html += '<span></span>';
+      for (var day = 1; day <= daysInMonth; day++) {
+        var d = new Date(y, m, day);
+        var cls = 'dp-day';
+        if (sel && sel.getFullYear() === y && sel.getMonth() === m && sel.getDate() === day) cls += ' selected';
+        if (isToday(d)) cls += ' today';
+        html += '<button type="button" class="' + cls + '" data-day="' + day + '" tabindex="-1">' + day + '</button>';
+      }
+      html += '</div>';
+      popup.innerHTML = html;
+    }
+
+    function show() { open = true; popup.hidden = false; render(); }
+    function hide() { open = false; popup.hidden = true; }
+
+    input.addEventListener('focus', show);
+    input.addEventListener('click', show);
+
+    popup.addEventListener('mousedown', function (e) { e.preventDefault(); });
+
+    popup.addEventListener('click', function (e) {
+      var nav = e.target.closest ? e.target.closest('.dp-nav') : null;
+      if (nav) {
+        viewDate.setMonth(viewDate.getMonth() + parseInt(nav.dataset.delta, 10));
+        render();
+        return;
+      }
+      var day = e.target.closest ? e.target.closest('.dp-day') : null;
+      if (day) {
+        input.value = fmt(new Date(viewDate.getFullYear(), viewDate.getMonth(), parseInt(day.dataset.day, 10)));
+        hide();
+      }
+    });
+
+    document.addEventListener('mousedown', function (e) {
+      if (open && !popup.contains(e.target) && e.target !== input) hide();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') hide();
+    });
+  })();
+</script>
+{% endblock %}

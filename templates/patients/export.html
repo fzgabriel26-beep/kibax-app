@@ -1,0 +1,159 @@
+{% macro tooth_icon(n, size='normal') %}
+  {% set layout = layouts[n] %}
+  {% set st = statuses.get(n, {}) %}
+  {% set general = st.get('', 'sano') %}
+  <button type="button" class="tooth-btn size-{{ size }}{% if general != 'sano' %} has-general{% endif %}" data-tooth="{{ n }}">
+    <svg viewBox="0 0 40 40" class="tooth-svg">
+      <polygon class="face status-{{ st.get(layout.top, 'sano') }}" data-surface="{{ layout.top }}" points="0,0 40,0 28,12 12,12"></polygon>
+      <polygon class="face status-{{ st.get(layout.right, 'sano') }}" data-surface="{{ layout.right }}" points="40,0 40,40 28,28 28,12"></polygon>
+      <polygon class="face status-{{ st.get(layout.bottom, 'sano') }}" data-surface="{{ layout.bottom }}" points="40,40 0,40 12,28 28,28"></polygon>
+      <polygon class="face status-{{ st.get(layout.left, 'sano') }}" data-surface="{{ layout.left }}" points="0,40 0,0 12,12 12,28"></polygon>
+      <polygon class="face status-{{ st.get('O', 'sano') }}" data-surface="O" points="12,12 28,12 28,28 12,28"></polygon>
+      {% if general != 'sano' %}
+      <rect class="tooth-overlay overlay-{{ general }}" x="0" y="0" width="40" height="40"></rect>
+      {% endif %}
+    </svg>
+    <span class="tooth-num">{{ n }}</span>
+  </button>
+{% endmacro %}
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Odontograma · {{ paciente.full_name }}</title>
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  <style>
+    .export-body { background: #fff; }
+    .print-toolbar {
+      position: sticky; top: 0; z-index: 10;
+      background: #fff; border-bottom: 1px solid #eee;
+      padding: .75rem 1.25rem;
+      display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+    }
+    .print-toolbar a { color: #205E58; font-weight: 600; text-decoration: none; font-size: .9rem; }
+    .print-toolbar button {
+      border: none; background: #205E58; color: #fff;
+      border-radius: 8px; padding: .45rem 1rem; font-weight: 600; cursor: pointer;
+    }
+    .print-toolbar .toolbar-hint { color: #5B6664; font-size: .8rem; margin-left: auto; }
+
+    .print-sheet { max-width: 1050px; margin: 0 auto; padding: 2rem; }
+    .print-head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      border-bottom: 2px solid #205E58; padding-bottom: .9rem; margin-bottom: 1.1rem;
+    }
+    .print-head h1 { font-size: 1.5rem; margin: 0; color: #205E58; }
+    .print-head .doc-label {
+      font-size: .75rem; letter-spacing: .1em; text-transform: uppercase;
+      color: #5B6664; font-weight: 700;
+    }
+    .print-data {
+      display: grid; grid-template-columns: 1fr 1fr; gap: .15rem 2.5rem;
+      font-size: .88rem; margin-bottom: .25rem;
+    }
+    .print-data div b { color: #205E58; }
+    .print-notes { font-size: .85rem; margin: .9rem 0 0; padding: .6rem .9rem; background: #F5F7F4; border-radius: 8px; }
+    .print-section-title {
+      font-size: .72rem; letter-spacing: .12em; text-transform: uppercase;
+      color: #5B6664; font-weight: 700; margin: 1.4rem 0 .45rem;
+    }
+    .print-legend {
+      display: flex; flex-wrap: wrap; gap: .9rem;
+      font-size: .8rem; color: #5B6664;
+      padding-bottom: .9rem; border-bottom: 1px solid #eee; margin-bottom: 1.1rem;
+    }
+    .print-legend .legend-item { display: flex; align-items: center; gap: .35rem; }
+    .print-arch { border: 1px solid #E1E6E1; border-radius: 16px; padding: 1.1rem .75rem .8rem; margin-bottom: 1rem; }
+    .arch-footnote { color: #5B6664; font-size: .72rem; text-align: center; margin: .6rem 0 0; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .export-body { background: #fff; }
+      .print-sheet { max-width: 100%; padding: 0; }
+      .print-arch, .arch-wrap { break-inside: avoid; }
+      .tooth-svg, .face, .tooth-overlay {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body class="export-body">
+
+  <div class="print-toolbar no-print">
+    <button onclick="window.print()">Imprimir / Guardar PDF</button>
+    <a href="{{ url_for('patients.patient_detail', patient_id=paciente.id) }}">← Volver al paciente</a>
+    <span class="toolbar-hint">En la ventana de impresión elegí "Guardar como PDF"</span>
+  </div>
+
+  <div class="print-sheet">
+    <div class="print-head">
+      <div>
+        <div class="doc-label">Odontograma</div>
+        <h1>{{ paciente.full_name }}</h1>
+      </div>
+      <div style="text-align:right;">
+        <div class="doc-label">Fecha de emisión</div>
+        <div style="font-weight:600;">{{ today.strftime('%d/%m/%Y') }}</div>
+      </div>
+    </div>
+
+    <div class="print-data">
+      {% if paciente.document_id %}<div><b>Documento:</b> {{ paciente.document_id }}</div>{% endif %}
+      {% if paciente.birth_date %}<div><b>Nacimiento:</b> {{ paciente.birth_date.strftime('%d/%m/%Y') }}</div>{% endif %}
+      {% if paciente.phone %}<div><b>Teléfono:</b> {{ paciente.phone }}</div>{% endif %}
+      {% if paciente.email %}<div><b>Email:</b> {{ paciente.email }}</div>{% endif %}
+    </div>
+    {% if paciente.medical_notes %}
+    <p class="print-notes"><b>Antecedentes:</b> {{ paciente.medical_notes }}</p>
+    {% endif %}
+
+    <div class="print-legend">
+      {% for key, label in status_labels.items() %}
+      <span class="legend-item"><i class="tooth-dot status-{{ key }}"></i>{{ label }}</span>
+      {% endfor %}
+    </div>
+
+    <div class="print-arch">
+      <div class="print-section-title">Superior · permanente</div>
+      <div class="arch-row">
+        {% for n in upper_row %}
+          {% if loop.index == 9 %}<div class="midline" style="height:56px;"></div>{% endif %}
+          {{ tooth_icon(n) }}
+        {% endfor %}
+      </div>
+      <div class="gum-line"></div>
+      <div class="arch-row">
+        {% for n in lower_row %}
+          {% if loop.index == 9 %}<div class="midline" style="height:56px;"></div>{% endif %}
+          {{ tooth_icon(n) }}
+        {% endfor %}
+      </div>
+      <div class="print-section-title">Inferior · permanente</div>
+    </div>
+
+    <div class="print-arch">
+      <div class="print-section-title">Superior · de leche</div>
+      <div class="arch-row">
+        {% for n in primary_upper_row %}
+          {% if loop.index == 6 %}<div class="midline" style="height:46px;"></div>{% endif %}
+          {{ tooth_icon(n, size='small') }}
+        {% endfor %}
+      </div>
+      <div class="gum-line"></div>
+      <div class="arch-row">
+        {% for n in primary_lower_row %}
+          {% if loop.index == 6 %}<div class="midline" style="height:46px;"></div>{% endif %}
+          {{ tooth_icon(n, size='small') }}
+        {% endfor %}
+      </div>
+      <div class="print-section-title">Inferior · de leche</div>
+    </div>
+
+    <p class="arch-footnote">Numeración FDI · cada diente se divide en 5 caras: vestibular, palatino/lingual, mesial, distal y oclusal/incisal</p>
+  </div>
+
+</body>
+</html>

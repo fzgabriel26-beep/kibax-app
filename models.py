@@ -55,6 +55,11 @@ class Patient(db.Model):
         cascade='all, delete-orphan',
         order_by='TreatmentEvolutionPhoto.created_at.desc()'
     )
+    consultation_notes = db.relationship(
+        'ConsultationNote', backref='patient', lazy=True,
+        cascade='all, delete-orphan',
+        order_by='ConsultationNote.visit_date.desc(), ConsultationNote.created_at.desc()'
+    )
 
 
 class ToothStatus(db.Model):
@@ -127,4 +132,38 @@ class TreatmentEvolutionPhoto(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     uploaded_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
+    dentist = db.relationship('User')
+
+
+class ConsultationNote(db.Model):
+    """Nota de consulta: registro diario de una visita del paciente
+    (motivo de la consulta, tratamiento realizado e indicaciones)."""
+
+    __tablename__ = 'consultation_note'
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    visit_date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    reason = db.Column(db.Text)
+    treatment = db.Column(db.Text)
+    indications = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    dentist = db.relationship('User')
+
+
+class Appointment(db.Model):
+    """Turno/agenda: cita de un paciente con un odontólogo en una fecha y hora."""
+
+    __tablename__ = 'appointment'
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    planned_date = db.Column(db.Date, nullable=False)
+    time = db.Column(db.String(5), nullable=False, default='10:00')  # formato HH:MM
+    reason = db.Column(db.String(255))
+    status = db.Column(db.String(20), default='confirmado')  # pendiente, confirmado, realizado, cancelado
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    patient = db.relationship('Patient', backref='appointments')
     dentist = db.relationship('User')
