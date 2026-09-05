@@ -116,7 +116,10 @@ def list_patients():
     q = request.args.get('q', '').strip()
     query = Patient.query
     if q:
-        query = query.filter(Patient.full_name.ilike(f'%{q}%'))
+        query = query.filter(db.or_(
+            Patient.full_name.ilike(f'%{q}%'),
+            Patient.document_id.ilike(f'%{q}%'),
+        ))
     pacientes = query.order_by(Patient.full_name).all()
     return render_template('patients/list.html', pacientes=pacientes, q=q)
 
