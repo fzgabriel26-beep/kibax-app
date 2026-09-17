@@ -9,14 +9,15 @@
   --primary-tint: #E7F0EE;
   --accent: #C17A2E;
 
-  --c-sano: #B9C2BE;
+  --c-sano: #FFFFFF;
   --c-caries: #C0392B;
   --c-obturado: #2E6E9E;
   --c-corona: #B8860B;
   --c-endodoncia: #7B4B94;
   --c-extraido: #7A8482;
   --c-implante: #1F8A70;
-  --c-ausente: #C7CDC9;
+  --c-protesis: #A0522D;
+  --c-ausente: #616B67;
 }
 
 * { box-sizing: border-box; }
@@ -159,6 +160,13 @@ a { color: var(--primary); }
 .dp-day:hover { background: var(--primary-tint); }
 .dp-day.today { font-weight: 700; color: var(--primary); }
 .dp-day.selected { background: var(--primary); color: #fff; }
+.dp-day.dp-avail { background: #dcebe8; color: var(--primary-dark); }
+.dp-day.dp-avail:hover { background: #cbe3de; }
+.dp-day.dp-no { background: #edefee; color: #97a09c; }
+.dp-day.dp-no:hover { background: #e4e7e5; }
+.dp-day.dp-sus { background: #fdeeea; color: #C0392B; text-decoration: line-through; }
+.dp-day.dp-sus:hover { background: #fbe0d9; }
+.dp-day.selected.dp-avail, .dp-day.selected.dp-no, .dp-day.selected.dp-sus { background: var(--primary); color: #fff; text-decoration: none; }
 .list-toolbar { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
 .list-toolbar .search-bar { flex: 1; max-width: 560px; margin-bottom: 0; }
 .sort-select { width: auto; }
@@ -381,32 +389,35 @@ a { color: var(--primary); }
   stroke-width: 1.4;
   transition: fill .12s;
 }
-.face.status-sano { fill: var(--surface); }
+.face.status-sano { fill: var(--c-sano); }
 .face.status-caries { fill: var(--c-caries); }
 .face.status-obturado { fill: var(--c-obturado); }
 .face.status-corona { fill: var(--c-corona); }
 .face.status-endodoncia { fill: var(--c-endodoncia); }
 .face.status-extraido { fill: var(--c-extraido); }
 .face.status-implante { fill: var(--c-implante); }
-.face.status-ausente { fill: var(--surface); opacity: .4; }
+.face.status-protesis { fill: var(--c-protesis); }
+.face.status-ausente { fill: var(--c-ausente); }
 
 .tooth-overlay { stroke: none; opacity: .78; pointer-events: none; }
-.overlay-ausente { fill: none; stroke: var(--c-ausente); stroke-width: 2.5; stroke-dasharray: 4 3; opacity: 1; }
+.overlay-ausente { fill: none; stroke: #B7BFBB; stroke-width: 2.5; stroke-dasharray: 4 3; opacity: 1; }
 .overlay-extraido { fill: var(--c-extraido); }
 .overlay-corona { fill: var(--c-corona); }
 .overlay-endodoncia { fill: var(--c-endodoncia); }
 .overlay-implante { fill: var(--c-implante); }
+.overlay-protesis { fill: var(--c-protesis); }
 
 .tooth-num { font-weight: 700; font-size: .78rem; line-height: 1; color: var(--ink); }
 .tooth-btn.size-small .tooth-num { font-size: .68rem; }
 
-.tooth-dot.status-sano { background: var(--c-sano); }
+.tooth-dot.status-sano { background: var(--c-sano); border: 1px solid var(--border); }
 .tooth-dot.status-caries { background: var(--c-caries); }
 .tooth-dot.status-obturado { background: var(--c-obturado); }
 .tooth-dot.status-corona { background: var(--c-corona); }
 .tooth-dot.status-endodoncia { background: var(--c-endodoncia); }
 .tooth-dot.status-extraido { background: var(--c-extraido); }
 .tooth-dot.status-implante { background: var(--c-implante); }
+.tooth-dot.status-protesis { background: var(--c-protesis); }
 .tooth-dot.status-ausente { background: var(--c-ausente); }
 
 /* ---------- Attachments ---------- */
@@ -434,11 +445,25 @@ a { color: var(--primary); }
   border-radius: 10px;
   padding: .6rem .8rem;
   margin-bottom: .5rem;
+  position: relative;
 }
 .tooth-history .th-top {
   display: flex; justify-content: space-between; font-size: .75rem;
   color: var(--ink-soft); margin-bottom: .25rem;
+  padding-right: 3.2rem;
 }
+.tooth-history .th-actions {
+  position: absolute; top: .45rem; right: .5rem;
+  display: flex; gap: .25rem;
+}
+.tooth-history .th-btn {
+  background: #fff; border: 1px solid var(--border); border-radius: 6px;
+  width: 24px; height: 24px; font-size: .75rem; line-height: 1;
+  cursor: pointer; color: var(--ink-soft);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.tooth-history .th-btn:hover { border-color: var(--primary); color: var(--primary); }
+.tooth-history .th-btn-del:hover { border-color: #C0392B; color: #C0392B; }
 .tooth-history .th-status {
   font-weight: 700; color: var(--primary-dark);
 }
@@ -577,6 +602,26 @@ a { color: var(--primary); }
 .agenda-cell.is-empty { background: transparent; border-color: transparent; }
 .agenda-day { font-weight: 600; font-size: .9rem; }
 .agenda-today { border-color: var(--primary); background: var(--primary-tint); }
+.agenda-cal td .schedule-day { background: var(--primary-tint); border-color: #cfe0dc; }
+.agenda-cal td .schedule-day:hover { border-color: var(--primary); background: #dcebe8; }
+.agenda-cal td .no-schedule { background: #edefee; border-color: #dadddb; }
+.agenda-cal td .no-schedule:hover { background: #e4e7e5; }
+.agenda-cal td .no-schedule .agenda-day { color: #97a09c; }
+.agenda-cal td .agenda-selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(193, 122, 46, .35); }
+.agenda-cal td .schedule-day.suspended { background: #fdeeea; border-color: #f0cdc4; }
+.agenda-cal td .schedule-day.suspended:hover { background: #fbe0d9; }
+.agenda-cal td .schedule-day.suspended .agenda-day { color: #C0392B; text-decoration: line-through; }
+.prof-filter-form select { min-width: 200px; }
+.schedule-legend { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; font-size: .8rem; color: var(--ink-soft); }
+.legend-chip { width: 14px; height: 14px; border-radius: 4px; display: inline-block; margin-right: .3rem; vertical-align: -2px; }
+.chip-work { background: #dcebe8; border: 1px solid #cfe0dc; }
+.chip-no { background: #edefee; border: 1px solid #dadddb; }
+.chip-sus { background: #fdeeea; border: 1px solid #f0cdc4; }
+.schedule-hint { font-size: .75rem; }
+.days-picker { display: flex; gap: .4rem; flex-wrap: wrap; }
+.day-check { cursor: pointer; font-size: .85rem; }
+.day-check input { margin-right: .25rem; }
+.agenda-table th, .agenda-table td { font-size: .85rem; vertical-align: middle; }
 .agenda-dot {
   margin-top: 2px; min-width: 18px; padding: 0 .3rem;
   background: var(--accent); color: #fff; border-radius: 999px;
@@ -600,14 +645,52 @@ a { color: var(--primary); }
 .agenda-item-meta { color: var(--ink-soft); font-size: .78rem; }
 .agenda-item-actions { display: flex; align-items: center; gap: .4rem; flex-shrink: 0; }
 .agenda-status-form select { width: auto; min-width: 110px; }
-.agenda-item.status-realizado { opacity: .62; }
-.agenda-item.status-cancelado { opacity: .55; }
-.agenda-item.status-cancelado .agenda-item-name { text-decoration: line-through; }
+.agenda-item.status-atendido { opacity: .62; }
+.agenda-item.status-ausente,
+.agenda-item.status-ausente_aviso,
+.agenda-item.status-cancelado {
+  background: #fdecea; border-color: #f2ccc5; opacity: 1;
+}
+.agenda-item.status-ausente .agenda-item-name,
+.agenda-item.status-ausente_aviso .agenda-item-name,
+.agenda-item.status-cancelado .agenda-item-name {
+  text-decoration: line-through; text-decoration-color: #C0392B;
+}
+.agenda-item.status-ausente .agenda-item-time,
+.agenda-item.status-ausente_aviso .agenda-item-time,
+.agenda-item.status-cancelado .agenda-item-time {
+  background: #f7d9d4; color: #a3362b;
+}
+.agenda-item.status-presente { background: #f1f8f2; border-color: #d6e9da; }
 .agenda-hoy-chip {
   display: inline-block; margin: .2rem .4rem .2rem 0;
   padding: .15rem .6rem; border-radius: 999px;
   background: #fff; border: 1px solid #cfe1dd; font-size: .8rem;
 }
+
+/* ---------- Vista de turnos (listado) ---------- */
+.turno-group { margin-bottom: 1.3rem; }
+.turno-day-head {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .35rem 0; border-bottom: 1px solid var(--border); margin-bottom: .6rem;
+}
+.turno-day-name { font-weight: 700; font-size: .9rem; color: var(--ink); }
+.turno-day-count {
+  background: var(--primary-tint); color: var(--primary-dark);
+  border-radius: 999px; padding: .05rem .55rem; font-size: .75rem; font-weight: 600;
+}
+.turno-chip-hoy {
+  background: var(--accent); color: #fff; border-radius: 999px;
+  padding: .05rem .55rem; font-size: .68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.turno-repro {
+  list-style: none; padding: .7rem; border: 1px dashed var(--border);
+  border-radius: 12px; margin: -.1rem 0 .7rem; background: #fafbfa;
+}
+.btn-xs { padding: .28rem .6rem; font-size: .78rem; border-radius: 8px; }
+.agenda-item-name a { color: inherit; text-decoration: none; }
+.agenda-item-name a:hover { color: var(--primary); text-decoration: underline; }
 
 /* ---------- Pestañas del paciente ---------- */
 .section-tabs .nav-tabs {

@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Horarios de los profesionales{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Agenda</p>
+    <h1>Horarios de los profesionales</h1>
+  </div>
+  <a href="{{ url_for('agenda.index') }}" class="btn-outline">← Volver a la agenda</a>
+</div>
+
+<div class="agenda-layout">
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Asignar horario semanal</h2>
+      <p>Definí la franja horaria y los días. Ej.: lunes a jueves de 08:00 a 16:00, con vigencia de un año.</p>
+    </div>
+
+    <form method="post" action="{{ url_for('agenda.horario_nuevo') }}" class="agenda-form">
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label" for="s-profesional">Profesional</label>
+          <select class="form-select" id="s-profesional" name="user_id" required>
+            <option value="" disabled selected>Seleccioná…</option>
+            {% for pr in profesionales %}
+            <option value="{{ pr.id }}">{{ pr.full_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="s-inicio">Hora inicio</label>
+          <input type="time" class="form-control" id="s-inicio" name="start_time" value="08:00" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="s-fin">Hora fin</label>
+          <input type="time" class="form-control" id="s-fin" name="end_time" value="16:00" required>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <span class="form-label" style="display:block; margin-bottom:4px;">Días que trabaja</span>
+        <div class="days-picker">
+          {% for idx in range(0, 7) %}
+          <label class="day-check">
+            <input type="checkbox" name="days" value="{{ idx }}">
+            <span>{{ day_names[idx] }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="row g-2 mt-2">
+        <div class="col-md-4">
+          <label class="form-label" for="s-desde">Vigente desde</label>
+          <input type="date" class="form-control" id="s-desde" name="valid_from" value="{{ hoy.isoformat() }}" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="s-hasta">Vigente hasta</label>
+          <input type="date" class="form-control" id="s-hasta" name="valid_to" value="{{ default_valid_to.isoformat() }}" required>
+        </div>
+      </div>
+      <button type="submit" class="btn-solid mt-3">Guardar horario</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Suspender disponibilidad</h2>
+      <p>Por enfermedad u otro motivo. Dejá el horario vacío para suspender el día completo.</p>
+    </div>
+
+    <form method="post" action="{{ url_for('agenda.suspension_nueva') }}" class="agenda-form">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label" for="x-profesional">Profesional</label>
+          <select class="form-select" id="x-profesional" name="user_id" required>
+            <option value="" disabled selected>Seleccioná…</option>
+            {% for pr in profesionales %}
+            <option value="{{ pr.id }}">{{ pr.full_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="x-fecha">Fecha</label>
+          <input type="date" class="form-control" id="x-fecha" name="fecha" value="{{ hoy.isoformat() }}" required>
+        </div>
+        <div class="col-md-5">
+          <label class="form-label" for="x-motivo">Motivo</label>
+          <input type="text" class="form-control" id="x-motivo" name="reason" placeholder="Ej: enfermedad, licencia…">
+        </div>
+      </div>
+      <div class="row g-2 mt-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label" for="x-inicio">Suspender desde (opcional)</label>
+          <input type="time" class="form-control" id="x-inicio" name="start_time">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="x-fin">Suspender hasta (opcional)</label>
+          <input type="time" class="form-control" id="x-fin" name="end_time">
+        </div>
+        <div class="col-md-4">
+          <button type="submit" class="btn-solid w-100">Registrar suspensión</button>
+        </div>
+      </div>
+    </form>
+  </section>
+</div>
+
+<section class="panel mt-4">
+  <div class="panel-head">
+    <h2>Horarios asignados</h2>
+    <p>Los horarios vigentes. Si un profesional cambia de franja, eliminá el horario y volvé a crearlo.</p>
+  </div>
+
+  {% if schedules %}
+  <table class="table table-sm agenda-table mt-2">
+    <thead>
+      <tr><th>Profesional</th><th>Día</th><th>Franja</th><th>Vigencia</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for s in schedules %}
+      <tr>
+        <td>{{ s.dentist.full_name }}</td>
+        <td>{{ day_names[s.day_of_week] }}</td>
+        <td>{{ s.start_time }} – {{ s.end_time }}</td>
+        <td>{{ s.valid_from.strftime('%d/%m/%Y') }} al {{ s.valid_to.strftime('%d/%m/%Y') }}</td>
+        <td class="text-end">
+          <form method="post" action="{{ url_for('agenda.horario_eliminar', sched_id=s.id) }}"
+                onsubmit="return confirm('¿Eliminar este horario?');">
+            <button type="submit" class="btn-danger-ghost">Eliminar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty-inline">Todavía no hay horarios asignados.</p>
+  {% endif %}
+</section>
+
+<section class="panel mt-4">
+  <div class="panel-head">
+    <h2>Suspensiones registradas</h2>
+    <p>Días o franjas en las que el profesional no atiende.</p>
+  </div>
+
+  {% if exceptions %}
+  <ul class="agenda-list">
+    {% for e in exceptions %}
+    <li class="agenda-item status-cancelado">
+      <div class="agenda-item-main">
+        <div class="agenda-item-time">{{ e.date.strftime('%d/%m') }}</div>
+        <div>
+          <div class="agenda-item-name">{{ e.dentist.full_name }}</div>
+          <div class="agenda-item-meta">
+            {% if e.start_time %}{{ e.start_time }} – {{ e.end_time }}{% else %}Día completo{% endif %}
+            {% if e.reason %} · {{ e.reason }}{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="agenda-item-actions">
+        <form method="post" action="{{ url_for('agenda.suspension_eliminar', exc_id=e.id) }}"
+              onsubmit="return confirm('¿Levantar esta suspensión?');">
+          <button type="submit" class="btn-danger-ghost" aria-label="Eliminar suspensión">✕</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="empty-inline">No hay suspensiones registradas.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -158,12 +158,46 @@ class Appointment(db.Model):
     __tablename__ = 'appointment'
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    professional_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     planned_date = db.Column(db.Date, nullable=False)
     time = db.Column(db.String(5), nullable=False, default='10:00')  # formato HH:MM
     reason = db.Column(db.String(255))
-    status = db.Column(db.String(20), default='confirmado')  # pendiente, confirmado, realizado, cancelado
+    status = db.Column(db.String(20), default='confirmado')  # pendiente, confirmado, presente, atendido, ausente, ausente_aviso, cancelado
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     patient = db.relationship('Patient', backref='appointments')
-    dentist = db.relationship('User')
+    professional = db.relationship('User', foreign_keys=[professional_id])
+    dentist = db.relationship('User', foreign_keys=[created_by_id])
+
+
+class WorkSchedule(db.Model):
+    """Horario semanal de trabajo de un profesional dentro de una vigencia.
+    Una fila por día de la semana (0 = lunes .. 6 = domingo) con su franja
+    horaria. Ej.: lunes a jueves de 08:00 a 16:00 por un año = 4 filas."""
+
+    __tablename__ = 'work_schedule'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    day_of_week = db.Column(db.Integer, nullable=False)
+    start_time = db.Column(db.String(5), nullable=False)  # HH:MM
+    end_time = db.Column(db.String(5), nullable=False)    # HH:MM
+    valid_from = db.Column(db.Date, nullable=False)
+    valid_to = db.Column(db.Date, nullable=False)
+
+    dentist = db.relationship('User', foreign_keys=[user_id])
+
+
+class ScheduleException(db.Model):
+    """Suspensión puntual de la disponibilidad de un profesional
+    (enfermedad, licencia, etc.). Sin horario = día completo."""
+
+    __tablename__ = 'schedule_exception'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.String(5))  # None = todo el día
+    end_time = db.Column(db.String(5))
+    reason = db.Column(db.String(255))
+
+    dentist = db.relationship('User', foreign_keys=[user_id])

@@ -23,6 +23,7 @@ STATUS_LABELS = {
     'endodoncia': 'Endodoncia',
     'extraido': 'Extraído',
     'implante': 'Implante',
+    'protesis': 'Prótesis',
     'ausente': 'Ausente',
 }
 
@@ -66,7 +67,7 @@ SURFACE_LABELS = {
 # Estados que aplican a una cara puntual vs. al diente completo (a modo de
 # sugerencia visual en el formulario; el backend acepta cualquier
 # combinación para no ser demasiado rígido).
-WHOLE_TOOTH_STATUSES = {'ausente', 'extraido', 'corona', 'endodoncia', 'implante'}
+WHOLE_TOOTH_STATUSES = {'ausente', 'extraido', 'corona', 'endodoncia', 'implante', 'protesis'}
 
 UPPER_QUADS = {1, 2, 5, 6}
 RIGHT_QUADS = {1, 4, 5, 8}   # cuadrantes del lado derecho del paciente
@@ -248,8 +249,10 @@ def tooth_info(patient_id, tooth_number):
         'statuses': statuses,
         'logs': [
             {
+                'id': log.id,
                 'surface': log.surface,
                 'surface_label': SURFACE_LABELS.get(log.surface, log.surface),
+                'status': log.status,
                 'status_label': STATUS_LABELS.get(log.status, log.status or ''),
                 'note': log.note,
                 'dentist': log.dentist.full_name if log.dentist else '',
@@ -302,14 +305,74 @@ def tooth_update(patient_id, tooth_number):
         'status': status,
         'status_label': STATUS_LABELS.get(status, status),
         'log': {
+            'id': log.id,
             'surface': surface,
             'surface_label': SURFACE_LABELS.get(surface, surface),
+            'status': status,
             'status_label': STATUS_LABELS.get(status, status),
             'note': log.note,
             'dentist': current_user.full_name,
             'created_at': log.created_at.strftime('%d/%m/%Y %H:%M'),
         }
     })
+
+
+@bp.route('/<int:patient_id>/diente/<int:tooth_number>/log/<int:log_id>', methods=['POST'])
+@login_required
+def tooth_log_update(patient_id, tooth_number, log_id):
+    """Edita una anotación del historial de un diente."""
+    paciente = Patient.query.get_or_404(patient_id)
+    if tooth_number not in ALL_TEETH:
+        abort(404)
+    log = ProcedureLog.query.get_or_404(log_id)
+    if log.patient_id != paciente.id or log.tooth_number != tooth_number:
+        abort(404)
+
+    surface = request.form.get('surface', '')
+    status = request.form.get('status', '')
+    note = request.form.get('note', '').strip()
+
+    if surface not in SURFACE_LABELS:
+        return jsonify({'ok': False, 'error': 'Cara inválida.'}), 400
+    if status not in STATUS_LABELS:
+        return jsonify({'ok': False, 'error': 'Estado inválido.'}), 400
+    if not note:
+        return jsonify({'ok': False, 'error': 'La anotación no puede estar vacía.'}), 400
+
+    log.surface = surface
+    log.status = status
+    log.note = note
+    db.session.commit()
+
+    return jsonify({
+        'ok': True,
+        'log': {
+            'id': log.id,
+            'surface': surface,
+            'surface_label': SURFACE_LABELS.get(surface, surface),
+            'status': status,
+            'status_label': STATUS_LABELS.get(status, status),
+            'note': log.note,
+            'dentist': log.dentist.full_name if log.dentist else current_user.full_name,
+            'created_at': log.created_at.strftime('%d/%m/%Y %H:%M'),
+        },
+    })
+
+
+@bp.route('/<int:patient_id>/diente/<int:tooth_number>/log/<int:log_id>/eliminar', methods=['POST'])
+@login_required
+def tooth_log_delete(patient_id, tooth_number, log_id):
+    """Elimina una anotación del historial de un diente."""
+    paciente = Patient.query.get_or_404(patient_id)
+    if tooth_number not in ALL_TEETH:
+        abort(404)
+    log = ProcedureLog.query.get_or_404(log_id)
+    if log.patient_id != paciente.id or log.tooth_number != tooth_number:
+        abort(404)
+
+    db.session.delete(log)
+    db.session.commit()
+    return jsonify({'ok': True})
 
 
 # ---------------------------------------------------------------------

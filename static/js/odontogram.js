@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const statusSelect = document.getElementById('toothStatus');
   const noteField = document.getElementById('toothNote');
   const errorEl = document.getElementById('toothFormError');
+  const submitBtn = document.getElementById('toothSubmitBtn');
+  const cancelEditBtn = document.getElementById('toothCancelEdit');
   const historyList = document.getElementById('toothHistory');
 
   const fileUploadForm = document.getElementById('toothUploadForm');
@@ -52,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let currentTooth = null;
   let currentStatuses = {}; // { '': 'sano', 'V': 'caries', ... } para el diente abierto
+  let editingLogId = null;
 
   function escapeHtml(str) {
     const div = document.createElement('div');
@@ -67,18 +70,106 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     logs.forEach(function (log) {
       const li = document.createElement('li');
-      li.innerHTML =
-        '<div class="th-top"><span>' + log.dentist + '</span><span>' + log.created_at + '</span></div>' +
-        '<div class="th-status">' + log.status_label + ' · ' + log.surface_label + '</div>' +
-        '<div>' + escapeHtml(log.note) + '</div>';
+
+      const top = document.createElement('div');
+      top.className = 'th-top';
+      const who = document.createElement('span');
+      who.textContent = log.dentist;
+      const when = document.createElement('span');
+      when.textContent = log.created_at;
+      top.appendChild(who);
+      top.appendChild(when);
+
+      const status = document.createElement('div');
+      status.className = 'th-status';
+      status.textContent = log.status_label + ' · ' + log.surface_label;
+
+      const note = document.createElement('div');
+      note.textContent = log.note;
+
+      const actions = document.createElement('div');
+      actions.className = 'th-actions';
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'th-btn';
+      editBtn.setAttribute('aria-label', 'Editar anotación');
+      editBtn.textContent = '✎';
+      editBtn.addEventListener('click', function () { startEdit(log); });
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'th-btn th-btn-del';
+      delBtn.setAttribute('aria-label', 'Eliminar anotación');
+      delBtn.textContent = '✕';
+      delBtn.addEventListener('click', function () { removeLog(log.id); });
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+
+      li.appendChild(top);
+      li.appendChild(status);
+      li.appendChild(note);
+      li.appendChild(actions);
       historyList.appendChild(li);
     });
   }
 
+  function loadHistory() {
+    fetch('/pacientes/' + patientId + '/diente/' + currentTooth)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.ok) return;
+        currentStatuses = data.statuses || {};
+        renderHistory(data.logs);
+      });
+  }
+
+  function resetForm() {
+    editingLogId = null;
+    noteField.value = '';
+    errorEl.textContent = '';
+    submitBtn.textContent = 'Guardar anotación';
+    cancelEditBtn.hidden = true;
+    statusSelect.value = currentStatuses[surfaceSelect.value] || 'sano';
+  }
+
+  function startEdit(log) {
+    editingLogId = log.id;
+    surfaceSelect.value = log.surface;
+    statusSelect.value = log.status || 'sano';
+    noteField.value = log.note;
+    errorEl.textContent = '';
+    submitBtn.textContent = 'Guardar cambios';
+    cancelEditBtn.hidden = false;
+  }
+
+  cancelEditBtn.addEventListener('click', function () {
+    resetForm();
+    statusSelect.value = currentStatuses[surfaceSelect.value] || 'sano';
+  });
+
+  function removeLog(logId) {
+    if (!confirm('¿Eliminar esta anotación del historial?')) return;
+    fetch('/pacientes/' + patientId + '/diente/' + currentTooth + '/log/' + logId + '/eliminar', {
+      method: 'POST',
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.ok) {
+          if (editingLogId === logId) resetForm();
+          loadHistory();
+        } else {
+          errorEl.textContent = data.error || 'No se pudo eliminar la anotación.';
+        }
+      })
+      .catch(function () {
+        errorEl.textContent = 'Error de conexión.';
+      });
+  }
+
   function openTooth(toothNumber, surface) {
     currentTooth = toothNumber;
-    errorEl.textContent = '';
-    noteField.value = '';
+    resetForm();
+    surfaceSelect.value = surface || '';
+    statusSelect.value = currentStatuses[surfaceSelect.value] || 'sano';
     modalTitle.textContent = 'Cargando diente ' + toothNumber + '…';
     historyList.innerHTML = '';
     filesErrorEl.textContent = '';
@@ -296,7 +387,11 @@ document.addEventListener('DOMContentLoaded', function () {
     formData.append('status', status);
     formData.append('note', noteField.value.trim());
 
-    fetch('/pacientes/' + patientId + '/diente/' + currentTooth, {
+    const url = editingLogId
+      ? '/pacientes/' + patientId + '/diente/' + currentTooth + '/log/' + editingLogId
+      : '/pacientes/' + patientId + '/diente/' + currentTooth;
+
+    fetch(url, {
       method: 'POST',
       body: formData,
     })
@@ -309,17 +404,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         currentStatuses[surface] = status;
         updateToothIcon(currentTooth, surface, status);
-        noteField.value = '';
-
-        const li = document.createElement('li');
-        li.innerHTML =
-          '<div class="th-top"><span>' + result.data.log.dentist + '</span><span>' + result.data.log.created_at + '</span></div>' +
-          '<div class="th-status">' + result.data.log.status_label + ' · ' + result.data.log.surface_label + '</div>' +
-          '<div>' + escapeHtml(result.data.log.note) + '</div>';
-        if (historyList.firstElementChild && historyList.firstElementChild.classList.contains('tooth-history-empty')) {
-          historyList.innerHTML = '';
-        }
-        historyList.insertBefore(li, historyList.firstChild);
+        loadHistory();
+        resetForm();
       })
       .catch(function () {
         errorEl.textContent = 'Error de conexión. Intentá nuevamente.';

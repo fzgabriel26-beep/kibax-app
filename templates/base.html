@@ -21,6 +21,8 @@
         <a class="btn-ghost" href="{{ url_for('agenda.index') }}">Agenda
           {% if agenda_hoy %}<span class="agenda-badge">{{ agenda_hoy }}</span>{% endif %}
         </a>
+        <a class="btn-ghost" href="{{ url_for('agenda.horarios') }}">Horarios</a>
+        <a class="btn-ghost" href="{{ url_for('agenda.turnos') }}">Turnos</a>
         <a class="btn-ghost" href="{{ url_for('patients.list_patients') }}">Pacientes</a>
         <a class="btn-solid" href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
       </div>

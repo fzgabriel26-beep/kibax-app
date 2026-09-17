@@ -217,6 +217,7 @@
           <option value="Ortodoncia">Ortodoncia</option>
           <option value="Tratamiento de Conducto">Tratamiento de Conducto</option>
           <option value="Blanqueamiento">Blanqueamiento</option>
+          <option value="Limpieza">Limpieza</option>
           <option value="Implante / Prótesis">Implante / Prótesis</option>
         </select>
       </div>
@@ -371,7 +372,8 @@
                 <label class="form-label" for="toothNote">Anotación / arreglo realizado</label>
                 <textarea class="form-control" id="toothNote" name="note" rows="3" placeholder="Ej: Obturación con resina compuesta, cara oclusal." required></textarea>
               </div>
-              <button type="submit" class="btn-solid">Guardar anotación</button>
+              <button type="submit" class="btn-solid" id="toothSubmitBtn">Guardar anotación</button>
+              <button type="button" class="btn-ghost ms-2" id="toothCancelEdit" hidden>Cancelar</button>
               <span id="toothFormError" class="text-danger ms-2"></span>
             </form>
           </div>
