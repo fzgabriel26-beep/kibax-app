@@ -52,14 +52,26 @@
       <div class="row g-2 mt-2">
         <div class="col-md-4">
           <label class="form-label" for="s-desde">Vigente desde</label>
-          <input type="date" class="form-control" id="s-desde" name="valid_from" value="{{ hoy.isoformat() }}" required>
+          <div class="datepicker-wrap">
+            <input type="text" class="form-control" id="s-desde" name="valid_from"
+                   value="{{ hoy.strftime('%d/%m/%Y') }}" placeholder="dd/mm/aaaa"
+                   inputmode="numeric" pattern="\d{2}/\d{2}/\d{4}" title="Formato: día/mes/año" required>
+          </div>
         </div>
         <div class="col-md-4">
           <label class="form-label" for="s-hasta">Vigente hasta</label>
-          <input type="date" class="form-control" id="s-hasta" name="valid_to" value="{{ default_valid_to.isoformat() }}" required>
+          <div class="datepicker-wrap">
+            <input type="text" class="form-control" id="s-hasta" name="valid_to"
+                   value="{{ default_valid_to.strftime('%d/%m/%Y') }}" placeholder="dd/mm/aaaa"
+                   inputmode="numeric" pattern="\d{2}/\d{2}/\d{4}" title="Formato: día/mes/año" required>
+          </div>
         </div>
       </div>
-      <button type="submit" class="btn-solid mt-3">Guardar horario</button>
+      <div class="row g-2 mt-1">
+        <div class="col-md-4">
+          <button type="submit" class="btn-solid w-100">Guardar horario</button>
+        </div>
+      </div>
     </form>
   </section>
 
@@ -82,7 +94,11 @@
         </div>
         <div class="col-md-3">
           <label class="form-label" for="x-fecha">Fecha</label>
-          <input type="date" class="form-control" id="x-fecha" name="fecha" value="{{ hoy.isoformat() }}" required>
+          <div class="datepicker-wrap">
+            <input type="text" class="form-control" id="x-fecha" name="fecha"
+                   value="{{ hoy.strftime('%d/%m/%Y') }}" placeholder="dd/mm/aaaa"
+                   inputmode="numeric" pattern="\d{2}/\d{2}/\d{4}" title="Formato: día/mes/año" required>
+          </div>
         </div>
         <div class="col-md-5">
           <label class="form-label" for="x-motivo">Motivo</label>
@@ -172,4 +188,119 @@
   <p class="empty-inline">No hay suspensiones registradas.</p>
   {% endif %}
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    var weekdays = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'];
+
+    function pad(n) { return ('0' + n).slice(-2); }
+    function fmt(d) { return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear(); }
+    function parseValue(v) {
+      var parts = (v || '').split('/');
+      if (parts.length !== 3) return null;
+      var d = parseInt(parts[0], 10), m = parseInt(parts[1], 10), y = parseInt(parts[2], 10);
+      if (!d || !m || !y) return null;
+      return new Date(y, m - 1, d);
+    }
+    function isToday(d) {
+      var t = new Date();
+      return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
+    }
+
+    // Datepicker genérico (sin pintado de disponibilidad): máscara
+    // dd/mm/aaaa al tipear, conversión a aaaa-mm-dd antes de enviar el
+    // formulario (que es lo que espera el backend), y un mini calendario
+    // igual al que ya se usa en la agenda para elegir el día con el mouse.
+    function attachDatePicker(input) {
+      if (!input) return;
+
+      input.addEventListener('input', function () {
+        var v = input.value.replace(/\D/g, '').slice(0, 8);
+        var out = v.length > 4 ? v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
+                : v.length > 2 ? v.slice(0, 2) + '/' + v.slice(2)
+                : v;
+        input.value = out;
+      });
+
+      var form = input.closest('form');
+      if (form) {
+        form.addEventListener('submit', function () {
+          var parts = input.value.split('/');
+          if (parts.length === 3 && parts[2].length === 4) {
+            input.value = parts[2] + '-' + parts[0] + '-' + parts[1];
+          }
+        });
+      }
+
+      var popup = document.createElement('div');
+      popup.className = 'datepicker-popup';
+      popup.hidden = true;
+      input.parentNode.appendChild(popup);
+
+      var viewDate = parseValue(input.value) || new Date();
+      var open = false;
+
+      function render() {
+        var y = viewDate.getFullYear(), m = viewDate.getMonth();
+        var startWeekday = new Date(y, m, 1).getDay();
+        var daysInMonth = new Date(y, m + 1, 0).getDate();
+        var sel = parseValue(input.value);
+
+        var html = '';
+        html += '<div class="dp-head">';
+        html += '<button type="button" class="dp-nav" data-delta="-1" tabindex="-1">&#8249;</button>';
+        html += '<span class="dp-title">' + MONTHS[m] + ' ' + y + '</span>';
+        html += '<button type="button" class="dp-nav" data-delta="1" tabindex="-1">&#8250;</button>';
+        html += '</div><div class="dp-grid">';
+        weekdays.forEach(function (w) { html += '<span class="dp-dow">' + w + '</span>'; });
+        for (var i = 0; i < startWeekday; i++) html += '<span></span>';
+        for (var day = 1; day <= daysInMonth; day++) {
+          var d = new Date(y, m, day);
+          var cls = 'dp-day';
+          if (sel && sel.getFullYear() === y && sel.getMonth() === m && sel.getDate() === day) cls += ' selected';
+          if (isToday(d)) cls += ' today';
+          html += '<button type="button" class="' + cls + '" data-day="' + day + '" tabindex="-1">' + day + '</button>';
+        }
+        html += '</div>';
+        popup.innerHTML = html;
+      }
+
+      function show() { open = true; popup.hidden = false; render(); }
+      function hide() { open = false; popup.hidden = true; }
+
+      input.addEventListener('focus', show);
+      input.addEventListener('click', show);
+      popup.addEventListener('mousedown', function (e) { e.preventDefault(); });
+
+      popup.addEventListener('click', function (e) {
+        var nav = e.target.closest ? e.target.closest('.dp-nav') : null;
+        if (nav) {
+          viewDate.setMonth(viewDate.getMonth() + parseInt(nav.dataset.delta, 10));
+          render();
+          return;
+        }
+        var day = e.target.closest ? e.target.closest('.dp-day') : null;
+        if (day) {
+          input.value = fmt(new Date(viewDate.getFullYear(), viewDate.getMonth(), parseInt(day.dataset.day, 10)));
+          hide();
+        }
+      });
+
+      document.addEventListener('mousedown', function (e) {
+        if (open && !popup.contains(e.target) && e.target !== input) hide();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') hide();
+      });
+    }
+
+    ['s-desde', 's-hasta', 'x-fecha'].forEach(function (id) {
+      attachDatePicker(document.getElementById(id));
+    });
+  })();
+</script>
 {% endblock %}

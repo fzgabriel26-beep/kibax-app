@@ -9,7 +9,7 @@
   </div>
   <div class="d-flex gap-2">
     <a href="{{ url_for('agenda.index', profesional=profesional.id if profesional else '') }}" class="btn-outline">Ver calendario</a>
-    <a href="{{ url_for('agenda.horarios') }}" class="btn-outline">Horarios de agentes</a>
+    <a href="{{ url_for('agenda.horarios') }}" class="btn-outline">Horarios de profesionales</a>
   </div>
 </div>
 
@@ -55,15 +55,12 @@
       <button type="submit" class="btn-primary w-100">Buscar</button>
     </div>
   </form>
-  {% if fecha %}
+  {% set filtros_activos = profesional or estado or fecha or q or rango != 'proximos' %}
+  {% if filtros_activos %}
   <p class="empty-inline mt-2 mb-0">
-    Mostrando solo los turnos del {{ fecha.strftime('%d/%m/%Y') }}.
-    <a href="{{ url_for('agenda.turnos', profesional=profesional.id if profesional else '', estado=estado, rango=rango) }}">Ver todas las fechas</a>
-  </p>
-  {% elif q %}
-  <p class="empty-inline mt-2 mb-0">
-    Filtrando por «{{ q }}».
-    <a href="{{ url_for('agenda.turnos', profesional=profesional.id if profesional else '', estado=estado, rango=rango) }}">Limpiar búsqueda</a>
+    {% if fecha %}Mostrando solo los turnos del {{ fecha.strftime('%d/%m/%Y') }}. {% endif %}
+    {% if q %}Filtrando por «{{ q }}». {% endif %}
+    <a href="{{ url_for('agenda.turnos') }}">Limpiar filtros</a>
   </p>
   {% endif %}
 </section>
@@ -86,7 +83,7 @@
         {% for a in grupo['items'] %}
         <li class="agenda-item status-{{ a.status }}">
           <div class="agenda-item-main">
-            <span class="agenda-item-time">{{ a.time }}</span>
+            <span class="agenda-item-time">{{ a|turno_hora }}</span>
             <div>
               <div class="agenda-item-name">
                 <a href="{{ url_for('patients.patient_detail', patient_id=a.patient_id) }}">{{ a.patient.full_name }}</a>
@@ -126,7 +123,7 @@
             </div>
             <div class="col-md-2">
               <label class="form-label">Hora</label>
-              <input type="time" class="form-control" name="hora" value="{{ a.time }}" required>
+              <input type="time" class="form-control" name="hora" value="{{ a|turno_hora }}" required>
             </div>
             <div class="col-md-4">
               <label class="form-label">Profesional</label>

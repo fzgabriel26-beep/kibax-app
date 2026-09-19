@@ -13,7 +13,7 @@
 <div class="notice-card mb-4">
   <strong>Turnos de hoy ({{ today.strftime('%d/%m/%Y') }}):</strong>
   {% for t in todos_hoy %}
-    <span class="agenda-hoy-chip">{{ t.time }} · {{ t.patient.full_name }}{% if t.professional %} ({{ t.professional.full_name }}){% endif %}{% if t.reason %} — {{ t.reason }}{% endif %}</span>
+    <span class="agenda-hoy-chip">{{ t|turno_hora }} · {{ t.patient.full_name }}{% if t.professional %} ({{ t.professional.full_name }}){% endif %}{% if t.reason %} — {{ t.reason }}{% endif %}</span>
   {% endfor %}
 </div>
 {% endif %}
@@ -39,7 +39,7 @@
       <div class="d-flex gap-2">
         <a href="{{ url_for('agenda.turnos', profesional=profesional.id if profesional else '') }}" class="btn-outline">Turnos</a>
         <a href="{{ url_for('agenda.index', profesional=profesional.id if profesional else '') }}" class="btn-outline">Hoy</a>
-        <a href="{{ url_for('agenda.horarios') }}" class="btn-outline">Horarios de agentes</a>
+        <a href="{{ url_for('agenda.horarios') }}" class="btn-outline">Horarios de profesionales</a>
       </div>
     </div>
 
@@ -88,66 +88,22 @@
 
   <!-- Lista de turnos -->
   <section class="panel">
-    <div class="panel-head">
-      <h2>{% if fecha %}Turnos del {{ fecha.strftime('%d/%m/%Y') }}{% else %}Próximos turnos{% endif %}</h2>
-      <p>Organizá la consulta y su recordatorio.</p>
-    </div>
-
-    <form method="post" action="{{ url_for('agenda.nuevo') }}" class="agenda-form" id="nuevo-turno">
-      <div class="row g-2">
-        <div class="col-md-6">
-          <label class="form-label" for="a-profesional">Profesional</label>
-          <select class="form-select" id="a-profesional" name="professional_id" required {% if profesional %}disabled{% endif %}>
-            <option value="" disabled selected>Seleccioná…</option>
-            {% for pr in profesionales %}
-            <option value="{{ pr.id }}"{% if profesional and profesional.id == pr.id %} selected{% endif %}>{{ pr.full_name }}</option>
-            {% endfor %}
-          </select>
-          {% if profesional %}<input type="hidden" name="professional_id" value="{{ profesional.id }}">{% endif %}
-        </div>
-        <div class="col-md-6">
-          <label class="form-label" for="a-patient">Paciente</label>
-          <div class="autocomplete">
-            <input type="text" class="form-control" id="a-patient" autocomplete="off"
-                   placeholder="Buscá por nombre o DNI…">
-            <input type="hidden" name="patient_id" id="a-patient-id">
-            <ul class="autocomplete-list" id="a-patient-list" hidden></ul>
-          </div>
-          <div class="autocomplete-selected" id="a-selected" hidden></div>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label" for="a-fecha">Fecha</label>
-          <div class="datepicker-wrap">
-            <input type="text" class="form-control" id="a-fecha" name="fecha"
-                   value="{{ (fecha or today).strftime('%d/%m/%Y') }}"
-                   placeholder="dd/mm/aaaa" inputmode="numeric"
-                   data-profesional="{{ profesional.id if profesional else '' }}"
-                   pattern="\d{2}/\d{2}/\d{4}" title="Formato: día/mes/año" required>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label" for="a-hora">Hora</label>
-          <input type="time" class="form-control" id="a-hora" name="hora" value="10:00" required>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label" for="a-status">Estado</label>
-          <select class="form-select" id="a-status" name="status">
-            {% for key, label in statuses.items() %}
-            <option value="{{ key }}">{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
+    <div class="panel-head d-flex align-items-start justify-content-between gap-2 flex-wrap">
+      <div>
+        <h2>{% if fecha %}Turnos del {{ fecha.strftime('%d/%m/%Y') }}{% else %}Próximos turnos{% endif %}</h2>
+        <p>Organizá la consulta y su recordatorio.</p>
       </div>
-      <input type="text" name="reason" class="form-control mt-2" placeholder="Motivo (opcional)">
-      <button type="submit" class="btn-solid mt-2 w-100">Agendar turno</button>
-    </form>
+      <button type="button" class="btn-solid" id="nuevo-turno" data-bs-toggle="modal" data-bs-target="#turnoModal">
+        + Nuevo turno
+      </button>
+    </div>
 
     {% if list_appts %}
     <ul class="agenda-list">
       {% for a in list_appts %}
       <li class="agenda-item status-{{ a.status }}">
         <div class="agenda-item-main">
-          <div class="agenda-item-time">{{ a.time }}</div>
+          <div class="agenda-item-time">{{ a|turno_hora }}</div>
           <div>
             <div class="agenda-item-name">{{ a.patient.full_name }}</div>
             <div class="agenda-item-meta">
@@ -178,10 +134,83 @@
     {% endif %}
   </section>
 </div>
+
+<!-- Modal: nuevo turno -->
+<div class="modal fade" id="turnoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agendar turno</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="{{ url_for('agenda.nuevo') }}" class="agenda-form mb-0 pb-0 border-0" id="nuevoTurnoForm">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label" for="a-profesional">Profesional</label>
+              <select class="form-select" id="a-profesional" name="professional_id" required {% if profesional %}disabled{% endif %}>
+                <option value="" disabled selected>Seleccioná…</option>
+                {% for pr in profesionales %}
+                <option value="{{ pr.id }}"{% if profesional and profesional.id == pr.id %} selected{% endif %}>{{ pr.full_name }}</option>
+                {% endfor %}
+              </select>
+              {% if profesional %}<input type="hidden" name="professional_id" value="{{ profesional.id }}">{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="a-patient">Paciente</label>
+              <div class="autocomplete">
+                <input type="text" class="form-control" id="a-patient" autocomplete="off"
+                       placeholder="Buscá por nombre o DNI…">
+                <input type="hidden" name="patient_id" id="a-patient-id">
+                <ul class="autocomplete-list" id="a-patient-list" hidden></ul>
+              </div>
+              <div class="autocomplete-selected" id="a-selected" hidden></div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="a-fecha">Fecha</label>
+              <div class="datepicker-wrap">
+                <input type="text" class="form-control" id="a-fecha" name="fecha"
+                       value="{{ (fecha or today).strftime('%d/%m/%Y') }}"
+                       placeholder="dd/mm/aaaa" inputmode="numeric"
+                       data-profesional="{{ profesional.id if profesional else '' }}"
+                       pattern="\d{2}/\d{2}/\d{4}" title="Formato: día/mes/año" required>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="a-hora">Hora</label>
+              <input type="time" class="form-control" id="a-hora" name="hora" value="10:00" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="a-status">Estado</label>
+              <select class="form-select" id="a-status" name="status">
+                {% for key, label in statuses.items() %}
+                <option value="{{ key }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <input type="text" name="reason" class="form-control mt-2" placeholder="Motivo (opcional)">
+          <button type="submit" class="btn-solid mt-3 w-100">Agendar turno</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+  // Si venimos de hacer clic en un día del calendario (link con
+  // #nuevo-turno), abrimos directamente el modal de nuevo turno.
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.location.hash === '#nuevo-turno') {
+      var modalEl = document.getElementById('turnoModal');
+      if (modalEl) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+      }
+    }
+  });
+
   (function () {
     var input = document.getElementById('a-patient');
     var hidden = document.getElementById('a-patient-id');

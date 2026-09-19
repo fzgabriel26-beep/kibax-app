@@ -32,16 +32,24 @@ def create_app():
     app.register_blueprint(patients.bp)
     app.register_blueprint(agenda.bp)
 
+    # Filtro de Jinja para mostrar la hora "real" de un turno cancelado o
+    # ausente: internamente se corre 1 minuto para no perder el registro
+    # sin ocupar el horario original, pero en pantalla mostramos la hora
+    # original para no confundir con un error de carga.
+    app.jinja_env.filters['turno_hora'] = agenda.display_time
+
     @app.context_processor
     def inject_agenda():
-        """Inyecta el conteo de turnos de hoy para la insignia del navbar."""
+        """Inyecta contadores para las insignias del navbar: turnos de hoy
+        y turnos pendientes de confirmar (en cualquier fecha)."""
         from models import Appointment
         if current_user.is_authenticated:
             hoy = date.today()
             conteo = Appointment.query.filter_by(planned_date=hoy).filter(
                 Appointment.status != 'cancelado'
             ).count()
-            return {'agenda_hoy': conteo, 'hoy': hoy}
+            pendientes = Appointment.query.filter_by(status='pendiente').count()
+            return {'agenda_hoy': conteo, 'hoy': hoy, 'turnos_pendientes': pendientes}
         return {}
 
     @app.route('/')

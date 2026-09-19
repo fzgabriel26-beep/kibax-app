@@ -67,6 +67,37 @@ a { color: var(--primary); }
   background: transparent;
 }
 .btn-ghost:hover { background: rgba(255,255,255,.1); color: #fff; }
+.nav-dropdown .dropdown-menu {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(20, 63, 59, .15);
+  padding: .4rem;
+  margin-top: .4rem;
+}
+.nav-dropdown .dropdown-item {
+  border-radius: 8px;
+  font-size: .875rem;
+  font-weight: 600;
+  padding: .5rem .7rem;
+  color: var(--ink);
+}
+.nav-dropdown .dropdown-item:hover,
+.nav-dropdown .dropdown-item:focus {
+  background: var(--primary-tint);
+  color: var(--primary-dark);
+}
+.dropdown-badge {
+  display: inline-block;
+  min-width: 16px;
+  margin-left: .5rem;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  font-size: .68rem;
+  font-weight: 700;
+  text-align: center;
+  padding: .05rem .35rem;
+}
 .btn-solid {
   background: var(--accent);
   color: #fff;

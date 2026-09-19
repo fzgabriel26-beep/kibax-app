@@ -24,14 +24,25 @@ APPOINTMENT_STATUSES = {
 NO_SHOW_STATUSES = {'ausente', 'ausente_aviso', 'cancelado'}
 
 
-def _bump_minute(t):
-    """Suma 1 minuto a una hora HH:MM (para no perder el registro del turno)."""
+def _bump_minute(t, delta=1):
+    """Suma (o resta, con delta negativo) minutos a una hora HH:MM."""
     try:
         hh, mm = (int(x) for x in t.split(':'))
     except (ValueError, AttributeError):
         return t
-    total = (hh * 60 + mm + 1) % (24 * 60)
+    total = (hh * 60 + mm + delta) % (24 * 60)
     return '%02d:%02d' % (divmod(total, 60))
+
+
+def display_time(appt):
+    """Hora a mostrar en pantalla para un turno. Si está cancelado/ausente,
+    se le resta el minuto que se le sumó automáticamente al marcarlo (ver
+    _bump_minute), para no mostrar una hora rara que parezca un error de
+    carga."""
+    if appt.status in NO_SHOW_STATUSES:
+        return _bump_minute(appt.time, -1)
+    return appt.time
+
 
 DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
@@ -154,17 +165,22 @@ def index():
         base_q = base_q.filter(Appointment.professional_id == profesional.id)
 
     if fecha:
+        # Vista de un día puntual: mostramos todo, incluidos cancelados o
+        # ausentes, para tener el panorama completo de ese día.
         list_appts = base_q.filter_by(planned_date=fecha).order_by(Appointment.time).all()
     else:
+        # "Próximos turnos": solo los que siguen activos, para no mezclar
+        # cancelados/ausentes con lo que realmente hay que atender.
         list_appts = (base_q
                       .filter(Appointment.planned_date >= today)
+                      .filter(~Appointment.status.in_(NO_SHOW_STATUSES))
                       .order_by(Appointment.planned_date, Appointment.time)
                       .limit(60)
                       .all())
 
     todos_hoy = (Appointment.query
                  .filter_by(planned_date=today)
-                 .filter(Appointment.status != 'cancelado')
+                 .filter(~Appointment.status.in_(NO_SHOW_STATUSES))
                  .order_by(Appointment.time)
                  .all())
 
