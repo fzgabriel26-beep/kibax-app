@@ -26,6 +26,9 @@ class Config:
     # las personas que vayan a trabajar en el consultorio.
     REGISTRATION_CODE = os.environ.get('REGISTRATION_CODE', 'changeme')
 
+    # Rate limiting: desactivar en tests con RATELIMIT_ENABLED=false
+    RATELIMIT_ENABLED = os.environ.get('RATELIMIT_ENABLED', 'true').lower() == 'true'
+
     # --- Seguridad ---
 
     # La sesión expira después de 8 horas de inactividad.

@@ -20,6 +20,73 @@
   --c-ausente: #616B67;
 }
 
+/* --- Dark mode --- */
+body.dark {
+  --bg: #121916;
+  --surface: #1A2320;
+  --ink: #E4EAE7;
+  --ink-soft: #9BA8A4;
+  --border: #2D3A36;
+  --primary: #3AAE9A;
+  --primary-dark: #2A8A78;
+  --primary-tint: #1C2E2A;
+  --accent: #D4943A;
+
+  --c-sano: #1A2320;
+  --c-caries: #E74C3C;
+  --c-obturado: #5DADE2;
+  --c-corona: #F0C040;
+  --c-endodoncia: #AF7AC5;
+  --c-extraido: #95A5A6;
+  --c-implante: #2ECC71;
+  --c-protesis: #CD853F;
+  --c-ausente: #7F8C8D;
+
+  color-scheme: dark;
+}
+body.dark .app-navbar { background: #0E1411; border-bottom-color: #2D3A36; }
+body.dark .brand { color: #E4EAE7; }
+body.dark .btn-ghost { color: #E4EAE7; border-color: rgba(228,234,231,.25); }
+body.dark .btn-ghost:hover { background: rgba(228,234,231,.08); color: #E4EAE7; }
+body.dark .dropdown-menu { background: #1A2320; border-color: #2D3A36; }
+body.dark .dropdown-item { color: #E4EAE7; }
+body.dark .dropdown-item:hover { background: #1C2E2A; color: #3AAE9A; }
+body.dark .navbar-user { color: rgba(228,234,231,.6); }
+body.dark .alert { background: #1C2E2A; border-color: #2D3A36; color: #E4EAE7; }
+body.dark .auth-card { background: #1A2320; border-color: #2D3A36; }
+body.dark .form-control, body.dark .form-select {
+  background: #121916; border-color: #2D3A36; color: #E4EAE7;
+}
+body.dark .form-control:focus, body.dark .form-select:focus {
+  border-color: #3AAE9A; box-shadow: 0 0 0 3px rgba(58,174,154,.15);
+}
+body.dark .panel { background: #1A2320; border-color: #2D3A36; }
+body.dark .notice-card { background: #1C2E2A; border-color: #2D3A36; color: #3AAE9A; }
+body.dark .patient-card { background: #1A2320; border-color: #2D3A36; color: #E4EAE7; }
+body.dark .patient-card:hover { border-color: #3AAE9A; }
+body.dark .patient-card p { color: #9BA8A4; }
+body.dark .patient-card-avatar { background: #1C2E2A; color: #3AAE9A; }
+body.dark .empty-state, body.dark .empty-inline { background: #1A2320; border-color: #2D3A36; color: #9BA8A4; }
+body.dark .arch-wrap { background: linear-gradient(180deg, #1A2320 0%, #121916 100%); border-color: #2D3A36; }
+body.dark .arch-wrap-primary { background: linear-gradient(180deg, #1A2320 0%, #161E1B 100%); }
+body.dark .agenda-cell { background: #1A2320; border-color: #2D3A36; color: #E4EAE7; }
+body.dark .agenda-cell:hover { background: #1C2E2A; border-color: #3AAE9A; }
+body.dark .agenda-item { background: #1A2320; border-color: #2D3A36; }
+body.dark .agenda-item-time { background: #1C2E2A; color: #3AAE9A; }
+body.dark .note-item { background: #1A2320; border-color: #2D3A36; }
+body.dark .note-date { background: #1C2E2A; color: #3AAE9A; }
+body.dark .section-tabs .nav-tabs .nav-link { color: #9BA8A4; border-color: #2D3A36; }
+body.dark .section-tabs .nav-tabs .nav-link:hover { color: #3AAE9A; background: #1C2E2A; }
+body.dark .section-tabs .nav-tabs .nav-link.active { color: #3AAE9A; background: #1A2320; border-color: #2D3A36; }
+body.dark .tooth-history li { border-color: #2D3A36; }
+body.dark .attachment-list li { border-color: #2D3A36; }
+body.dark .agenda-cal td .no-schedule { background: #161E1B; border-color: #2D3A36; }
+
+/* --- Theme toggle button --- */
+.theme-toggle { font-size: 1rem; padding: .4rem .6rem; }
+body:not(.dark) .theme-icon-light { display: none; }
+body.dark .theme-icon-dark { display: none; }
+
 * { box-sizing: border-box; }
 
 body {
@@ -787,3 +854,95 @@ a { color: var(--primary); }
   .tooth-btn.size-small { width: 30px; height: 42px; }
   .upload-row { flex-direction: column; }
 }
+
+/* ---------- Navbar responsive (hamburger en mobile) ---------- */
+.navbar-toggler {
+  padding: .35rem .55rem;
+  font-size: 1.2rem;
+  line-height: 1;
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+.navbar-toggler:focus { box-shadow: 0 0 0 3px rgba(255,255,255,.2); }
+.navbar-toggler-icon {
+  display: inline-block;
+  width: 1.2em; height: 1.2em;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100%;
+}
+
+/* Colapsable: oculto en desktop, se muestra en mobile */
+@media (max-width: 767.98px) {
+  .navbar-collapse-custom {
+    display: none;
+    width: 100%;
+    padding-top: .75rem;
+    border-top: 1px solid rgba(255,255,255,.15);
+    margin-top: .5rem;
+  }
+  .navbar-collapse-custom.show { display: block; }
+  .navbar-inner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: .6rem !important;
+  }
+  .navbar-inner .btn-ghost,
+  .navbar-inner .btn-solid,
+  .navbar-inner .theme-toggle {
+    width: 100%;
+    text-align: left;
+  }
+  .nav-dropdown .dropdown-menu {
+    position: static !important;
+    box-shadow: none;
+    border: 1px solid rgba(255,255,255,.1);
+    background: rgba(255,255,255,.05);
+    margin-top: .2rem;
+  }
+  .nav-dropdown .dropdown-item { color: #fff; }
+  .nav-dropdown .dropdown-item:hover { background: rgba(255,255,255,.1); }
+}
+@media (min-width: 768px) {
+  .navbar-collapse-custom { display: flex !important; }
+}
+
+/* ---------- Leyenda interactiva del odontograma ---------- */
+.legend-item {
+  cursor: pointer;
+  padding: .2rem .5rem;
+  border-radius: 6px;
+  transition: background .15s, transform .15s;
+  user-select: none;
+}
+.legend-item:hover {
+  background: var(--primary-tint);
+}
+.legend-item.legend-active {
+  background: var(--primary-tint);
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+/* Cuando la leyenda está activa, opacar los dientes que NO coinciden */
+.odontogram-legend-active .tooth-btn:not(.legend-highlight) {
+  opacity: .25;
+  filter: grayscale(.6);
+  transform: scale(.95);
+  transition: opacity .2s, filter .2s, transform .2s;
+}
+.odontogram-legend-active .tooth-btn.legend-highlight {
+  opacity: 1;
+  filter: none;
+  transform: scale(1.08);
+  transition: opacity .2s, filter .2s, transform .2s;
+  position: relative;
+  z-index: 2;
+}
+body.dark .nav-dropdown .dropdown-menu { background: #1A2320; border-color: #2D3A36; }
+body.dark .nav-dropdown .dropdown-item { color: #E4EAE7; }
+body.dark .nav-dropdown .dropdown-item:hover { background: #1C2E2A; color: #3AAE9A; }

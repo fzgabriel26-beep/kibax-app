@@ -56,9 +56,9 @@
     <p>Tocá una cara del diente (o el centro, para la cara oclusal) para ver su historial y anotar un arreglo o diagnóstico.</p>
   </div>
 
-  <div class="legend">
+  <div class="legend" id="odontogramLegend">
     {% for key, label in status_labels.items() %}
-    <span class="legend-item"><i class="tooth-dot status-{{ key }}"></i>{{ label }}</span>
+    <span class="legend-item" data-status="{{ key }}"><i class="tooth-dot status-{{ key }}"></i>{{ label }}</span>
     {% endfor %}
   </div>
 
@@ -446,13 +446,72 @@
 </script>
 <script>
   (function () {
-    var saved = localStorage.getItem('patientTab');
-    if (saved && document.querySelector('#tab-' + saved)) {
-      bootstrap.Tab.getOrCreateInstance(document.querySelector('#tab-' + saved)).show();
+    // --- Tabs: estado vía URL hash en vez de localStorage ---
+    var tabBtns = document.querySelectorAll('#patientTabs [data-bs-toggle="tab"]');
+
+    function getHashTab() {
+      var h = window.location.hash.replace('#', '');
+      return h && document.querySelector('#tab-' + h) ? h : null;
     }
-    document.querySelectorAll('#patientTabs [data-bs-toggle="tab"]').forEach(function (btn) {
+
+    // Al cargar, si hay hash, activar esa pestaña
+    var initial = getHashTab();
+    if (initial) {
+      bootstrap.Tab.getOrCreateInstance(document.querySelector('#tab-' + initial)).show();
+    }
+
+    // Al cambiar de pestaña, actualizar el hash
+    tabBtns.forEach(function (btn) {
       btn.addEventListener('shown.bs.tab', function () {
-        localStorage.setItem('patientTab', btn.id.replace('tab-', ''));
+        var tabName = btn.id.replace('tab-', '');
+        history.replaceState(null, null, '#' + tabName);
+      });
+    });
+
+    // --- Leyenda interactiva del odontograma ---
+    var legend = document.getElementById('odontogramLegend');
+    var archWrap = document.querySelector('.arch-wrap');
+    if (!legend || !archWrap) return;
+
+    var legendItems = legend.querySelectorAll('.legend-item');
+    var activeStatus = null;
+
+    legendItems.forEach(function (item) {
+      item.addEventListener('click', function () {
+        var status = item.dataset.status;
+
+        // Si se hace clic en el mismo estado, desactivar
+        if (activeStatus === status) {
+          activeStatus = null;
+          item.classList.remove('legend-active');
+          archWrap.classList.remove('odontogram-legend-active');
+          archWrap.querySelectorAll('.tooth-btn').forEach(function (b) {
+            b.classList.remove('legend-highlight');
+          });
+          return;
+        }
+
+        // Activar nuevo filtro
+        activeStatus = status;
+        legendItems.forEach(function (li) { li.classList.remove('legend-active'); });
+        item.classList.add('legend-active');
+        archWrap.classList.add('odontogram-legend-active');
+
+        // Highlight dientes que tienen al menos una cara con ese estado
+        archWrap.querySelectorAll('.tooth-btn').forEach(function (btn) {
+          var toothNum = btn.dataset.tooth;
+          // Leer los estados del SVG: buscar polígonos con clase status-{status}
+          var faces = btn.querySelectorAll('.face');
+          var overlay = btn.querySelector('.tooth-overlay');
+          var match = false;
+
+          faces.forEach(function (f) {
+            if (f.classList.contains('status-' + status)) match = true;
+          });
+          if (overlay && overlay.classList.contains('overlay-' + status)) match = true;
+
+          btn.classList.toggle('legend-highlight', match);
+        });
       });
     });
   })();

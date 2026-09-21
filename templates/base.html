@@ -16,28 +16,44 @@
       <a class="brand" href="{{ url_for('index') }}">
         <span class="brand-mark">◗</span> Odontograma
       </a>
+
       {% if current_user.is_authenticated %}
-      <div class="d-flex align-items-center gap-3">
-        <span class="navbar-user d-none d-sm-inline">Dr/a. {{ current_user.full_name }}</span>
-        <a class="btn-ghost" href="{{ url_for('patients.list_patients') }}">Pacientes</a>
-        <div class="nav-dropdown dropdown">
-          <button class="btn-ghost dropdown-toggle" type="button" id="navAgendaDropdown"
-                  data-bs-toggle="dropdown" aria-expanded="false">
-            Agenda
-            {% if agenda_hoy %}<span class="agenda-badge">{{ agenda_hoy }}</span>{% endif %}
+      <!-- Botón hamburger: solo visible en mobile -->
+      <button class="navbar-toggler d-md-none" type="button"
+              data-bs-toggle="collapse" data-bs-target="#navbarMain"
+              aria-controls="navbarMain" aria-expanded="false" aria-label="Menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Nav colapsable -->
+      <div class="collapse navbar-collapse-custom" id="navbarMain">
+        <div class="d-flex align-items-center gap-3 navbar-inner">
+          <span class="navbar-user d-none d-md-inline">Dr/a. {{ current_user.full_name }}</span>
+          <a class="btn-ghost" href="{{ url_for('patients.list_patients') }}">Pacientes</a>
+          <div class="nav-dropdown dropdown">
+            <button class="btn-ghost dropdown-toggle" type="button" id="navAgendaDropdown"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+              Agenda
+              {% if agenda_hoy %}<span class="agenda-badge">{{ agenda_hoy }}</span>{% endif %}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navAgendaDropdown">
+              <li><a class="dropdown-item" href="{{ url_for('agenda.index') }}">Calendario</a></li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center justify-content-between" href="{{ url_for('agenda.turnos') }}">
+                  Turnos
+                  {% if turnos_pendientes %}<span class="dropdown-badge">{{ turnos_pendientes }}</span>{% endif %}
+                </a>
+              </li>
+              <li><a class="dropdown-item" href="{{ url_for('agenda.horarios') }}">Horarios</a></li>
+            </ul>
+          </div>
+          <button type="button" class="btn-ghost theme-toggle" id="themeToggle"
+                  aria-label="Cambiar modo oscuro" title="Modo oscuro">
+            <span class="theme-icon-dark">☀️</span>
+            <span class="theme-icon-light">🌙</span>
           </button>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navAgendaDropdown">
-            <li><a class="dropdown-item" href="{{ url_for('agenda.index') }}">Calendario</a></li>
-            <li>
-              <a class="dropdown-item d-flex align-items-center justify-content-between" href="{{ url_for('agenda.turnos') }}">
-                Turnos
-                {% if turnos_pendientes %}<span class="dropdown-badge">{{ turnos_pendientes }}</span>{% endif %}
-              </a>
-            </li>
-            <li><a class="dropdown-item" href="{{ url_for('agenda.horarios') }}">Horarios</a></li>
-          </ul>
+          <a class="btn-solid" href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
         </div>
-        <a class="btn-solid" href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
       </div>
       {% endif %}
     </div>
@@ -59,6 +75,23 @@
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // --- Dark mode toggle ---
+    (function () {
+      var toggle = document.getElementById('themeToggle');
+      if (!toggle) return;
+
+      var stored = localStorage.getItem('theme');
+      if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.body.classList.add('dark');
+      }
+
+      toggle.addEventListener('click', function () {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+      });
+    })();
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
