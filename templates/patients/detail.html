@@ -341,20 +341,14 @@
   </div>
 </div>
 
-<!-- Zona de peligro: eliminar paciente -->
-<section class="panel mt-4" style="border-color: #e8c9c4;">
-  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-    <div>
-      <h3 style="margin:0; color:#a4362b;">Zona de peligro</h3>
-      <p style="margin:0; color:var(--ink-soft); font-size:.9rem;">Eliminar al paciente borra permanentemente toda su información: odontograma, historial, notas y archivos adjuntos. Esta acción no se puede deshacer.</p>
-    </div>
-    <form method="post" action="{{ url_for('patients.delete_patient', patient_id=paciente.id) }}"
-          onsubmit="return confirm('¿Eliminar a {{ paciente.full_name }} y toda su información (odontograma, historial y adjuntos)? Esta acción no se puede deshacer.');">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn-danger">Eliminar paciente</button>
-    </form>
-  </div>
-</section>
+<!-- Eliminar paciente -->
+<div class="mt-4">
+  <form method="post" action="{{ url_for('patients.delete_patient', patient_id=paciente.id) }}"
+        onsubmit="return confirm('Eliminar al paciente borra permanentemente toda su información: odontograma, historial, notas y archivos adjuntos. Esta acción no se puede deshacer.');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn-danger-ghost">Eliminar paciente</button>
+  </form>
+</div>
 
 <!-- Modal diente -->
 <div class="modal fade" id="toothModal" tabindex="-1" aria-hidden="true">
