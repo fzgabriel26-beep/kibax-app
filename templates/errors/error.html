@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }}{% endblock %}
+{% block content %}
+<div class="empty-state" style="padding: 3rem 0;">
+  <h1 style="font-size: 4rem; margin-bottom: 0.5rem; color: var(--primary);">{{ code }}</h1>
+  <p style="font-size: 1.1rem; color: var(--ink-soft); margin-bottom: 1.5rem;">{{ message }}</p>
+  <a href="{{ url_for('index') }}" class="btn-solid">Volver al inicio</a>
+</div>
+{% endblock %}

@@ -1,7 +1,8 @@
 import calendar
+import datetime as _dt
 from datetime import date, datetime, timedelta
 
-from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, abort
 from flask_login import login_required, current_user
 
 from extensions import db
@@ -339,7 +340,7 @@ def disponibilidad_json():
         return jsonify({'ok': False, 'error': 'Mes inválido.'}), 400
 
     if prof_raw:
-        usuarios = [u for u in [User.query.get(prof_raw)] if u]
+        usuarios = [u for u in [db.session.get(User, prof_raw)] if u]
     else:
         usuarios = User.query.all()
     availability = _month_availability(year, month, usuarios)
@@ -369,7 +370,7 @@ def nuevo():
             flash('Fecha inválida.', 'danger')
             return redirect(url_for('agenda.index'))
 
-    profesional = User.query.get(prof_raw)
+    profesional = db.session.get(User, prof_raw)
     if not profesional:
         flash('Profesional inválido.', 'danger')
         return redirect(url_for('agenda.index'))
@@ -451,7 +452,7 @@ def reprogramar(appt_id):
         flash('Fecha inválida.', 'danger')
         return redirect(back)
 
-    profesional = User.query.get(prof_raw)
+    profesional = db.session.get(User, prof_raw)
     if not profesional:
         flash('Profesional inválido.', 'danger')
         return redirect(back)
@@ -518,7 +519,7 @@ def horario_nuevo():
         flash(msg, 'danger')
         return redirect(url_for('agenda.horarios'))
 
-    profesional = User.query.get(prof_raw) if prof_raw else None
+    profesional = db.session.get(User, prof_raw) if prof_raw else None
     if not profesional:
         return _bad('Seleccioná un profesional.')
     if not days:
@@ -569,7 +570,7 @@ def suspension_nueva():
         flash(msg, 'danger')
         return redirect(url_for('agenda.horarios'))
 
-    profesional = User.query.get(prof_raw) if prof_raw else None
+    profesional = db.session.get(User, prof_raw) if prof_raw else None
     if not profesional:
         return _bad('Seleccioná un profesional.')
 
@@ -599,6 +600,149 @@ def suspension_eliminar(exc_id):
     db.session.commit()
     flash('Suspensión eliminada.', 'info')
     return redirect(url_for('agenda.horarios'))
+
+
+# ---------------------------------------------------------------------
+# CRUD de profesionales
+# ---------------------------------------------------------------------
+
+@bp.route('/profesionales')
+@login_required
+def list_profesionales():
+    """Listado de profesionales/odontólogos."""
+    from models import User
+    profesionales = User.query.order_by(User.full_name).all()
+    return render_template('agenda/profesionales.html', profesionales=profesionales)
+
+
+@bp.route('/profesionales/nuevo', methods=['GET', 'POST'])
+@login_required
+def nuevo_profesional():
+    """Crear un nuevo profesional."""
+    from models import User
+    from auth import _password_strength, _validate_email
+
+    if request.method == 'POST':
+        full_name = request.form.get('full_name', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        license_number = request.form.get('license_number', '').strip()
+        password = request.form.get('password', '')
+
+        if not full_name or not email:
+            flash('Nombre y email son obligatorios.', 'danger')
+            return render_template('agenda/profesional_form.html', form=request.form, action='create')
+
+        email_err = _validate_email(email)
+        if email_err:
+            flash(email_err, 'danger')
+            return render_template('agenda/profesional_form.html', form=request.form, action='create')
+
+        if User.query.filter_by(email=email).first():
+            flash('Ya existe un profesional con ese email.', 'danger')
+            return render_template('agenda/profesional_form.html', form=request.form, action='create')
+
+        if not password:
+            flash('La contraseña es obligatoria para nuevos profesionales.', 'danger')
+            return render_template('agenda/profesional_form.html', form=request.form, action='create')
+
+        pw_err = _password_strength(password)
+        if pw_err:
+            flash(pw_err, 'danger')
+            return render_template('agenda/profesional_form.html', form=request.form, action='create')
+
+        u = User(full_name=full_name, email=email, license_number=license_number)
+        u.set_password(password)
+        db.session.add(u)
+        db.session.commit()
+        flash(f'Profesional {full_name} creado correctamente.', 'success')
+        return redirect(url_for('agenda.list_profesionales'))
+
+    return render_template('agenda/profesional_form.html', form={}, action='create')
+
+
+@bp.route('/profesionales/<int:user_id>/editar', methods=['GET', 'POST'])
+@login_required
+def editar_profesional(user_id):
+    """Editar un profesional existente."""
+    from models import User
+    from auth import _validate_email
+
+    user = db.session.get(User, user_id)
+    if not user:
+        abort(404)
+
+    if request.method == 'POST':
+        full_name = request.form.get('full_name', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        license_number = request.form.get('license_number', '').strip()
+
+        if not full_name or not email:
+            flash('Nombre y email son obligatorios.', 'danger')
+            return render_template('agenda/profesional_form.html', form=request.form, action='edit', user=user)
+
+        email_err = _validate_email(email)
+        if email_err:
+            flash(email_err, 'danger')
+            return render_template('agenda/profesional_form.html', form=request.form, action='edit', user=user)
+
+        existing = User.query.filter(User.email == email, User.id != user_id).first()
+        if existing:
+            flash('Ya existe otro profesional con ese email.', 'danger')
+            return render_template('agenda/profesional_form.html', form=request.form, action='edit', user=user)
+
+        user.full_name = full_name
+        user.email = email
+        user.license_number = license_number
+
+        # Actualizar contraseña solo si se proporcionó una nueva
+        new_password = request.form.get('password', '').strip()
+        if new_password:
+            from auth import _password_strength
+            pw_err = _password_strength(new_password)
+            if pw_err:
+                flash(pw_err, 'danger')
+                return render_template('agenda/profesional_form.html', form=request.form, action='edit', user=user)
+            user.set_password(new_password)
+
+        db.session.commit()
+        flash(f'Profesional {full_name} actualizado.', 'success')
+        return redirect(url_for('agenda.list_profesionales'))
+
+    form = {
+        'full_name': user.full_name or '',
+        'email': user.email or '',
+        'license_number': user.license_number or '',
+    }
+    return render_template('agenda/profesional_form.html', form=form, action='edit', user=user)
+
+
+@bp.route('/profesionales/<int:user_id>/eliminar', methods=['POST'])
+@login_required
+def eliminar_profesional(user_id):
+    """Eliminar un profesional."""
+    from models import User
+    user = db.session.get(User, user_id)
+    if not user:
+        abort(404)
+    if user.id == current_user.id:
+        flash('No podés eliminar tu propia cuenta.', 'danger')
+        return redirect(url_for('agenda.list_profesionales'))
+
+    # Verificar si tiene turnos activos
+    from datetime import date as _date
+    turnos_activos = Appointment.query.filter(
+        Appointment.professional_id == user_id,
+        Appointment.planned_date >= _date.today(),
+        Appointment.status.notin_(['cancelado', 'atendido']),
+    ).count()
+    if turnos_activos:
+        flash(f'{user.full_name} tiene {turnos_activos} turno(s) activo(s). Reasignalos antes de eliminar.', 'danger')
+        return redirect(url_for('agenda.list_profesionales'))
+
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'Profesional {user.full_name} eliminado.', 'info')
+    return redirect(url_for('agenda.list_profesionales'))
 
 
 @bp.route('/exportar/ics')
@@ -638,7 +782,7 @@ def export_ics():
 
         dt_start = datetime.combine(appt.planned_date, datetime.min.time().replace(hour=hh, minute=mm))
         dt_end = dt_start + timedelta(minutes=60)
-        dtstamp = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
+        dtstamp = _dt.datetime.now(_dt.UTC).strftime('%Y%m%dT%H%M%SZ')
 
         summary_parts = []
         if appt.patient:

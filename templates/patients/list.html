@@ -6,7 +6,10 @@
     <p class="eyebrow">Consultorio</p>
     <h1>Pacientes</h1>
   </div>
-  <a href="{{ url_for('patients.new_patient') }}" class="btn-solid">+ Dar de alta paciente</a>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('patients.import_patients') }}" class="btn-outline">📥 Importar CSV</a>
+    <a href="{{ url_for('patients.new_patient') }}" class="btn-solid">+ Dar de alta paciente</a>
+  </div>
 </div>
 
 <div class="list-toolbar mb-3">
@@ -42,7 +45,9 @@
   {% endfor %}
 </div>
 <div id="patientNoResults" class="empty-state" style="display:none;">
-  <p>No se encontraron pacientes para tu búsqueda.</p>
+  <div class="empty-icon">🔍</div>
+  <h3>No se encontraron pacientes</h3>
+  <p>Probá con otros términos de búsqueda.</p>
   <button type="button" class="btn-ghost" onclick="document.getElementById('patientSearch').value='';var e=new Event('input',{bubbles:true});document.getElementById('patientSearch').dispatchEvent(e);">Limpiar búsqueda</button>
 </div>
 
@@ -75,8 +80,10 @@
 {% endif %}
 {% else %}
 <div class="empty-state">
-  <p>Todavía no hay pacientes cargados.</p>
-  <a href="{{ url_for('patients.new_patient') }}" class="btn-solid">Dar de alta el primer paciente</a>
+  <div class="empty-icon">🦷</div>
+  <h3>Todavía no hay pacientes cargados</h3>
+  <p>Dar de alta tu primer paciente para comenzar a usar el odontograma.</p>
+  <a href="{{ url_for('patients.new_patient') }}" class="btn-solid">+ Dar de alta paciente</a>
 </div>
 {% endif %}
 {% endblock %}

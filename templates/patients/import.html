@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Importar pacientes{% endblock %}
+{% block content %}
+<p class="eyebrow"><a href="{{ url_for('patients.list_patients') }}" class="back-link">← Pacientes</a></p>
+<h1 class="mb-4">Importar pacientes desde CSV</h1>
+
+<div class="panel mb-4">
+  <p class="mb-3">Subí un archivo <strong>.csv</strong> con los datos de tus pacientes.</p>
+
+  <h4 class="mb-2">Columnas esperadas:</h4>
+  <table class="table table-sm mb-3">
+    <thead>
+      <tr><th>Columna</th><th>Obligatoria</th><th>Descripción</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>nombre</code></td><td>Sí</td><td>Nombre completo del paciente</td></tr>
+      <tr><td><code>documento</code></td><td>No</td><td>DNI u otro documento</td></tr>
+      <tr><td><code>telefono</code></td><td>No</td><td>Número de teléfono</td></tr>
+      <tr><td><code>email</code></td><td>No</td><td>Correo electrónico</td></tr>
+      <tr><td><code>direccion</code></td><td>No</td><td>Dirección</td></tr>
+      <tr><td><code>notas_medicas</code></td><td>No</td><td>Antecedentes médicos</td></tr>
+    </tbody>
+  </table>
+
+  <p class="text-muted mb-3">
+    <strong>Ejemplo:</strong> <code>nombre,documento,telefono,email</code><br>
+    <code>Juan Pérez,12345678,11-5555-1234,juan@email.com</code>
+  </p>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="form-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="mb-3">
+    <label class="form-label" for="csv_file">Archivo CSV</label>
+    <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv" required>
+  </div>
+  <button type="submit" class="btn-solid">Importar pacientes</button>
+</form>
+{% endblock %}

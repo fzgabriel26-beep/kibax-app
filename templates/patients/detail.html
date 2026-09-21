@@ -241,7 +241,7 @@
   {% if paciente.evolution_photos %}
   <div class="evo-gallery">
     {% for photo in paciente.evolution_photos %}
-    <div class="evo-card">
+    <div class="evo-card" draggable="true">
       
       <!-- Encabezado de la tarjeta con botón de eliminación integrado -->
       <div class="evo-card-head">
@@ -260,7 +260,7 @@
       </div>
       
       <a href="{{ url_for('patients.serve_evolution_photo', patient_id=paciente.id, photo_id=photo.id) }}" target="_blank" rel="noopener" class="evo-card-img">
-        <img src="{{ url_for('patients.serve_evolution_photo', patient_id=paciente.id, photo_id=photo.id) }}" alt="Evolución clínica" class="evo-card-img-inner">
+        <img data-src="{{ url_for('patients.serve_evolution_photo', patient_id=paciente.id, photo_id=photo.id) }}" alt="Evolución clínica" class="evo-card-img-inner lazy-img">
       </a>
       
       <div class="evo-card-body">
@@ -467,6 +467,77 @@
       }
     });
   });
+
+  // Lazy loading de imágenes de evolución
+  if ('IntersectionObserver' in window) {
+    var lazyObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          var img = entry.target;
+          if (img.dataset.src) {
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+            img.classList.add('loaded');
+            lazyObserver.unobserve(img);
+          }
+        }
+      });
+    }, { rootMargin: '200px' });
+    document.querySelectorAll('.lazy-img[data-src]').forEach(function (img) {
+      lazyObserver.observe(img);
+    });
+  } else {
+    // Fallback: cargar todas las imágenes
+    document.querySelectorAll('.lazy-img[data-src]').forEach(function (img) {
+      img.src = img.dataset.src;
+      img.classList.add('loaded');
+    });
+  }
+
+  // Drag & drop para reordenar fotos de evolución
+  (function () {
+    var gallery = document.querySelector('.evo-gallery');
+    if (!gallery) return;
+    var cards = gallery.querySelectorAll('.evo-card[draggable]');
+    var dragCard = null;
+
+    cards.forEach(function (card) {
+      card.addEventListener('dragstart', function (e) {
+        dragCard = card;
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      card.addEventListener('dragend', function () {
+        card.classList.remove('dragging');
+        gallery.querySelectorAll('.evo-card').forEach(function (c) {
+          c.classList.remove('drag-over');
+        });
+        dragCard = null;
+      });
+      card.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        card.classList.add('drag-over');
+      });
+      card.addEventListener('dragleave', function () {
+        card.classList.remove('drag-over');
+      });
+      card.addEventListener('drop', function (e) {
+        e.preventDefault();
+        card.classList.remove('drag-over');
+        if (dragCard && dragCard !== card) {
+          var allCards = Array.from(gallery.querySelectorAll('.evo-card'));
+          var fromIdx = allCards.indexOf(dragCard);
+          var toIdx = allCards.indexOf(card);
+          if (fromIdx < toIdx) {
+            card.parentNode.insertBefore(dragCard, card.nextSibling);
+          } else {
+            card.parentNode.insertBefore(dragCard, card);
+          }
+        }
+      });
+    });
+  })();
 </script>
 <script>
   (function () {

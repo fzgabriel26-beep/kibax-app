@@ -45,6 +45,8 @@
                 </a>
               </li>
               <li><a class="dropdown-item" href="{{ url_for('agenda.horarios') }}">Horarios</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{{ url_for('agenda.list_profesionales') }}">👩‍⚕️ Profesionales</a></li>
             </ul>
           </div>
           <button type="button" class="btn-ghost theme-toggle" id="themeToggle"
@@ -71,6 +73,9 @@
       {% endif %}
     {% endwith %}
 
+    <!-- Toast container para notificaciones persistentes -->
+    <div id="toastContainer" class="toast-container"></div>
+
     {% block content %}{% endblock %}
   </main>
 
@@ -91,6 +96,52 @@
         localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
       });
     })();
+
+    // --- Toast notifications ---
+    function showToast(message, type) {
+      type = type || 'info';
+      var container = document.getElementById('toastContainer');
+      if (!container) return;
+      var toast = document.createElement('div');
+      toast.className = 'toast-notification toast-' + type;
+      toast.innerHTML = '<span>' + message + '</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>';
+      container.appendChild(toast);
+      setTimeout(function () { toast.classList.add('show'); }, 10);
+      setTimeout(function () { toast.remove(); }, 5000);
+    }
+
+    // --- Character counters ---
+    document.querySelectorAll('.char-counter').forEach(function (counter) {
+      var input = document.getElementById(counter.dataset.for);
+      if (!input) return;
+      var max = input.getAttribute('maxlength') || 2000;
+      function update() {
+        counter.textContent = input.value.length + ' / ' + max;
+      }
+      input.addEventListener('input', update);
+      update();
+    });
+
+    // --- Keyboard shortcuts ---
+    document.addEventListener('keydown', function (e) {
+      // Solo funcionan sin modifiers (Ctrl/Alt/Meta) para no interferir
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+      // No activar en inputs de texto
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+
+      var key = e.key.toLowerCase();
+      if (key === 'n') {
+        window.location.href = '{{ url_for("patients.new_patient") }}';
+      } else if (key === 'p') {
+        window.location.href = '{{ url_for("patients.list_patients") }}';
+      } else if (key === 'a') {
+        window.location.href = '{{ url_for("agenda.index") }}';
+      } else if (key === 't') {
+        window.location.href = '{{ url_for("agenda.turnos") }}';
+      } else if (key === '?') {
+        showToast('Atajos: N=Nuevo paciente, P=Pacientes, A=Agenda, T=Turnos', 'info');
+      }
+    });
   </script>
   {% block scripts %}{% endblock %}
 </body>

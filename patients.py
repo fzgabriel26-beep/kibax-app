@@ -1,17 +1,24 @@
+import csv
+import io
+import json
 import os
 import shutil
 import uuid
 from datetime import datetime
 
+from email_validator import validate_email, EmailNotValidError
 from flask import (
     Blueprint, render_template, redirect, url_for, request, flash,
-    current_app, send_from_directory, abort, jsonify
+    current_app, send_from_directory, abort, jsonify, Response
 )
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
 from extensions import db
-from models import Patient, ToothStatus, ProcedureLog, Attachment, TreatmentEvolutionPhoto, ConsultationNote
+from models import (
+    Patient, ToothStatus, ProcedureLog, Attachment,
+    TreatmentEvolutionPhoto, ConsultationNote, AuditLog
+)
 
 bp = Blueprint('patients', __name__, url_prefix='/pacientes')
 
@@ -26,6 +33,29 @@ STATUS_LABELS = {
     'protesis': 'Prótesis',
     'ausente': 'Ausente',
 }
+
+
+def _audit(entity_type, entity_id, action, changes=None):
+    """Registra una acción de auditoría."""
+    log = AuditLog(
+        user_id=current_user.id if current_user.is_authenticated else None,
+        entity_type=entity_type,
+        entity_id=entity_id,
+        action=action,
+        changes=json.dumps(changes, ensure_ascii=False, default=str) if changes else None,
+    )
+    db.session.add(log)
+
+
+def _validate_patient_email(email):
+    """Valida formato de email de paciente. Devuelve None si es válido."""
+    if not email:
+        return None
+    try:
+        validate_email(email, check_deliverability=False)
+        return None
+    except EmailNotValidError:
+        return 'El formato del email del paciente no es válido.'
 
 # Numeración FDI (la que se usa en Argentina y la mayoría de Latinoamérica
 # y Europa), organizada por cuadrantes.
@@ -134,6 +164,60 @@ def list_patients():
                            pagination=pagination, q=q)
 
 
+@bp.route('/importar', methods=['GET', 'POST'])
+@login_required
+def import_patients():
+    """Importar pacientes desde un archivo CSV.
+    Columnas esperadas: nombre, documento, telefono, email, direccion, notas_medicas"""
+    if request.method == 'POST':
+        file = request.files.get('csv_file')
+        if not file or not file.filename.endswith('.csv'):
+            flash('Subí un archivo CSV válido.', 'danger')
+            return render_template('patients/import.html')
+
+        try:
+            content = file.read().decode('utf-8-sig')
+            reader = csv.DictReader(io.StringIO(content))
+            count = 0
+            errors = []
+            for i, row in enumerate(reader, start=2):
+                name = (row.get('nombre') or row.get('full_name') or '').strip()
+                if not name:
+                    errors.append(f'Fila {i}: sin nombre')
+                    continue
+                email_val = (row.get('email') or '').strip()
+                if email_val:
+                    err = _validate_patient_email(email_val)
+                    if err:
+                        errors.append(f'Fila {i}: {err}')
+                        continue
+
+                p = Patient(
+                    full_name=name,
+                    document_id=(row.get('documento') or row.get('document_id') or '').strip(),
+                    phone=(row.get('telefono') or row.get('phone') or '').strip(),
+                    email=email_val,
+                    address=(row.get('direccion') or row.get('address') or '').strip(),
+                    medical_notes=(row.get('notas_medicas') or row.get('medical_notes') or '').strip(),
+                    created_by_id=current_user.id,
+                )
+                db.session.add(p)
+                count += 1
+
+            db.session.commit()
+            if errors:
+                flash(f'Se importaron {count} pacientes. {len(errors)} filas con errores: ' +
+                      '; '.join(errors[:5]), 'warning')
+            else:
+                flash(f'Se importaron {count} pacientes correctamente.', 'success')
+        except Exception as e:
+            flash(f'Error al procesar el archivo: {e}', 'danger')
+
+        return redirect(url_for('patients.list_patients'))
+
+    return render_template('patients/import.html')
+
+
 @bp.route('/nuevo', methods=['GET', 'POST'])
 @login_required
 def new_patient():
@@ -141,6 +225,12 @@ def new_patient():
         full_name = request.form.get('full_name', '').strip()
         if not full_name:
             flash('El nombre del paciente es obligatorio.', 'danger')
+            return render_template('patients/new.html', form=request.form)
+
+        email = request.form.get('email', '').strip()
+        email_error = _validate_patient_email(email)
+        if email_error:
+            flash(email_error, 'danger')
             return render_template('patients/new.html', form=request.form)
 
         birth_date_raw = request.form.get('birth_date') or None
@@ -156,12 +246,14 @@ def new_patient():
             document_id=request.form.get('document_id', '').strip(),
             birth_date=birth_date,
             phone=request.form.get('phone', '').strip(),
-            email=request.form.get('email', '').strip(),
+            email=email,
             address=request.form.get('address', '').strip(),
             medical_notes=request.form.get('medical_notes', '').strip(),
             created_by_id=current_user.id,
         )
         db.session.add(paciente)
+        db.session.commit()
+        _audit('patient', paciente.id, 'create', {'full_name': full_name})
         db.session.commit()
         flash('Paciente dado de alta correctamente.', 'success')
         return redirect(url_for('patients.patient_detail', patient_id=paciente.id))
@@ -180,6 +272,12 @@ def edit_patient(patient_id):
             flash('El nombre del paciente es obligatorio.', 'danger')
             return render_template('patients/edit.html', paciente=paciente, form=request.form)
 
+        email = request.form.get('email', '').strip()
+        email_error = _validate_patient_email(email)
+        if email_error:
+            flash(email_error, 'danger')
+            return render_template('patients/edit.html', paciente=paciente, form=request.form)
+
         birth_date_raw = request.form.get('birth_date') or None
         birth_date = None
         if birth_date_raw:
@@ -188,14 +286,27 @@ def edit_patient(patient_id):
             except ValueError:
                 birth_date = None
 
+        # Registrar cambios para auditoría
+        changes = {}
+        if paciente.full_name != full_name:
+            changes['full_name'] = {'old': paciente.full_name, 'new': full_name}
+        if (paciente.email or '') != email:
+            changes['email'] = {'old': paciente.email, 'new': email}
+        if (paciente.phone or '') != request.form.get('phone', '').strip():
+            changes['phone'] = {'old': paciente.phone, 'new': request.form.get('phone', '').strip()}
+
         paciente.full_name = full_name
         paciente.document_id = request.form.get('document_id', '').strip()
         paciente.birth_date = birth_date
         paciente.phone = request.form.get('phone', '').strip()
-        paciente.email = request.form.get('email', '').strip()
+        paciente.email = email
         paciente.address = request.form.get('address', '').strip()
         paciente.medical_notes = request.form.get('medical_notes', '').strip()
         db.session.commit()
+
+        if changes:
+            _audit('patient', paciente.id, 'update', changes)
+            db.session.commit()
 
         flash('Paciente actualizado correctamente.', 'success')
         return redirect(url_for('patients.patient_detail', patient_id=paciente.id))
@@ -306,6 +417,7 @@ def export_patient(patient_id):
 @login_required
 def delete_patient(patient_id):
     paciente = Patient.query.get_or_404(patient_id)
+    _audit('patient', patient_id, 'delete', {'full_name': paciente.full_name})
     folder = patient_folder_path(patient_id)
     if os.path.isdir(folder):
         shutil.rmtree(folder)

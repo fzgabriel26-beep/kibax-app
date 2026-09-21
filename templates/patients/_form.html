@@ -1,0 +1,61 @@
+{# Macro compartido para formularios de paciente (alta/edición) #}
+{% macro patient_form(form, action, submit_text, paciente=None) %}
+<form method="post" action="{{ action }}" class="form-card" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row">
+    <div class="col-md-8 mb-3">
+      <label class="form-label" for="full_name">Nombre completo *</label>
+      <input class="form-control" type="text" id="full_name" name="full_name"
+             value="{{ form.get('full_name','') }}" required autofocus
+             maxlength="150" placeholder="Ej: María García">
+      <div class="char-counter" data-for="full_name">0 / 150</div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <label class="form-label" for="document_id">Documento</label>
+      <input class="form-control" type="text" id="document_id" name="document_id"
+             value="{{ form.get('document_id','') }}" maxlength="60"
+             placeholder="Ej: 12345678">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-4 mb-3">
+      <label class="form-label" for="birth_date">Fecha de nacimiento</label>
+      <input class="form-control" type="date" id="birth_date" name="birth_date"
+             value="{{ form.get('birth_date','') }}">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label class="form-label" for="phone">Teléfono</label>
+      <input class="form-control" type="text" id="phone" name="phone"
+             value="{{ form.get('phone','') }}" maxlength="40"
+             placeholder="Ej: 11-5555-1234">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label class="form-label" for="email">Email</label>
+      <input class="form-control" type="email" id="email" name="email"
+             value="{{ form.get('email','') }}" maxlength="120"
+             placeholder="Ej: maria@email.com">
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label" for="address">Dirección</label>
+    <input class="form-control" type="text" id="address" name="address"
+           value="{{ form.get('address','') }}" maxlength="200"
+           placeholder="Ej: Av. Corrientes 1234, CABA">
+  </div>
+
+  <div class="mb-4">
+    <label class="form-label" for="medical_notes">Antecedentes médicos relevantes</label>
+    <textarea class="form-control" id="medical_notes" name="medical_notes" rows="3"
+              maxlength="2000"
+              placeholder="Alergias, medicación, condiciones a tener en cuenta…">{{ form.get('medical_notes','') }}</textarea>
+    <div class="char-counter" data-for="medical_notes">0 / 2000</div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn-solid px-4 py-2">{{ submit_text }}</button>
+    <a href="{{ url_for('patients.list_patients') }}" class="btn-ghost">Cancelar</a>
+  </div>
+</form>
+{% endmacro %}

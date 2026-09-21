@@ -102,7 +102,8 @@ class TestEstadoTurno:
         assert r.status_code == 200
         assert 'actualizado' in r.data.decode()
         with app.app_context():
-            assert Appointment.query.get(appt_id).status == 'atendido'
+            from extensions import db as _db2
+            assert _db2.session.get(Appointment, appt_id).status == 'atendido'
 
 
 class TestEliminarTurno:
@@ -125,7 +126,8 @@ class TestEliminarTurno:
         assert r.status_code == 200
         assert 'eliminado' in r.data.decode()
         with app.app_context():
-            assert Appointment.query.get(appt_id) is None
+            from extensions import db as _db2
+            assert _db2.session.get(Appointment, appt_id) is None
 
 
 class TestHorarios:

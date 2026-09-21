@@ -1,8 +1,14 @@
-from datetime import datetime
+import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from extensions import db
+
+
+def _utcnow():
+    """Función default para columnas datetime. Reemplaza datetime.utcnow()
+    deprecado en Python 3.12+."""
+    return datetime.datetime.now(datetime.UTC)
 
 
 class User(UserMixin, db.Model):
@@ -15,7 +21,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     license_number = db.Column(db.String(60))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=_utcnow)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -26,14 +32,14 @@ class User(UserMixin, db.Model):
 
 class Patient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    full_name = db.Column(db.String(150), nullable=False)
-    document_id = db.Column(db.String(60))
+    full_name = db.Column(db.String(150), nullable=False, index=True)
+    document_id = db.Column(db.String(60), index=True)
     birth_date = db.Column(db.Date)
-    phone = db.Column(db.String(40))
-    email = db.Column(db.String(120))
+    phone = db.Column(db.String(40), index=True)
+    email = db.Column(db.String(120), index=True)
     address = db.Column(db.String(200))
     medical_notes = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=_utcnow)
     created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     tooth_statuses = db.relationship(
@@ -78,7 +84,7 @@ class ToothStatus(db.Model):
     tooth_number = db.Column(db.Integer, nullable=False)  # numeración FDI
     surface = db.Column(db.String(1), nullable=False, default='')
     status = db.Column(db.String(30), default='sano')
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=_utcnow, onupdate=_utcnow)
 
     __table_args__ = (
         db.UniqueConstraint('patient_id', 'tooth_number', 'surface', name='uix_patient_tooth_surface'),
@@ -96,7 +102,7 @@ class ProcedureLog(db.Model):
     surface = db.Column(db.String(1), nullable=False, default='')
     status = db.Column(db.String(30))
     note = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=_utcnow)
     created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     dentist = db.relationship('User')
@@ -113,7 +119,7 @@ class Attachment(db.Model):
     description = db.Column(db.String(255))
     category = db.Column(db.String(30), default='otro')  # panoramica, bitewing, periapical, foto_intraoral, foto_extraoral, otro
     tooth_number = db.Column(db.Integer, nullable=True)
-    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    uploaded_at = db.Column(db.DateTime, default=_utcnow)
     uploaded_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
@@ -129,7 +135,7 @@ class TreatmentEvolutionPhoto(db.Model):
     original_filename = db.Column(db.String(255), nullable=False)
     stored_filename = db.Column(db.String(255), nullable=False)
     notes = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=_utcnow)
     uploaded_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     dentist = db.relationship('User')
@@ -142,11 +148,11 @@ class ConsultationNote(db.Model):
     __tablename__ = 'consultation_note'
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
-    visit_date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    visit_date = db.Column(db.Date, nullable=False, default=datetime.date.today)
     reason = db.Column(db.Text)
     treatment = db.Column(db.Text)
     indications = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=_utcnow)
     created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     dentist = db.relationship('User')
@@ -163,7 +169,7 @@ class Appointment(db.Model):
     time = db.Column(db.String(5), nullable=False, default='10:00')  # formato HH:MM
     reason = db.Column(db.String(255))
     status = db.Column(db.String(20), default='confirmado')  # pendiente, confirmado, presente, atendido, ausente, ausente_aviso, cancelado
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=_utcnow)
     created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     patient = db.relationship('Patient', backref='appointments')
@@ -201,3 +207,19 @@ class ScheduleException(db.Model):
     reason = db.Column(db.String(255))
 
     dentist = db.relationship('User', foreign_keys=[user_id])
+
+
+class AuditLog(db.Model):
+    """Registro de auditoría: cada cambio relevante en datos de pacientes
+    o turnos queda registrado con quién, cuándo y qué cambió."""
+
+    __tablename__ = 'audit_log'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    entity_type = db.Column(db.String(50), nullable=False)
+    entity_id = db.Column(db.Integer, nullable=False)
+    action = db.Column(db.String(20), nullable=False)
+    changes = db.Column(db.Text)  # JSON con los cambios
+    timestamp = db.Column(db.DateTime, default=_utcnow, index=True)
+
+    user = db.relationship('User')

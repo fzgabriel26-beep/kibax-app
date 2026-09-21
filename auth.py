@@ -1,5 +1,6 @@
 import re
 
+from email_validator import validate_email, EmailNotValidError
 from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 
@@ -24,8 +25,19 @@ def _password_strength(password):
     return None
 
 
+def _validate_email(email):
+    """Valida formato de email. Devuelve None si es válido, o un mensaje de error."""
+    try:
+        validate_email(email, check_deliverability=False)
+        return None
+    except EmailNotValidError:
+        return 'El formato del email no es válido.'
+
+
 @bp.route('/register', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def register():
+    """Rate limited: máximo 5 registros por minuto por IP."""
     if current_user.is_authenticated:
         return redirect(url_for('patients.list_patients'))
 
@@ -45,6 +57,11 @@ def register():
 
         if not full_name or not email or not password:
             flash('Completá todos los campos obligatorios.', 'danger')
+            return render_template('auth/register.html', form=request.form)
+
+        email_error = _validate_email(email)
+        if email_error:
+            flash(email_error, 'danger')
             return render_template('auth/register.html', form=request.form)
 
         if password != password2:

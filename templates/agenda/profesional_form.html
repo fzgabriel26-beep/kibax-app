@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if action == 'edit' else 'Nuevo' }} profesional{% endblock %}
+{% block content %}
+<p class="eyebrow"><a href="{{ url_for('agenda.list_profesionales') }}" class="back-link">← Profesionales</a></p>
+<h1 class="mb-4">{{ 'Editar' if action == 'edit' else 'Nuevo' }} profesional</h1>
+
+<form method="post" class="form-card" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row">
+    <div class="col-md-8 mb-3">
+      <label class="form-label" for="full_name">Nombre completo *</label>
+      <input class="form-control" type="text" id="full_name" name="full_name"
+             value="{{ form.get('full_name','') }}" required autofocus maxlength="120">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label class="form-label" for="license_number">Matrícula</label>
+      <input class="form-control" type="text" id="license_number" name="license_number"
+             value="{{ form.get('license_number','') }}" maxlength="60">
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label" for="email">Email *</label>
+    <input class="form-control" type="email" id="email" name="email"
+           value="{{ form.get('email','') }}" required maxlength="120">
+  </div>
+
+  <div class="mb-4">
+    <label class="form-label" for="password">
+      Contraseña {{ '(dejar vacío para no cambiar)' if action == 'edit' else '*' }}
+    </label>
+    <input class="form-control" type="password" id="password" name="password"
+           {{ '' if action == 'edit' else 'required' }} minlength="8">
+    <div class="form-text">Mínimo 8 caracteres, 1 mayúscula, 1 número, 1 especial.</div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn-solid px-4 py-2">
+      {{ 'Guardar cambios' if action == 'edit' else 'Crear profesional' }}
+    </button>
+    <a href="{{ url_for('agenda.list_profesionales') }}" class="btn-ghost">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

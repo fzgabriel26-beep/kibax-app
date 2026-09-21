@@ -76,7 +76,8 @@ class TestDeletePatient:
         assert r.status_code == 200
         assert 'eliminados' in r.data.decode()
         with app.app_context():
-            assert Patient.query.get(pid) is None
+            from extensions import db as _db2
+            assert _db2.session.get(Patient, pid) is None
 
 
 class TestToothOperations:
