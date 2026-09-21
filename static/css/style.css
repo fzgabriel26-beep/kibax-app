@@ -946,3 +946,96 @@ a { color: var(--primary); }
 body.dark .nav-dropdown .dropdown-menu { background: #1A2320; border-color: #2D3A36; }
 body.dark .nav-dropdown .dropdown-item { color: #E4EAE7; }
 body.dark .nav-dropdown .dropdown-item:hover { background: #1C2E2A; color: #3AAE9A; }
+
+/* ---------- Evolución fotográfica: clases CSS ---------- */
+.evo-form-row {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;
+}
+.evo-form-field { flex: 1; min-width: 180px; }
+.evo-field-photo { flex: 1.5; min-width: 200px; }
+.evo-label { display: block; margin-bottom: 4px; }
+.evo-select { width: 100%; }
+
+.evo-gallery {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px; margin-top: 20px;
+}
+.evo-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; display: flex;
+  flex-direction: column; position: relative;
+}
+.evo-card-head {
+  padding: 10px 15px; display: flex; justify-content: space-between;
+  align-items: center; border-bottom: 1px solid var(--border);
+  background: var(--bg); gap: 8px;
+}
+.evo-card-tags { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.evo-tag-type { font-size: .75rem; font-weight: 700; color: var(--primary); }
+.evo-tag-stage {
+  font-size: .7rem; font-weight: 700; padding: 2px 6px;
+  border-radius: 4px; text-transform: uppercase; background: var(--primary-tint);
+}
+.evo-delete-form { display: inline; margin: 0; padding: 0; }
+.evo-delete-btn {
+  background: transparent; border: none; color: #a4362b;
+  font-weight: bold; cursor: pointer; font-size: .9rem; padding: 2px 6px;
+}
+.evo-card-img {
+  background: #111; height: 180px; display: flex;
+  justify-content: center; align-items: center; overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+.evo-card-img-inner { max-height: 100%; max-width: 100%; object-fit: contain; }
+.evo-card-body {
+  padding: 12px; display: flex; flex-direction: column;
+  flex-grow: 1; justify-content: space-between;
+}
+.evo-card-notes {
+  font-size: .85rem; color: var(--ink); margin: 0 0 10px 0; line-height: 1.4;
+}
+.evo-card-footer {
+  font-size: .75rem; color: var(--ink-soft); display: flex;
+  justify-content: space-between; border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+.evo-empty { margin-top: 20px; }
+.evo-submit-btn { min-width: 200px; }
+
+/* ---------- Loading spinner para uploads ---------- */
+.btn-loading { position: relative; pointer-events: none; opacity: .7; }
+.btn-loading::after {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  width: 1rem; height: 1rem; margin: -.5rem 0 0 -.5rem;
+  border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+  border-radius: 50%; animation: spin .5s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- Icono de lupa en búsqueda ---------- */
+.search-bar { position: relative; }
+.search-bar .form-control {
+  padding-left: 2.2rem;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239BA8A4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'/%3e%3cline x1='21' y1='21' x2='16.65' y2='16.65'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: .65rem center;
+  background-size: 1rem;
+}
+body.dark .search-bar .form-control {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239BA8A4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'/%3e%3cline x1='21' y1='21' x2='16.65' y2='16.65'/%3e%3c/svg%3e");
+}
+
+/* ---------- Paginación ---------- */
+.pagination { display: flex; gap: .3rem; justify-content: center; margin-top: 1.5rem; }
+.pagination a, .pagination span {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 2.2rem; height: 2.2rem; padding: 0 .5rem;
+  border-radius: 8px; font-size: .85rem; font-weight: 600;
+  text-decoration: none; color: var(--ink); border: 1px solid var(--border);
+  background: var(--surface); transition: background .15s, color .15s;
+}
+.pagination a:hover { background: var(--primary-tint); color: var(--primary); }
+.pagination .active {
+  background: var(--primary); color: #fff; border-color: var(--primary);
+}
+.pagination .disabled { opacity: .4; pointer-events: none; }

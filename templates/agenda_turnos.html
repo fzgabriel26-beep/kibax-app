@@ -10,6 +10,7 @@
   <div class="d-flex gap-2">
     <a href="{{ url_for('agenda.index', profesional=profesional.id if profesional else '') }}" class="btn-outline">Ver calendario</a>
     <a href="{{ url_for('agenda.horarios') }}" class="btn-outline">Horarios de profesionales</a>
+    <a href="{{ url_for('agenda.export_ics', profesional=profesional.id if profesional else '', rango=rango) }}" class="btn-outline" download>📥 Exportar .ics</a>
   </div>
 </div>
 
@@ -98,7 +99,7 @@
             <form method="post" action="{{ url_for('agenda.estado', appt_id=a.id) }}" class="agenda-status-form">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="next" value="{{ url_for('agenda.turnos', profesional=profesional.id if profesional else '', estado=estado, rango=rango, q=q, fecha=fecha.isoformat() if fecha else '') }}">
-              <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" aria-label="Estado del turno">
+              <select name="status" class="form-select form-select-sm agenda-status-select" aria-label="Estado del turno">
                 {% for key, label in statuses.items() %}
                 <option value="{{ key }}"{% if a.status == key %} selected{% endif %}>{{ label }}</option>
                 {% endfor %}
@@ -161,6 +162,19 @@
       if (!row.hidden) {
         var f = row.querySelector('input[name="fecha"]');
         if (f) f.focus();
+      }
+    });
+  });
+
+  // Confirmación antes de cambiar estado de turno
+  document.querySelectorAll('.agenda-status-select').forEach(function (sel) {
+    sel.addEventListener('change', function () {
+      var label = sel.options[sel.selectedIndex].text;
+      if (confirm('¿Cambiar el estado del turno a «' + label + '»?')) {
+        sel.form.submit();
+      } else {
+        // Restaurar al valor anterior
+        sel.value = sel.querySelector('[selected]').value;
       }
     });
   });

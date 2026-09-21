@@ -599,3 +599,78 @@ def suspension_eliminar(exc_id):
     db.session.commit()
     flash('Suspensión eliminada.', 'info')
     return redirect(url_for('agenda.horarios'))
+
+
+@bp.route('/exportar/ics')
+@login_required
+def export_ics():
+    """Genera un archivo .ics con los turnos filtrados."""
+    profesional_raw = request.args.get('profesional', type=int)
+    rango = request.args.get('rango', 'proximos')
+    hoy = date.today()
+
+    query = Appointment.query.filter(Appointment.status != 'cancelado')
+    if profesional_raw:
+        query = query.filter(Appointment.professional_id == profesional_raw)
+    if rango == 'proximos':
+        query = query.filter(Appointment.planned_date >= hoy)
+    elif rango == 'pasados':
+        query = query.filter(Appointment.planned_date < hoy)
+    query = query.order_by(Appointment.planned_date, Appointment.time)
+
+    appointments = query.all()
+
+    from flask import Response
+    lines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Consultorio Odontologico//Agenda//ES',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'X-WR-CALNAME:Agenda Consultorio',
+    ]
+
+    for appt in appointments:
+        try:
+            hh, mm = (int(x) for x in (appt.time or '10:00').split(':'))
+        except (ValueError, AttributeError):
+            hh, mm = 10, 0
+
+        dt_start = datetime.combine(appt.planned_date, datetime.min.time().replace(hour=hh, minute=mm))
+        dt_end = dt_start + timedelta(minutes=60)
+        dtstamp = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
+
+        summary_parts = []
+        if appt.patient:
+            summary_parts.append(appt.patient.full_name)
+        if appt.professional:
+            summary_parts.append(appt.professional.full_name)
+        summary = ' - '.join(summary_parts) if summary_parts else 'Turno'
+
+        desc_parts = []
+        if appt.reason:
+            desc_parts.append(f'Motivo: {appt.reason}')
+        desc_parts.append(f'Estado: {APPOINTMENT_STATUSES.get(appt.status, appt.status)}')
+        description = '\\n'.join(desc_parts)
+
+        uid = f'appt-{appt.id}@consultorio'
+
+        lines.extend([
+            'BEGIN:VEVENT',
+            f'UID:{uid}',
+            f'DTSTAMP:{dtstamp}',
+            f'DTSTART:{dt_start.strftime("%Y%m%dT%H%M%S")}',
+            f'DTEND:{dt_end.strftime("%Y%m%dT%H%M%S")}',
+            f'SUMMARY:{summary}',
+            f'DESCRIPTION:{description}',
+            'END:VEVENT',
+        ])
+
+    lines.append('END:VCALENDAR')
+
+    ics_content = '\r\n'.join(lines)
+    return Response(
+        ics_content,
+        mimetype='text/calendar',
+        headers={'Content-Disposition': 'attachment;filename=agenda.ics'},
+    )

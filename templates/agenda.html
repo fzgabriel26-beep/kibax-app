@@ -116,7 +116,7 @@
         <div class="agenda-item-actions">
           <form method="post" action="{{ url_for('agenda.estado', appt_id=a.id) }}" class="agenda-status-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" aria-label="Estado del turno">
+            <select name="status" class="form-select form-select-sm agenda-status-select" aria-label="Estado del turno">
               {% for key, label in statuses.items() %}
               <option value="{{ key }}"{% if a.status == key %} selected{% endif %}>{{ label }}</option>
               {% endfor %}
@@ -220,6 +220,7 @@
     var list = document.getElementById('a-patient-list');
     var selected = document.getElementById('a-selected');
     var timer = null;
+    var currentRequest = null;
 
     function pick(item) {
       input.value = item.full_name;
@@ -254,12 +255,13 @@
       var q = input.value.trim();
       if (q.length < 2) { list.hidden = true; return; }
       clearTimeout(timer);
+      if (currentRequest) currentRequest.abort();
       timer = setTimeout(function () {
-        fetch('/agenda/pacientes?q=' + encodeURIComponent(q))
+        currentRequest = fetch('/agenda/pacientes?q=' + encodeURIComponent(q))
           .then(function (r) { return r.json(); })
-          .then(function (data) { show(data.results || []); })
-          .catch(function () { list.hidden = true; });
-      }, 150);
+          .then(function (data) { show(data.results || []); currentRequest = null; })
+          .catch(function () { list.hidden = true; currentRequest = null; });
+      }, 300);
     });
 
     input.addEventListener('keydown', function (e) {
@@ -447,5 +449,18 @@
       if (e.key === 'Escape') hide();
     });
   })();
+
+  // Confirmación antes de cambiar estado de turno
+  document.querySelectorAll('.agenda-status-select').forEach(function (sel) {
+    sel.addEventListener('change', function () {
+      var label = sel.options[sel.selectedIndex].text;
+      if (confirm('¿Cambiar el estado del turno a «' + label + '»?')) {
+        sel.form.submit();
+      } else {
+        var prev = sel.querySelector('[selected]');
+        if (prev) sel.value = prev.value;
+      }
+    });
+  });
 </script>
 {% endblock %}

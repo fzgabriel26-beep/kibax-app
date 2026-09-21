@@ -12,14 +12,14 @@
 <div class="list-toolbar mb-3">
   <form method="get" class="search-bar" onsubmit="return false;">
     <input type="search" id="patientSearch" name="q" value="{{ q }}" class="form-control"
-           placeholder="Buscá por nombre o DNI…">
+           placeholder="Buscá por nombre, DNI, teléfono o email…">
   </form>
   <select id="patientSort" class="form-select sort-select" aria-label="Ordenar pacientes">
     <option value="nombre">Ordenar por nombre</option>
     <option value="apellido">Ordenar por apellido</option>
   </select>
 </div>
-<div id="patientCount" class="list-count">Mostrando {{ pacientes|length }} pacientes</div>
+<div id="patientCount" class="list-count">Mostrando {{ pacientes|length }} paciente{{ 's' if pacientes|length != 1 }}{% if pagination and pagination.pages > 1 %} (página {{ pagination.page }} de {{ pagination.pages }}){% endif %}</div>
 
 {% if pacientes %}
 <div id="patientGrid" class="patient-grid">
@@ -27,7 +27,9 @@
   <a href="{{ url_for('patients.patient_detail', patient_id=p.id) }}" class="patient-card"
      data-name="{{ p.full_name|lower }}"
      data-last="{{ (p.full_name.split()|last)|lower }}"
-     data-dni="{{ (p.document_id or '')|lower }}">
+     data-dni="{{ (p.document_id or '')|lower }}"
+     data-phone="{{ (p.phone or '')|lower }}"
+     data-email="{{ (p.email or '')|lower }}">
     <div class="patient-card-avatar">{{ p.full_name[:1]|upper }}</div>
     <div>
       <h3>{{ p.full_name }}</h3>
@@ -43,6 +45,34 @@
   <p>No se encontraron pacientes para tu búsqueda.</p>
   <button type="button" class="btn-ghost" onclick="document.getElementById('patientSearch').value='';var e=new Event('input',{bubbles:true});document.getElementById('patientSearch').dispatchEvent(e);">Limpiar búsqueda</button>
 </div>
+
+{% if pagination and pagination.pages > 1 %}
+<nav class="pagination" aria-label="Paginación de pacientes">
+  {% if pagination.has_prev %}
+  <a href="{{ url_for('patients.list_patients', page=pagination.prev_num, q=q) }}">‹ Anterior</a>
+  {% else %}
+  <span class="disabled">‹ Anterior</span>
+  {% endif %}
+
+  {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+    {% if p %}
+      {% if p == pagination.page %}
+      <span class="active">{{ p }}</span>
+      {% else %}
+      <a href="{{ url_for('patients.list_patients', page=p, q=q) }}">{{ p }}</a>
+      {% endif %}
+    {% else %}
+      <span class="disabled">…</span>
+    {% endif %}
+  {% endfor %}
+
+  {% if pagination.has_next %}
+  <a href="{{ url_for('patients.list_patients', page=pagination.next_num, q=q) }}">Siguiente ›</a>
+  {% else %}
+  <span class="disabled">Siguiente ›</span>
+  {% endif %}
+</nav>
+{% endif %}
 {% else %}
 <div class="empty-state">
   <p>Todavía no hay pacientes cargados.</p>
@@ -62,7 +92,9 @@
     if (!grid || !count) return;
     var cards = Array.prototype.slice.call(grid.querySelectorAll('.patient-card'));
 
-    function apply() {
+    var searchTimer = null;
+
+    function applyLocal() {
       var q = (input.value || '').trim().toLowerCase();
       var by = sort ? sort.value : 'nombre';
 
@@ -70,7 +102,9 @@
         if (!q) return true;
         return (card.dataset.name || '').indexOf(q) !== -1 ||
                (card.dataset.last || '').indexOf(q) !== -1 ||
-               (card.dataset.dni || '').indexOf(q) !== -1;
+               (card.dataset.dni || '').indexOf(q) !== -1 ||
+               (card.dataset.phone || '').indexOf(q) !== -1 ||
+               (card.dataset.email || '').indexOf(q) !== -1;
       });
 
       visible.sort(function (a, b) {
@@ -90,9 +124,13 @@
       if (empty) empty.style.display = cards.length && !visible.length ? '' : 'none';
     }
 
-    input.addEventListener('input', apply);
-    if (sort) sort.addEventListener('change', apply);
-    apply();
+    input.addEventListener('input', function () {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(applyLocal, 150);
+    });
+
+    if (sort) sort.addEventListener('change', applyLocal);
+    applyLocal();
   })();
 </script>
 {% endblock %}

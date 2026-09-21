@@ -115,9 +115,23 @@ def patient_folder_path(patient_id):
 @login_required
 def list_patients():
     q = request.args.get('q', '').strip()
-    # La búsqueda y el ordenado se hacen del lado del cliente (en vivo).
-    pacientes = Patient.query.order_by(Patient.full_name).all()
-    return render_template('patients/list.html', pacientes=pacientes, q=q)
+    page = request.args.get('page', 1, type=int)
+    per_page = 50
+
+    query = Patient.query.order_by(Patient.full_name)
+    if q:
+        like = f'%{q}%'
+        query = query.filter(db.or_(
+            Patient.full_name.ilike(like),
+            Patient.document_id.ilike(like),
+            Patient.phone.ilike(like),
+            Patient.email.ilike(like),
+        ))
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    return render_template('patients/list.html',
+                           pacientes=pagination.items,
+                           pagination=pagination, q=q)
 
 
 @bp.route('/nuevo', methods=['GET', 'POST'])
@@ -153,6 +167,50 @@ def new_patient():
         return redirect(url_for('patients.patient_detail', patient_id=paciente.id))
 
     return render_template('patients/new.html', form={})
+
+
+@bp.route('/<int:patient_id>/editar', methods=['GET', 'POST'])
+@login_required
+def edit_patient(patient_id):
+    paciente = Patient.query.get_or_404(patient_id)
+
+    if request.method == 'POST':
+        full_name = request.form.get('full_name', '').strip()
+        if not full_name:
+            flash('El nombre del paciente es obligatorio.', 'danger')
+            return render_template('patients/edit.html', paciente=paciente, form=request.form)
+
+        birth_date_raw = request.form.get('birth_date') or None
+        birth_date = None
+        if birth_date_raw:
+            try:
+                birth_date = datetime.strptime(birth_date_raw, '%Y-%m-%d').date()
+            except ValueError:
+                birth_date = None
+
+        paciente.full_name = full_name
+        paciente.document_id = request.form.get('document_id', '').strip()
+        paciente.birth_date = birth_date
+        paciente.phone = request.form.get('phone', '').strip()
+        paciente.email = request.form.get('email', '').strip()
+        paciente.address = request.form.get('address', '').strip()
+        paciente.medical_notes = request.form.get('medical_notes', '').strip()
+        db.session.commit()
+
+        flash('Paciente actualizado correctamente.', 'success')
+        return redirect(url_for('patients.patient_detail', patient_id=paciente.id))
+
+    # Preparar datos para el template
+    form = {
+        'full_name': paciente.full_name or '',
+        'document_id': paciente.document_id or '',
+        'birth_date': paciente.birth_date.isoformat() if paciente.birth_date else '',
+        'phone': paciente.phone or '',
+        'email': paciente.email or '',
+        'address': paciente.address or '',
+        'medical_notes': paciente.medical_notes or '',
+    }
+    return render_template('patients/edit.html', paciente=paciente, form=form)
 
 
 @bp.route('/<int:patient_id>')
@@ -198,6 +256,37 @@ def export_patient(patient_id):
     for ts in paciente.tooth_statuses:
         statuses.setdefault(ts.tooth_number, {})[ts.surface] = ts.status
 
+    # Try to generate real PDF with WeasyPrint
+    try:
+        from weasyprint import HTML
+        html_string = render_template(
+            'patients/export.html',
+            paciente=paciente,
+            statuses=statuses,
+            status_labels=STATUS_LABELS,
+            upper_row=UPPER_ROW,
+            lower_row=LOWER_ROW,
+            primary_upper_row=PRIMARY_UPPER_ROW,
+            primary_lower_row=PRIMARY_LOWER_ROW,
+            layouts=TOOTH_LAYOUTS,
+            today=datetime.now(),
+            for_pdf=True,
+        )
+        pdf_bytes = HTML(string=html_string).write_pdf()
+        from flask import Response
+        return Response(
+            pdf_bytes,
+            mimetype='application/pdf',
+            headers={
+                'Content-Disposition': f'attachment;filename=odontograma_{paciente.full_name.replace(" ", "_")}.pdf'
+            },
+        )
+    except ImportError:
+        pass
+    except Exception:
+        pass  # Fallback to print view
+
+    # Fallback: print-friendly HTML view
     return render_template(
         'patients/export.html',
         paciente=paciente,
@@ -209,6 +298,7 @@ def export_patient(patient_id):
         primary_lower_row=PRIMARY_LOWER_ROW,
         layouts=TOOTH_LAYOUTS,
         today=datetime.now(),
+        for_pdf=False,
     )
 
 
