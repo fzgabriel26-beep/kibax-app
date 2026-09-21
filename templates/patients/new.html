@@ -5,6 +5,7 @@
 <h1 class="mb-4">Dar de alta paciente</h1>
 
 <form method="post" class="form-card" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="row">
     <div class="col-md-8 mb-3">
       <label class="form-label" for="full_name">Nombre completo *</label>

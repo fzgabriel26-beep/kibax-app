@@ -1,10 +1,27 @@
+import re
+
 from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 
-from extensions import db
+from extensions import db, limiter
 from models import User
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+
+def _password_strength(password):
+    """Valida que la contraseña tenga al menos 8 caracteres, una mayúscula,
+    un número y un carácter especial. Devuelve None si es válida, o un
+    mensaje de error descriptivo."""
+    if len(password) < 8:
+        return 'La contraseña debe tener al menos 8 caracteres.'
+    if not re.search(r'[A-Z]', password):
+        return 'La contraseña debe contener al menos una letra mayúscula.'
+    if not re.search(r'[0-9]', password):
+        return 'La contraseña debe contener al menos un número.'
+    if not re.search(r'[!@#$%^&*(),.?\":{}|<>\-_=+\[\]\\;\'`~]', password):
+        return 'La contraseña debe contener al menos un carácter especial (!@#$%^&*...).'
+    return None
 
 
 @bp.route('/register', methods=['GET', 'POST'])
@@ -34,8 +51,9 @@ def register():
             flash('Las contraseñas no coinciden.', 'danger')
             return render_template('auth/register.html', form=request.form)
 
-        if len(password) < 8:
-            flash('La contraseña debe tener al menos 8 caracteres.', 'danger')
+        error = _password_strength(password)
+        if error:
+            flash(error, 'danger')
             return render_template('auth/register.html', form=request.form)
 
         if User.query.filter_by(email=email).first():
@@ -54,7 +72,9 @@ def register():
 
 
 @bp.route('/login', methods=['GET', 'POST'])
+@limiter.limit("10 per minute")
 def login():
+    """Rate limited: máximo 10 intentos de login por minuto por IP."""
     if current_user.is_authenticated:
         return redirect(url_for('patients.list_patients'))
 

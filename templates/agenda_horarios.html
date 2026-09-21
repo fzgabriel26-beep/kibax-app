@@ -17,6 +17,7 @@
     </div>
 
     <form method="post" action="{{ url_for('agenda.horario_nuevo') }}" class="agenda-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="row g-2">
         <div class="col-md-6">
           <label class="form-label" for="s-profesional">Profesional</label>
@@ -82,6 +83,7 @@
     </div>
 
     <form method="post" action="{{ url_for('agenda.suspension_nueva') }}" class="agenda-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="row g-2">
         <div class="col-md-4">
           <label class="form-label" for="x-profesional">Profesional</label>
@@ -143,6 +145,7 @@
         <td class="text-end">
           <form method="post" action="{{ url_for('agenda.horario_eliminar', sched_id=s.id) }}"
                 onsubmit="return confirm('¿Eliminar este horario?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn-danger-ghost">Eliminar</button>
           </form>
         </td>
@@ -178,6 +181,7 @@
       <div class="agenda-item-actions">
         <form method="post" action="{{ url_for('agenda.suspension_eliminar', exc_id=e.id) }}"
               onsubmit="return confirm('¿Levantar esta suspensión?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn-danger-ghost" aria-label="Eliminar suspensión">✕</button>
         </form>
       </div>
@@ -231,11 +235,10 @@
         form.addEventListener('submit', function () {
           var parts = input.value.split('/');
           if (parts.length === 3 && parts[2].length === 4) {
-            input.value = parts[2] + '-' + parts[0] + '-' + parts[1];
+            input.value = parts[2] + '-' + parts[1] + '-' + parts[0];
           }
         });
       }
-
       var popup = document.createElement('div');
       popup.className = 'datepicker-popup';
       popup.hidden = true;

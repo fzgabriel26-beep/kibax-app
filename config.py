@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -24,3 +25,20 @@ class Config:
     # Cambialo por variable de entorno en producción y compartilo solo con
     # las personas que vayan a trabajar en el consultorio.
     REGISTRATION_CODE = os.environ.get('REGISTRATION_CODE', 'changeme')
+
+    # --- Seguridad ---
+
+    # La sesión expira después de 8 horas de inactividad.
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
+
+    # Flask-WTF: la cookie CSRF se envía con cada respuesta.
+    WTF_CSRF_ENABLED = True
+    WTF_CSRF_TIME_LIMIT = 3600  # Token válido por 1 hora
+
+    # Solo permitir cookies de sesión (no other cookies from other sites)
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+
+    # En producción, descomentar estas dos líneas:
+    # SESSION_COOKIE_SECURE = True   # Solo enviar cookie por HTTPS
+    # WTF_CSRF_SSL_STRICT = True    # Revisar origin estricto

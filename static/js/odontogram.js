@@ -1,4 +1,22 @@
 document.addEventListener('DOMContentLoaded', function () {
+  // --- CSRF: leer el token del meta tag para peticiones AJAX ---
+  function getCsrfToken() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+  }
+
+  function csrfFetch(url, options) {
+    options = options || {};
+    options.headers = options.headers || {};
+    // Si ya es FormData, no sobreescribimos Content-Type (el browser lo hace solo)
+    if (!(options.body instanceof FormData)) {
+      options.headers['Content-Type'] = options.headers['Content-Type'] || 'application/x-www-form-urlencoded';
+    }
+    options.headers['X-CSRFToken'] = getCsrfToken();
+    options.credentials = 'same-origin'; // enviar cookies de sesión
+    return fetch(url, options);
+  }
+
   const patientId = window.PATIENT_ID;
   const modalEl = document.getElementById('toothModal');
   const modal = new bootstrap.Modal(modalEl);
@@ -148,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function removeLog(logId) {
     if (!confirm('¿Eliminar esta anotación del historial?')) return;
-    fetch('/pacientes/' + patientId + '/diente/' + currentTooth + '/log/' + logId + '/eliminar', {
+    csrfFetch('/pacientes/' + patientId + '/diente/' + currentTooth + '/log/' + logId + '/eliminar', {
       method: 'POST',
     })
       .then(function (r) { return r.json(); })
@@ -281,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function () {
       del.addEventListener('click', function (ev) {
         ev.stopPropagation();
         if (!confirm('¿Eliminar ' + item.original_filename + '?')) return;
-        fetch('/pacientes/' + patientId + '/diente/' + currentTooth + '/adjuntos/' + item.id + '/eliminar', {
+        csrfFetch('/pacientes/' + patientId + '/diente/' + currentTooth + '/adjuntos/' + item.id + '/eliminar', {
           method: 'POST',
         })
           .then(function (r) { return r.json(); })
@@ -329,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function () {
     formData.append('category', fileCategory.value);
     formData.append('description', fileDesc.value.trim());
 
-    fetch('/pacientes/' + patientId + '/diente/' + currentTooth + '/adjuntos', {
+    csrfFetch('/pacientes/' + patientId + '/diente/' + currentTooth + '/adjuntos', {
       method: 'POST',
       body: formData,
     })
@@ -391,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function () {
       ? '/pacientes/' + patientId + '/diente/' + currentTooth + '/log/' + editingLogId
       : '/pacientes/' + patientId + '/diente/' + currentTooth;
 
-    fetch(url, {
+    csrfFetch(url, {
       method: 'POST',
       body: formData,
     })

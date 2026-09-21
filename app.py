@@ -5,7 +5,7 @@ from flask import Flask, redirect, url_for, request, flash
 from flask_login import current_user
 
 from config import Config
-from extensions import db, login_manager, migrate
+from extensions import db, login_manager, migrate, csrf, limiter
 
 
 def create_app():
@@ -18,6 +18,15 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    csrf.init_app(app)
+    limiter.init_app(app)
+
+    # Hacemos que la sesión sea permanente para que PERMANENT_SESSION_LIFETIME
+    # tenga efecto. Sin esto, la sesión se borra al cerrar el navegador.
+    @app.before_request
+    def make_session_permanent():
+        from flask import session
+        session.permanent = True
 
     from models import User
 
@@ -31,6 +40,10 @@ def create_app():
     app.register_blueprint(auth.bp)
     app.register_blueprint(patients.bp)
     app.register_blueprint(agenda.bp)
+
+    # Exponer csrf_token() en todas las plantillas Jinja
+    from flask_wtf.csrf import generate_csrf
+    app.jinja_env.globals['csrf_token'] = generate_csrf
 
     # Filtro de Jinja para mostrar la hora "real" de un turno cancelado o
     # ausente: internamente se corre 1 minuto para no perder el registro
@@ -62,6 +75,11 @@ def create_app():
     def too_large(_e):
         flash('El archivo supera el tamaño máximo permitido (15 MB).', 'danger')
         return redirect(request.referrer or url_for('patients.list_patients'))
+
+    @app.errorhandler(429)
+    def rate_limit_exceeded(_e):
+        flash('Demasiadas solicitudes. Esperá unos minutos y volvé a intentar.', 'danger')
+        return redirect(request.referrer or url_for('auth.login'))
 
     # OJO: ya NO se llama a db.create_all() acá. Las tablas se crean y
     # actualizan con Flask-Migrate ("flask db upgrade"), no automáticamente

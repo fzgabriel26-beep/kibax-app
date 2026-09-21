@@ -8,6 +8,7 @@
     <p class="auth-sub">Solo el odontólogo/a registrado puede ver y editar los datos de los pacientes.</p>
 
     <form method="post" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="mb-3">
         <label class="form-label" for="email">Email</label>
         <input class="form-control" type="email" id="email" name="email" required autofocus>

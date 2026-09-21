@@ -8,6 +8,7 @@
     <p class="auth-sub">Necesitás el código de registro del consultorio para poder crear tu usuario.</p>
 
     <form method="post" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="mb-3">
         <label class="form-label" for="full_name">Nombre completo</label>
         <input class="form-control" type="text" id="full_name" name="full_name" value="{{ form.get('full_name', '') }}" required>

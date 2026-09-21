@@ -43,6 +43,15 @@ def display_time(appt):
         return _bump_minute(appt.time, -1)
     return appt.time
 
+def _parse_fecha_ar(raw):
+    """Parsea una fecha en formato argentino dd/mm/aaaa (con fallback a aaaa-mm-dd
+    por si llega en formato ISO, ej. desde un link generado por la propia app)."""
+    for fmt in ('%d/%m/%Y', '%Y-%m-%d'):
+        try:
+            return datetime.strptime((raw or '').strip(), fmt).date()
+        except (ValueError, TypeError):
+            continue
+    return None
 
 DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
@@ -495,7 +504,6 @@ def horarios():
         day_names=DAY_NAMES,
     )
 
-
 @bp.route('/horarios/nuevo', methods=['POST'])
 @login_required
 def horario_nuevo():
@@ -517,11 +525,11 @@ def horario_nuevo():
         return _bad('Marcá al menos un día de la semana.')
     if not start or not end or start >= end:
         return _bad('Franja horaria inválida (inicio y fin obligatorios, inicio < fin).')
-    try:
-        valid_from = datetime.strptime(valid_from_raw, '%Y-%m-%d').date()
-        valid_to = datetime.strptime(valid_to_raw, '%Y-%m-%d').date()
-    except (ValueError, TypeError):
-        return _bad('Las fechas de vigencia son obligatorias (aaaa-mm-dd).')
+
+    valid_from = _parse_fecha_ar(valid_from_raw)
+    valid_to = _parse_fecha_ar(valid_to_raw)
+    if not valid_from or not valid_to:
+        return _bad('Las fechas de vigencia son obligatorias (dd/mm/aaaa).')
     if valid_to < valid_from:
         return _bad('La fecha de fin no puede ser anterior a la de inicio.')
 
@@ -548,7 +556,6 @@ def horario_eliminar(sched_id):
     flash('Horario eliminado.', 'info')
     return redirect(url_for('agenda.horarios'))
 
-
 @bp.route('/suspensiones/nuevo', methods=['POST'])
 @login_required
 def suspension_nueva():
@@ -565,10 +572,10 @@ def suspension_nueva():
     profesional = User.query.get(prof_raw) if prof_raw else None
     if not profesional:
         return _bad('Seleccioná un profesional.')
-    try:
-        fecha = datetime.strptime(fecha_raw, '%Y-%m-%d').date()
-    except (ValueError, TypeError):
-        return _bad('Fecha inválida.')
+
+    fecha = _parse_fecha_ar(fecha_raw)
+    if not fecha:
+        return _bad('Fecha inválida (formato dd/mm/aaaa).')
     if start and end and start >= end:
         return _bad('Franja de suspensión inválida (inicio < fin).')
 

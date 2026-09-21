@@ -37,6 +37,7 @@
     <a href="{{ url_for('patients.export_patient', patient_id=paciente.id) }}" target="_blank" rel="noopener" class="btn-outline">Imprimir / PDF</a>
     <form method="post" action="{{ url_for('patients.delete_patient', patient_id=paciente.id) }}"
           onsubmit="return confirm('¿Eliminar a {{ paciente.full_name }} y toda su información (odontograma, historial y adjuntos)? Esta acción no se puede deshacer.');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn-danger-ghost">Eliminar paciente</button>
     </form>
   </div>
@@ -149,6 +150,7 @@
 
   <form method="post" action="{{ url_for('patients.upload_attachment', patient_id=paciente.id) }}"
         enctype="multipart/form-data" class="upload-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="upload-row">
       <input type="file" name="file" accept=".jpg,.jpeg,.png,.webp,.pdf" required class="form-control">
       <select name="category" class="form-select upload-tooth">
@@ -182,6 +184,7 @@
       </span>
       <form method="post" action="{{ url_for('patients.delete_attachment', patient_id=paciente.id, attachment_id=a.id) }}"
             onsubmit="return confirm('¿Eliminar este archivo?');" class="attachment-delete">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" aria-label="Eliminar archivo">✕</button>
       </form>
     </li>
@@ -203,6 +206,7 @@
   <!-- Formulario nativo simplificado -->
   <form method="post" action="{{ url_for('patients.upload_evolution_photo', patient_id=paciente.id) }}"
         enctype="multipart/form-data" class="upload-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     
     <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
       <div style="flex: 1; min-width: 200px;">
@@ -254,6 +258,7 @@
         <form method="post" action="{{ url_for('patients.delete_evolution_photo', patient_id=paciente.id, photo_id=photo.id) }}"
               onsubmit="return confirm('¿Seguro que querés eliminar esta fotografía del historial de evolución? Esta acción no se puede deshacer.');" 
               style="display: inline; margin: 0; padding: 0;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" style="background: transparent; border: none; color: #a4362b; font-weight: bold; cursor: pointer; font-size: 0.9rem; padding: 2px 6px;" aria-label="Eliminar fotografía">✕</button>
         </form>
       </div>
@@ -289,6 +294,7 @@
         </div>
 
         <form method="post" action="{{ url_for('patients.add_consultation_note', patient_id=paciente.id) }}" class="upload-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="row g-2">
             <div class="col-md-3">
               <label class="form-label" for="nc-fecha">Fecha de la consulta</label>
@@ -321,6 +327,7 @@
               {% if n.dentist %}<span class="note-dentist">🩺 Dr/a. {{ n.dentist.full_name }}</span>{% endif %}
               <form method="post" action="{{ url_for('patients.delete_consultation_note', patient_id=paciente.id, note_id=n.id) }}"
                     onsubmit="return confirm('¿Eliminar esta nota de consulta?');" class="note-delete">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" aria-label="Eliminar nota">✕</button>
               </form>
             </div>
