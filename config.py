@@ -24,7 +24,7 @@ class Config:
     # Código que se debe conocer para poder crear una cuenta de odontólogo.
     # Cambialo por variable de entorno en producción y compartilo solo con
     # las personas que vayan a trabajar en el consultorio.
-    REGISTRATION_CODE = os.environ.get('REGISTRATION_CODE', 'changeme')
+    REGISTRATION_CODE = os.environ.get('REGISTRATION_CODE', 'activaodonto2627')
 
     # Rate limiting: desactivar en tests con RATELIMIT_ENABLED=false
     RATELIMIT_ENABLED = os.environ.get('RATELIMIT_ENABLED', 'true').lower() == 'true'
