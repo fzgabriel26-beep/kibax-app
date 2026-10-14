@@ -156,11 +156,55 @@ porque la app lee el `.env` solo al arrancar.
 |--------|----------------|
 | `reset_password.py` | resetear la contraseña de tu cuenta si te la olvidaste |
 | `set_registration_code.py` | ver/cambiar el código de registro |
+| `create_user.py` | crear una cuenta de odontólogo/a sin pasar por el registro web |
 | `seed_demo_patients.py 50` | cargar pacientes de prueba (datos inventados) |
 | `clear_all_patients.py` | borrar todos los pacientes (pide confirmación) |
 
 Todos se ejecutan con el Python del entorno virtual activado, p. ej.:
 `source venv/bin/activate && python reset_password.py`.
+
+## Darle acceso a otra persona (ej. que el profesor pruebe la página)
+
+### 1. Crearle la cuenta (una sola vez)
+
+```bash
+source venv/bin/activate
+python create_user.py                      # te pregunta email, nombre y contraseña
+# o directo:
+./venv/bin/python create_user.py profe@mail.com --nombre "Ana Peres" --password "Clave123!"
+```
+
+Después le pasás el email y la contraseña, y entra en `/auth/login`. No necesita
+saber el `REGISTRATION_CODE` ni registrarse.
+
+### 2. Que entre sin instalar nada: exponer la app en tu red
+
+```bash
+HOST=0.0.0.0 ./run.sh        # escucha en todas las interfaces de tu red
+```
+
+Y le pasás **http://<tu-ip-local>:5000** (averiguás tu IP con `hostname -I`).
+Para otro puerto: `PORT=5055 ./run.sh`.
+
+- Solo funciona si las dos PCs están en la **misma red** (mismo WiFi/router).
+- Cuando `HOST` no es localhost, el modo debug se desactiva solo (el debugger de
+  Werkzeug permitiría ejecución remota de código). Para forzarlo: `FLASK_DEBUG=1 ./run.sh`.
+- Es para una prueba informal. Para acceso desde internet o datos de salud hace
+  falta HTTPS, un servidor de verdad (gunicorn + Nginx o un PaaS tipo
+  Render/Railway/PythonAnywhere) y reemplazar SQLite por PostgreSQL.
+
+### Sobre la persistencia de los datos
+
+La base (`instance/odontograma.db`) **sí persiste** entre reinicios: los usuarios
+y pacientes que crees siguen ahí mientras no borres la carpeta `instance/`. Lo
+que NO persiste es un clon nuevo del repo, porque `instance/` está en
+`.gitignore` (cada máquina tiene su propia base). Por eso:
+
+- La cuenta del profesor se crea **en la PC donde corre la app** (la tuya, si
+  entra por la red).
+- Si en algún momento llevás la base a otra máquina, copiá la carpeta
+  `instance/` completa (base + archivos subidos) o usá el backup de
+  `/admin/backup` dentro de la app.
 
 ## Cómo funciona el odontograma
 

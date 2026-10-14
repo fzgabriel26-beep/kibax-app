@@ -16,6 +16,9 @@ run:             ## Arrancar la web
 test:            ## Correr los tests
 	./venv/bin/python -m pytest tests/ -q
 
+usuario:         ## Crear/actualizar una cuenta (make usuario EMAIL=x@y.com NOMBRE="Ana Perez")
+	./venv/bin/python create_user.py $(EMAIL) --nombre "$(NOMBRE)" --si
+
 db-upgrade:      ## Aplicar migraciones pendientes
 	./venv/bin/python -m flask --app app.py db upgrade
 

@@ -150,4 +150,15 @@ def create_app():
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Host/puerto/debug configurables por variables de entorno.
+    # Para que otra persona de tu red pueda probar la app sin instalar nada:
+    #     HOST=0.0.0.0 ./run.sh
+    # y le pasás http://<tu-ip-local>:5000  (ip: `hostname -I`).
+    host = os.environ.get('HOST', '127.0.0.1')
+    port = int(os.environ.get('PORT', '5000'))
+    # El debugger de Werkzeug permite ejecución remota de código, así que
+    # solo se activa por defecto en localhost. Para forzarlo: FLASK_DEBUG=1.
+    debug = os.environ.get(
+        'FLASK_DEBUG', '1' if host in ('127.0.0.1', 'localhost') else '0'
+    ).lower() in ('1', 'true', 'yes')
+    app.run(host=host, port=port, debug=debug)
