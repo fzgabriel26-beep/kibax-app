@@ -6,6 +6,10 @@ anotaciones (arreglos, diagnósticos). También permite subir imágenes y PDF
 de estudios por paciente. Todo el sistema requiere haber iniciado sesión
 como odontólogo/a — como invitado no se puede ver ni modificar nada.
 
+> **¿Querés publicarla para que otras personas la prueben desde internet?**
+> Ver **[DEPLOY.md](DEPLOY.md)** (guía paso a paso para PythonAnyhere gratis,
+> con persistencia de datos incluida).
+
 ## Estructura del proyecto
 
 ```
@@ -24,6 +28,8 @@ odontograma_app/
 │   ├── css/style.css
 │   └── js/odontogram.js
 ├── requirements.txt
+├── wsgi.py              # Punto de entrada para servidores (PythonAnywhere/gunicorn)
+├── DEPLOY.md            # Guía de deploy de prueba (PythonAnywhere)
 ├── .flaskenv            # FLASK_APP=app.py, para que el comando `flask` funcione
 ├── migrations/          # (se crea con `flask db init`, no viene en el zip)
 └── instance/            # (se crea sola) DB SQLite + archivos subidos

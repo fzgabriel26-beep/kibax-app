@@ -5,9 +5,12 @@ from datetime import date
 from logging.handlers import RotatingFileHandler
 
 # .env se carga antes de importar config, para que SECRET_KEY, DATABASE_URL y
-# REGISTRATION_CODE estén disponibles tanto con `python app.py` como con `flask run`.
+# REGISTRATION_CODE estén disponibles tanto con `python app.py` como con
+# `flask run` o un servidor WSGI (PythonAnywhere, gunicorn).
+# Se usa la ruta absoluta al .env del proyecto para que funcione sin importar
+# desde qué directorio se arranque la app.
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'))
 
 from flask import Flask, redirect, url_for, request, flash, send_file, jsonify
 from flask_login import current_user, login_required
