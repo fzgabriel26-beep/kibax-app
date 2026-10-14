@@ -15,14 +15,33 @@ APPOINTMENT_STATUSES = {
     'confirmado': 'Confirmado',
     'presente': 'Paciente presente',
     'atendido': 'Atendido',
-    'ausente': 'Ausente',
     'ausente_aviso': 'Ausente con aviso',
+    'ausente_sin_aviso': 'Ausente sin aviso',
     'cancelado': 'Cancelado',
 }
 
 # Estados que indican que el paciente no cumplió el turno. Se pintan en rojo
 # claro y al asignarlos el turno corre 1 minuto para conservar el registro.
-NO_SHOW_STATUSES = {'ausente', 'ausente_aviso', 'cancelado'}
+# (El genérico 'ausente' se eliminó: ahora hay que aclarar si avisó o no.)
+NO_SHOW_STATUSES = {'ausente_aviso', 'ausente_sin_aviso', 'cancelado'}
+
+# Clase CSS que colorea cada estado en los <select> y en las etiquetas.
+# El mapeo va aparte de APPOINTMENT_STATUSES para poder nombrar las clases
+# con guiones (ausente_sin_aviso -> st-ausente-sin-aviso).
+STATUS_CLASSES = {
+    'pendiente': '',
+    'confirmado': 'st-confirmado',
+    'presente': 'st-presente',
+    'atendido': 'st-atendido',
+    'ausente_aviso': 'st-ausente-aviso',
+    'ausente_sin_aviso': 'st-ausente-sin-aviso',
+    'cancelado': 'st-cancelado',
+}
+
+
+def status_class(status):
+    """Clase CSS de un estado de turno ('' si es pendiente o desconocido)."""
+    return STATUS_CLASSES.get(status, '')
 
 
 def _bump_minute(t, delta=1):
@@ -45,16 +64,35 @@ def display_time(appt):
     return appt.time
 
 def _parse_fecha_ar(raw):
-    """Parsea una fecha en formato argentino dd/mm/aaaa (con fallback a aaaa-mm-dd
-    por si llega en formato ISO, ej. desde un link generado por la propia app)."""
+    """Parsea una fecha en formato argentino dd/mm/aaaa, ISO aaaa-mm-dd o
+    aaaa-día-mes (formato erróneo que enviaba una versión vieja del JS del
+    modal de turnos y terminaba en 'Fecha inválida')."""
+    raw = (raw or '').strip()
     for fmt in ('%d/%m/%Y', '%Y-%m-%d'):
         try:
-            return datetime.strptime((raw or '').strip(), fmt).date()
+            return datetime.strptime(raw, fmt).date()
         except (ValueError, TypeError):
             continue
-    return None
+    try:
+        y, d, m = raw.split('-')
+        return date(int(y), int(m), int(d))
+    except (ValueError, AttributeError):
+        return None
 
 DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+MESES_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+
+
+def fecha_larga(d):
+    """'Lunes, 13 de octubre de 2026' — en español (el strftime del sistema
+    devuelve los nombres en inglés)."""
+    return f'{DAY_NAMES[d.weekday()]}, {d.day:02d} de {MESES_ES[d.month - 1].lower()} de {d.year}'
+
+
+def fecha_lista(d):
+    """'Lunes 13/10/2026' — en español."""
+    return f'{DAY_NAMES[d.weekday()]} {d.strftime("%d/%m/%Y")}'
 
 
 def _safe_next(default):
@@ -63,6 +101,16 @@ def _safe_next(default):
     if nxt and nxt.startswith('/') and not nxt.startswith('//'):
         return nxt
     return default
+
+
+def _volver_a(fecha, profesional):
+    """URL de la agenda integrada para ese día y profesional."""
+    return url_for(
+        'agenda.index',
+        fecha=fecha.isoformat(),
+        mes=f'{fecha.year:04d}-{fecha.month:02d}',
+        profesional=profesional.id,
+    )
 
 
 def _schedule_rows(prof, d):
@@ -80,17 +128,24 @@ def _exceptions_for(prof, d):
 
 
 def _is_available(prof, d, t):
-    """True si el profesional trabaja el día d a la hora t (HH:MM)."""
+    """True si se puede agendar con prof el día d a la hora t (HH:MM).
+
+    Si el profesional tiene horario cargado para ese día se respeta el rango
+    laboral. Si no tiene ninguno, la agenda queda abierta de 8:00 a 20:00
+    (antes devolvía False y no dejaba agendar ningún turno). Las
+    suspensiones cargadas se respetan siempre.
+    """
     rows = _schedule_rows(prof, d)
-    if not rows:
-        return False
-    if not any(r.start_time <= t < r.end_time for r in rows):
+    if rows and not any(r.start_time <= t < r.end_time for r in rows):
         return False
     for e in _exceptions_for(prof, d):
         if e.start_time is None:
             return False
         if e.start_time <= t < e.end_time:
             return False
+    if not rows:
+        # Sin horario cargado: rango genérico de la consulta
+        return '08:00' <= t < '20:00'
     return True
 
 
@@ -164,8 +219,22 @@ def index():
     profesional_raw = request.args.get('profesional', type=int)
     profesional = next((u for u in profesionales if u.id == profesional_raw), None)
 
+    # La agenda siempre es de UN profesional: si no eligieron, mostramos el
+    # primero de la lista y caemos en el día de hoy (redirigimos para que la
+    # URL quede compartible).
+    if profesional is None and profesionales:
+        params = {k: v for k, v in request.args.to_dict().items() if v}
+        # Sobrescribimos siempre: si el id venía vacío o era inválido
+        # (profesional eliminado), evitamos un redirect loop.
+        params['profesional'] = str(profesionales[0].id)
+        params['profesional'] = str(profesionales[0].id)
+        params.setdefault('fecha', today.isoformat())
+        params.setdefault('mes', f'{today.year:04d}-{today.month:02d}')
+        return redirect(url_for('agenda.index', **params))
+
     availability = _month_availability(year, month, profesionales)
 
+    # Conteo de turnos por día para el mini calendario
     counts = {}
     for a in _agenda_in_month(year, month):
         counts[a.planned_date.isoformat()] = counts.get(a.planned_date.isoformat(), 0) + 1
@@ -175,12 +244,8 @@ def index():
         base_q = base_q.filter(Appointment.professional_id == profesional.id)
 
     if fecha:
-        # Vista de un día puntual: mostramos todo, incluidos cancelados o
-        # ausentes, para tener el panorama completo de ese día.
         list_appts = base_q.filter_by(planned_date=fecha).order_by(Appointment.time).all()
     else:
-        # "Próximos turnos": solo los que siguen activos, para no mezclar
-        # cancelados/ausentes con lo que realmente hay que atender.
         list_appts = (base_q
                       .filter(Appointment.planned_date >= today)
                       .filter(~Appointment.status.in_(NO_SHOW_STATUSES))
@@ -194,7 +259,65 @@ def index():
                  .order_by(Appointment.time)
                  .all())
 
+    # Slots del día: si hay profesional, mostrar todos los slots de su horario.
+    # Si no, mostrar slots genéricos 8:00-20:00 cada 30 min.
+    day_slots = []
+    if fecha:
+        appts_by_time = {a.time[:5]: a for a in list_appts}
+
+        schedule = _schedule_rows(profesional, fecha) if profesional else []
+        exceptions = _exceptions_for(profesional, fecha) if profesional else []
+
+        if schedule:
+            # Generar slots desde el inicio hasta el fin del horario
+            earliest = min(r.start_time for r in schedule)
+            latest = max(r.end_time for r in schedule)
+            sh, sm = int(earliest[:2]), int(earliest[3:5])
+            eh, em = int(latest[:2]), int(latest[3:5])
+        else:
+            # Sin horario configurado: slots genéricos
+            sh, sm, eh, em = 8, 0, 20, 0
+
+        h, m = sh, sm
+        while (h, m) < (eh, em):
+            t = f'{h:02d}:{m:02d}'
+            if schedule:
+                is_work = any(r.start_time <= t < r.end_time for r in schedule)
+                is_excepted = any(
+                    (e.start_time is None) or (e.start_time <= t < e.end_time)
+                    for e in exceptions
+                )
+                available = is_work and not is_excepted
+            else:
+                available = True
+            day_slots.append({
+                'time': t,
+                'available': available,
+                'appointment': appts_by_time.get(t),
+            })
+            m += 30
+            if m >= 60:
+                h += 1
+                m = 0
+
+        # Si por algún motivo quedó fuera un turno (hora fuera del rango),
+        # lo agregamos al final para que nunca se pierda de vista.
+        placed = {s['time'] for s in day_slots}
+        for t, a in sorted(appts_by_time.items()):
+            if t not in placed:
+                day_slots.append({'time': t, 'available': False, 'appointment': a})
+        day_slots.sort(key=lambda s: s['time'])
+
+    # Contar turnos y disponibles para el header
+    total_turnos = len(list_appts)
+    disponibles = sum(1 for s in day_slots if s['available'] and not s['appointment'])
+
     prev_month, next_month = _prev_next(year, month)
+
+    # Día de referencia para la barra de navegación (flechas ‹ ›)
+    day_ref = fecha or today
+    prev_day = day_ref - timedelta(days=1)
+    next_day = day_ref + timedelta(days=1)
 
     return render_template(
         'agenda.html',
@@ -206,13 +329,19 @@ def index():
         list_appts=list_appts,
         todos_hoy=todos_hoy,
         statuses=APPOINTMENT_STATUSES,
+        no_show_statuses=NO_SHOW_STATUSES,
         prev_month=prev_month,
         next_month=next_month,
         fecha=fecha,
-        month_name=calendar.month_name[month].capitalize(),
+        month_name=MESES_ES[month - 1],
         profesionales=profesionales,
         profesional=profesional,
         availability=availability,
+        day_slots=day_slots,
+        total_turnos=total_turnos,
+        disponibles=disponibles,
+        prev_day=prev_day,
+        next_day=next_day,
     )
 
 
@@ -284,6 +413,7 @@ def turnos():
         fecha=fecha,
         q=q,
         statuses=APPOINTMENT_STATUSES,
+        no_show_statuses=NO_SHOW_STATUSES,
         hoy=hoy,
     )
 
@@ -361,14 +491,10 @@ def nuevo():
         flash('Paciente, profesional y fecha son obligatorios.', 'danger')
         return redirect(url_for('agenda.index'))
 
-    try:
-        fecha = datetime.strptime(fecha_raw, '%Y-%m-%d').date()
-    except ValueError:
-        try:
-            fecha = datetime.strptime(fecha_raw, '%d/%m/%Y').date()
-        except ValueError:
-            flash('Fecha inválida.', 'danger')
-            return redirect(url_for('agenda.index'))
+    fecha = _parse_fecha_ar(fecha_raw)
+    if not fecha:
+        flash('Fecha inválida.', 'danger')
+        return redirect(url_for('agenda.index'))
 
     profesional = db.session.get(User, prof_raw)
     if not profesional:
@@ -376,9 +502,9 @@ def nuevo():
         return redirect(url_for('agenda.index'))
 
     if not _is_available(profesional, fecha, hora):
-        flash(f'{profesional.full_name} no trabaja {fecha.strftime("%d/%m/%Y")} a las {hora} '
+        flash(f'{profesional.full_name} no atiende {fecha.strftime("%d/%m/%Y")} a las {hora} '
               f'(fuera de su horario o suspendido).', 'warning')
-        return redirect(url_for('agenda.index', fecha=fecha_raw, mes=fecha_raw[:7], profesional=prof_raw))
+        return redirect(_volver_a(fecha, profesional))
 
     choque = (Appointment.query
               .filter_by(planned_date=fecha, time=hora, professional_id=profesional.id)
@@ -387,7 +513,7 @@ def nuevo():
     if choque:
         flash(f'Advertencia: {profesional.full_name} ya tiene un turno a las {hora} con '
               f'{choque.patient.full_name}. No se puede agendar 2 pacientes en el mismo horario.', 'danger')
-        return redirect(url_for('agenda.index', fecha=fecha_raw, mes=fecha_raw[:7], profesional=prof_raw))
+        return redirect(_volver_a(fecha, profesional))
 
     turno = Appointment(
         patient_id=int(patient_id),
@@ -401,7 +527,7 @@ def nuevo():
     db.session.add(turno)
     db.session.commit()
     flash('Turno agendado.', 'success')
-    return redirect(url_for('agenda.index', fecha=fecha_raw, mes=fecha_raw[:7], profesional=prof_raw))
+    return redirect(_volver_a(fecha, profesional))
 
 
 @bp.route('/<int:appt_id>/eliminar', methods=['POST'])
@@ -441,21 +567,17 @@ def reprogramar(appt_id):
     hora = (request.form.get('hora') or '').strip() or '10:00'
     prof_raw = request.form.get('professional_id') or turno.professional_id
 
-    back = url_for('agenda.turnos', profesional=request.form.get('filtro_profesional') or '')
-
-    try:
-        try:
-            fecha = datetime.strptime(fecha_raw, '%Y-%m-%d').date()
-        except ValueError:
-            fecha = datetime.strptime(fecha_raw, '%d/%m/%Y').date()
-    except (ValueError, TypeError):
+    fecha = _parse_fecha_ar(fecha_raw)
+    if not fecha:
         flash('Fecha inválida.', 'danger')
-        return redirect(back)
+        return redirect(url_for('agenda.index'))
 
     profesional = db.session.get(User, prof_raw)
     if not profesional:
         flash('Profesional inválido.', 'danger')
-        return redirect(back)
+        return redirect(url_for('agenda.index', fecha=fecha.isoformat()))
+
+    back = _volver_a(fecha, profesional)
 
     if not _is_available(profesional, fecha, hora):
         flash(f'{profesional.full_name} no trabaja {fecha.strftime("%d/%m/%Y")} a las {hora} '

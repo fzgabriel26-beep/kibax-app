@@ -2,60 +2,20 @@
 {% block title %}Agenda{% endblock %}
 {% block content %}
 
-<div class="page-head">
-  <div>
-    <p class="eyebrow">Consultorio</p>
-    <h1>Agenda de turnos</h1>
-  </div>
-</div>
-
-{% if todos_hoy %}
-<div class="notice-card mb-4">
-  <strong>Turnos de hoy ({{ today.strftime('%d/%m/%Y') }}):</strong>
-  {% for t in todos_hoy %}
-    <span class="agenda-hoy-chip">{{ t|turno_hora }} · {{ t.patient.full_name }}{% if t.professional %} ({{ t.professional.full_name }}){% endif %}{% if t.reason %} — {{ t.reason }}{% endif %}</span>
-  {% endfor %}
-</div>
-{% endif %}
-
-<div class="agenda-layout">
-  <!-- Calendario -->
-  <section class="panel">
-    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-      <form method="get" class="prof-filter-form">
-        <select name="profesional" class="form-select" onchange="this.form.submit()" aria-label="Filtrar por profesional">
-          <option value="">Todos los profesionales</option>
-          {% for pr in profesionales %}
-          <option value="{{ pr.id }}"{% if profesional and profesional.id == pr.id %} selected{% endif %}>{{ pr.full_name }}</option>
-          {% endfor %}
-        </select>
-        <input type="hidden" name="mes" value="{{ '%04d-%02d'|format(year, month) }}">
-      </form>
-      <div class="agenda-month">
-        <a class="btn-icon" href="{{ url_for('agenda.index', mes=prev_month[0] ~ '-' ~ '%02d'|format(prev_month[1]), profesional=profesional.id if profesional else '') }}" aria-label="Mes anterior">‹</a>
-        <strong>{{ month_name }} {{ year }}</strong>
-        <a class="btn-icon" href="{{ url_for('agenda.index', mes=next_month[0] ~ '-' ~ '%02d'|format(next_month[1]), profesional=profesional.id if profesional else '') }}" aria-label="Mes siguiente">›</a>
-      </div>
-      <div class="d-flex gap-2">
-        <a href="{{ url_for('agenda.turnos', profesional=profesional.id if profesional else '') }}" class="btn-outline">Turnos</a>
-        <a href="{{ url_for('agenda.index', profesional=profesional.id if profesional else '') }}" class="btn-outline">Hoy</a>
-        <a href="{{ url_for('agenda.horarios') }}" class="btn-outline">Horarios de profesionales</a>
-      </div>
+<div class="agenda-new-layout">
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="agenda-sidebar">
+    <!-- Mini calendario -->
+    <div class="mini-cal-header">
+      <a class="btn-icon-mini" href="{{ url_for('agenda.index', mes=prev_month[0] ~ '-' ~ '%02d'|format(prev_month[1]), fecha=fecha.isoformat() if fecha else '', profesional=profesional.id if profesional else '') }}" aria-label="Mes anterior">‹</a>
+      <span class="mini-cal-title">{{ month_name }} {{ year }}</span>
+      <a class="btn-icon-mini" href="{{ url_for('agenda.index', mes=next_month[0] ~ '-' ~ '%02d'|format(next_month[1]), fecha=fecha.isoformat() if fecha else '', profesional=profesional.id if profesional else '') }}" aria-label="Mes siguiente">›</a>
     </div>
 
-    {% if profesional %}
-    <div class="schedule-legend mb-2">
-      <span class="legend-chip chip-work"></span> Trabaja
-      <span class="legend-chip chip-no"></span> No trabaja
-      <span class="legend-chip chip-sus"></span> Suspendido
-      <span class="schedule-hint">Disponibilidad de {{ profesional.full_name }}. Tocá un día para agendar un turno con la fecha ya cargada.</span>
-    </div>
-    {% endif %}
-
-    <table class="agenda-cal">
+    <table class="mini-cal">
       <thead>
         <tr>
-          <th>Lun</th><th>Mar</th><th>Mié</th><th>Jue</th><th>Vie</th><th>Sáb</th><th>Dom</th>
+          <th>lu</th><th>ma</th><th>mi</th><th>ju</th><th>vi</th><th>sá</th><th>do</th>
         </tr>
       </thead>
       <tbody>
@@ -65,17 +25,17 @@
           <td>
             {% if day %}
               {% set iso = "%04d-%02d-%02d"|format(year, month, day) %}
-              {% set cell_avail = availability.get(iso, {}).get(profesional.id) if profesional else none %}
-              <a class="agenda-cell {{ 'agenda-today' if iso == today.isoformat() }} {{ 'agenda-selected' if fecha and iso == fecha.isoformat() }} {{ 'schedule-day' if cell_avail }}{{ ' suspended' if cell_avail and cell_avail.suspended }}{{ ' no-schedule' if profesional and not cell_avail and iso != today.isoformat() }}"
-                 {% if cell_avail %}title="{% if cell_avail.suspended %}SUSPENDIDO · {% endif %}Disponible: {{ cell_avail.start }} a {{ cell_avail.end }}"{% endif %}
-                 href="{{ url_for('agenda.index', fecha=iso, mes='%04d-%02d'|format(year, month), profesional=profesional.id if profesional else '') }}#nuevo-turno">
-                <span class="agenda-day">{{ day }}</span>
+              {% set is_today = iso == today.isoformat() %}
+              {% set is_selected = fecha and iso == fecha.isoformat() %}
+              <a class="mini-day {{ 'mini-today' if is_today }} {{ 'mini-selected' if is_selected }}"
+                 href="{{ url_for('agenda.index', fecha=iso, mes='%04d-%02d'|format(year, month), profesional=profesional.id if profesional else '') }}">
+                {{ day }}
                 {% if counts.get(iso) %}
-                <span class="agenda-dot">{{ counts[iso] }}</span>
+                <span class="mini-dot"></span>
                 {% endif %}
               </a>
             {% else %}
-              <div class="agenda-cell is-empty"></div>
+              <span class="mini-day empty"></span>
             {% endif %}
           </td>
           {% endfor %}
@@ -83,22 +43,154 @@
         {% endfor %}
       </tbody>
     </table>
-    <p class="arch-footnote">Los números en color indican cuántos turnos hay ese día. Hacé clic para verlos.</p>
-  </section>
 
-  <!-- Lista de turnos -->
-  <section class="panel">
-    <div class="panel-head d-flex align-items-start justify-content-between gap-2 flex-wrap">
-      <div>
-        <h2>{% if fecha %}Turnos del {{ fecha.strftime('%d/%m/%Y') }}{% else %}Próximos turnos{% endif %}</h2>
-        <p>Organizá la consulta y su recordatorio.</p>
+    <!-- Lista de profesionales -->
+    <div class="sidebar-section">
+      <h4 class="sidebar-title">Profesional</h4>
+      {% if profesionales %}
+      <ul class="prof-list">
+        {% for pr in profesionales %}
+        <li>
+          <a class="prof-item {{ 'active' if profesional and profesional.id == pr.id }}"
+             href="{{ url_for('agenda.index', fecha=fecha.isoformat() if fecha else '', mes='%04d-%02d'|format(year, month), profesional=pr.id) }}">
+            {{ pr.full_name }}
+            {% if profesional and profesional.id == pr.id %}
+            <span class="prof-check">✓</span>
+            {% endif %}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="sidebar-empty">Todavía no hay profesionales cargados.</p>
+      <a href="{{ url_for('agenda.nuevo_profesional') }}" class="btn-sidebar">+ Agregar profesional</a>
+      {% endif %}
+    </div>
+
+    <!-- Acciones rápidas -->
+    <div class="sidebar-section">
+      <a href="{{ url_for('agenda.horarios') }}" class="btn-sidebar">🕐 Horarios de profesionales</a>
+      <a href="{{ url_for('agenda.list_profesionales') }}" class="btn-sidebar">👩‍⚕️ Gestionar profesionales</a>
+      <a href="{{ url_for('agenda.export_ics', profesional=profesional.id if profesional else '') }}" class="btn-sidebar">📥 Exportar .ics</a>
+    </div>
+  </aside>
+
+  <!-- ===== CONTENIDO PRINCIPAL ===== -->
+  <main class="agenda-main">
+    <!-- Barra de navegación de fecha -->
+    <div class="date-nav-bar">
+      <a class="btn-icon-mini" href="{{ url_for('agenda.index', fecha=prev_day.isoformat(), mes='%04d-%02d'|format(prev_day.year, prev_day.month), profesional=profesional.id if profesional else '') }}" aria-label="Día anterior">‹</a>
+      <div class="date-nav-display">
+        📅 {{ (fecha or today)|fecha_larga }}
       </div>
-      <button type="button" class="btn-solid" id="nuevo-turno" data-bs-toggle="modal" data-bs-target="#turnoModal">
+      <a class="btn-icon-mini" href="{{ url_for('agenda.index', fecha=next_day.isoformat(), mes='%04d-%02d'|format(next_day.year, next_day.month), profesional=profesional.id if profesional else '') }}" aria-label="Día siguiente">›</a>
+      <a class="btn-hoy" href="{{ url_for('agenda.index', fecha=today.isoformat(), mes='%04d-%02d'|format(today.year, today.month), profesional=profesional.id if profesional else '') }}">Hoy</a>
+    </div>
+
+    <!-- Header del profesional -->
+    {% if profesional %}
+    <div class="prof-header">
+      <div class="prof-avatar">{{ profesional.full_name[:2]|upper }}</div>
+      <div class="prof-info">
+        <h2 class="prof-name">{{ profesional.full_name }}</h2>
+      </div>
+      <div class="prof-stats">
+        <span class="stat-item"><strong>{{ total_turnos }}</strong> turnos</span>
+        <span class="stat-item disponible"><strong>{{ disponibles }}</strong> disponibles</span>
+      </div>
+      <button type="button" class="btn-solid btn-sm" data-bs-toggle="modal" data-bs-target="#turnoModal">
         + Nuevo turno
       </button>
     </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">👩‍⚕️</div>
+      <h3>No hay profesionales cargados</h3>
+      <p>Altá un profesional para empezar a usar la agenda.</p>
+      <a href="{{ url_for('agenda.nuevo_profesional') }}" class="btn-solid mt-2">+ Agregar profesional</a>
+    </div>
+    {% endif %}
 
-    {% if list_appts %}
+    <!-- Tabla de turnos del día -->
+    {% if profesional and fecha and day_slots %}
+    <div class="slots-table-wrap">
+      <table class="slots-table">
+        <thead>
+          <tr>
+            <th class="col-hora">Hora</th>
+            <th class="col-estado">Asistencia</th>
+            <th class="col-paciente">Paciente</th>
+            <th class="col-obs">Observación</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for slot in day_slots %}
+          {% if slot.appointment %}
+          <tr class="slot-row has-appt status-{{ slot.appointment.status }}">
+            <td class="col-hora">
+              <span class="slot-time">{{ slot.time }}</span>
+              {% if slot.appointment.status == 'pendiente' %}<span class="slot-dot dot-pendiente"></span>{% endif %}
+              {% if slot.appointment.status in no_show_statuses %}<span class="slot-dot dot-ausente"></span>{% endif %}
+            </td>
+            <td class="col-estado">
+              <form method="post" action="{{ url_for('agenda.estado', appt_id=slot.appointment.id) }}" class="agenda-status-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ url_for('agenda.index', fecha=fecha.isoformat(), mes='%04d-%02d'|format(year, month), profesional=profesional.id if profesional else '') }}">
+                <select name="status" class="status-select agenda-status-select {{ slot.appointment.status|estado_clase }}" aria-label="Estado del turno">
+                  {% for key, label in statuses.items() %}
+                  <option value="{{ key }}" class="{{ key|estado_clase }}"{% if slot.appointment.status == key %} selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </form>
+            </td>
+            <td class="col-paciente">
+              <a href="{{ url_for('patients.patient_detail', patient_id=slot.appointment.patient_id) }}" class="patient-link">
+                {{ slot.appointment.patient.full_name }}
+              </a>
+              {% if slot.appointment.professional %}
+              <span class="prof-tag">- {{ slot.appointment.professional.full_name }}</span>
+              {% endif %}
+            </td>
+            <td class="col-obs">
+              {{ slot.appointment.reason or '-' }}
+              <form method="post" action="{{ url_for('agenda.eliminar', appt_id=slot.appointment.id) }}"
+                    class="del-form" onsubmit="return confirm('¿Eliminar este turno?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="del-btn" aria-label="Eliminar turno">✕</button>
+              </form>
+            </td>
+          </tr>
+          {% elif slot.available %}
+          <tr class="slot-row available">
+            <td class="col-hora"><span class="slot-time">{{ slot.time }}</span></td>
+            <td class="col-estado"></td>
+            <td class="col-paciente">
+              <button type="button" class="slot-book-btn" data-bs-toggle="modal" data-bs-target="#turnoModal"
+                      data-fecha="{{ fecha.isoformat() }}" data-hora="{{ slot.time }}"
+                      data-prof="{{ profesional.id if profesional else '' }}">
+                + Agendar
+              </button>
+            </td>
+            <td class="col-obs"></td>
+          </tr>
+          {% else %}
+          <tr class="slot-row blocked">
+            <td class="col-hora">
+              <span class="slot-time">{{ slot.time }}</span>
+              <span class="slot-dot dot-blocked"></span>
+            </td>
+            <td class="col-estado"></td>
+            <td class="col-paciente blocked-text">NO CITAR ESTE TURNO</td>
+            <td class="col-obs">-</td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% elif list_appts %}
+    <!-- Lista de turnos próximos (cuando no hay fecha seleccionada) -->
     <ul class="agenda-list">
       {% for a in list_appts %}
       <li class="agenda-item status-{{ a.status }}">
@@ -107,7 +199,7 @@
           <div>
             <div class="agenda-item-name">{{ a.patient.full_name }}</div>
             <div class="agenda-item-meta">
-              {{ a.planned_date.strftime('%A %d/%m/%Y')|capitalize }}
+              {{ a.planned_date|fecha_lista }}
               {% if a.professional %} · {{ a.professional.full_name }}{% endif %}
               {% if a.reason %} · {{ a.reason }}{% endif %}
             </div>
@@ -116,9 +208,9 @@
         <div class="agenda-item-actions">
           <form method="post" action="{{ url_for('agenda.estado', appt_id=a.id) }}" class="agenda-status-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <select name="status" class="form-select form-select-sm agenda-status-select" aria-label="Estado del turno">
+            <select name="status" class="status-select agenda-status-select {{ a.status|estado_clase }}" aria-label="Estado del turno">
               {% for key, label in statuses.items() %}
-              <option value="{{ key }}"{% if a.status == key %} selected{% endif %}>{{ label }}</option>
+              <option value="{{ key }}" class="{{ key|estado_clase }}"{% if a.status == key %} selected{% endif %}>{{ label }}</option>
               {% endfor %}
             </select>
           </form>
@@ -131,10 +223,15 @@
       </li>
       {% endfor %}
     </ul>
+
     {% else %}
-    <p class="empty-inline">{% if fecha %}No hay turnos ese día.{% else %}Todavía no hay turnos próximos.{% endif %}</p>
+    <div class="empty-state">
+      <div class="empty-icon">📅</div>
+      <h3>No hay turnos para mostrar</h3>
+      <p>Hacé clic en un día del mini calendario para ver los horarios disponibles de {{ profesional.full_name }}.</p>
+    </div>
     {% endif %}
-  </section>
+  </main>
 </div>
 
 <!-- Modal: nuevo turno -->
@@ -185,9 +282,9 @@
             </div>
             <div class="col-md-4">
               <label class="form-label" for="a-status">Estado</label>
-              <select class="form-select" id="a-status" name="status">
+              <select class="form-select status-select" id="a-status" name="status">
                 {% for key, label in statuses.items() %}
-                <option value="{{ key }}">{{ label }}</option>
+                <option value="{{ key }}" class="{{ key|estado_clase }}">{{ label }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -203,17 +300,22 @@
 
 {% block scripts %}
 <script>
-  // Si venimos de hacer clic en un día del calendario (link con
-  // #nuevo-turno), abrimos directamente el modal de nuevo turno.
-  document.addEventListener('DOMContentLoaded', function () {
-    if (window.location.hash === '#nuevo-turno') {
-      var modalEl = document.getElementById('turnoModal');
-      if (modalEl) {
-        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+  // Modal: prellenar fecha/hora desde botón "+ Agendar" en un slot
+  document.querySelectorAll('.slot-book-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var f = document.getElementById('a-fecha');
+      var h = document.getElementById('a-hora');
+      if (f && btn.dataset.fecha) {
+        var parts = btn.dataset.fecha.split('-');
+        f.value = parts[2] + '/' + parts[1] + '/' + parts[0];
       }
-    }
+      if (h && btn.dataset.hora) {
+        h.value = btn.dataset.hora;
+      }
+    });
   });
 
+  // Autocomplete de pacientes
   (function () {
     var input = document.getElementById('a-patient');
     var hidden = document.getElementById('a-patient-id');
@@ -279,6 +381,7 @@
     });
   })();
 
+  // Datepicker en input de fecha
   (function () {
     var fechaInput = document.getElementById('a-fecha');
     if (!fechaInput) return;
@@ -296,171 +399,44 @@
       form.addEventListener('submit', function () {
         var parts = fechaInput.value.split('/');
         if (parts.length === 3 && parts[2].length === 4) {
-          fechaInput.value = parts[2] + '-' + parts[0] + '-' + parts[1];
+          // dd/mm/aaaa -> aaaa-mm-dd (ojo: era día/mes, no mes/día)
+          fechaInput.value = parts[2] + '-' + parts[1] + '-' + parts[0];
         }
       });
     }
   })();
 
-  (function () {
-    var input = document.getElementById('a-fecha');
-    if (!input) return;
-
-    var popup = document.createElement('div');
-    popup.className = 'datepicker-popup';
-    popup.hidden = true;
-    input.parentNode.appendChild(popup);
-
-    var MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    var weekdays = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'];
-    var open = false;
-    var profSelect = document.getElementById('a-profesional');
-    var availCache = {};
-
-    function currentProfId() {
-      return (profSelect && profSelect.value) || input.getAttribute('data-profesional') || '';
-    }
-
-    function monthKey(y, m) { return y + '-' + pad(m + 1); }
-
-    function parseValue(v) {
-      var parts = v.split('/');
-      if (parts.length !== 3) return null;
-      var d = parseInt(parts[0], 10), m = parseInt(parts[1], 10), y = parseInt(parts[2], 10);
-      if (!d || !m || !y) return null;
-      return new Date(y, m - 1, d);
-    }
-
-    function pad(n) { return ('0' + n).slice(-2); }
-
-    function fmt(d) {
-      return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
-    }
-
-    var viewDate = parseValue(input.value) || new Date();
-
-    function isToday(d) {
-      var t = new Date();
-      return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
-    }
-
-    function render() {
-      var y = viewDate.getFullYear(), m = viewDate.getMonth();
-      var startWeekday = new Date(y, m, 1).getDay();
-      var daysInMonth = new Date(y, m + 1, 0).getDate();
-      var sel = parseValue(input.value);
-
-      var html = '';
-      html += '<div class="dp-head">';
-      html += '<button type="button" class="dp-nav" data-delta="-1" tabindex="-1">&#8249;</button>';
-      html += '<span class="dp-title">' + MONTHS[m] + ' ' + y + '</span>';
-      html += '<button type="button" class="dp-nav" data-delta="1" tabindex="-1">&#8250;</button>';
-      html += '</div><div class="dp-grid">';
-      weekdays.forEach(function (w) { html += '<span class="dp-dow">' + w + '</span>'; });
-      for (var i = 0; i < startWeekday; i++) html += '<span></span>';
-      for (var day = 1; day <= daysInMonth; day++) {
-        var d = new Date(y, m, day);
-        var cls = 'dp-day';
-        if (sel && sel.getFullYear() === y && sel.getMonth() === m && sel.getDate() === day) cls += ' selected';
-        if (isToday(d)) cls += ' today';
-        html += '<button type="button" class="' + cls + '" data-day="' + day + '" tabindex="-1">' + day + '</button>';
-      }
-      html += '</div>';
-      popup.innerHTML = html;
-      paintAvail();
-    }
-
-    function paintAvail() {
-      var pid = currentProfId();
-      if (!pid) return;
-      var y = viewDate.getFullYear(), m = viewDate.getMonth();
-      var data = availCache[monthKey(y, m)];
-      if (!data) return;
-      var days = popup.querySelectorAll('.dp-day');
-      for (var i = 0; i < days.length; i++) {
-        var btn = days[i];
-        var day = parseInt(btn.dataset.day, 10);
-        var iso = y + '-' + pad(m + 1) + '-' + pad(day);
-        var info = data[iso] && data[iso][pid];
-        btn.classList.remove('dp-avail', 'dp-no', 'dp-sus');
-        btn.removeAttribute('title');
-        if (!info) {
-          btn.classList.add('dp-no');
-          btn.title = 'El profesional no trabaja este día';
-        } else if (info.suspended) {
-          btn.classList.add('dp-sus');
-          btn.title = 'Suspendido (no atiende)';
-        } else {
-          btn.classList.add('dp-avail');
-          btn.title = 'Disponible: ' + info.start + ' a ' + info.end;
-        }
-      }
-    }
-
-    function ensureAvail() {
-      var pid = currentProfId();
-      if (!pid) return;
-      var key = monthKey(viewDate.getFullYear(), viewDate.getMonth());
-      if (availCache[key] !== undefined) { paintAvail(); return; }
-      fetch('/agenda/disponibilidad?mes=' + key + '&profesional=' + encodeURIComponent(pid))
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          availCache[key] = data.availability || {};
-          paintAvail();
-        })
-        .catch(function () {});
-    }
-
-    if (profSelect) {
-      profSelect.addEventListener('change', function () {
-        availCache = {};
-        if (open) ensureAvail();
-      });
-    }
-
-    function show() { open = true; popup.hidden = false; render(); ensureAvail(); }
-    function hide() { open = false; popup.hidden = true; }
-
-    input.addEventListener('focus', show);
-    input.addEventListener('click', show);
-
-    popup.addEventListener('mousedown', function (e) { e.preventDefault(); });
-
-    popup.addEventListener('click', function (e) {
-      var nav = e.target.closest ? e.target.closest('.dp-nav') : null;
-      if (nav) {
-        viewDate.setMonth(viewDate.getMonth() + parseInt(nav.dataset.delta, 10));
-        render();
-        ensureAvail();
-        return;
-      }
-      var day = e.target.closest ? e.target.closest('.dp-day') : null;
-      if (day) {
-        input.value = fmt(new Date(viewDate.getFullYear(), viewDate.getMonth(), parseInt(day.dataset.day, 10)));
-        hide();
-      }
+  // Colorea un <select> de estado según la opción elegida
+  function applyStatusColor(sel) {
+    var cls = sel.className.split(/\s+/).filter(function (c) {
+      return c.indexOf('st-') !== 0;
     });
-
-    document.addEventListener('mousedown', function (e) {
-      if (open && !popup.contains(e.target) && e.target !== input) hide();
-    });
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') hide();
-    });
-  })();
+    var opt = sel.options[sel.selectedIndex];
+    if (opt && opt.className) cls = cls.concat(opt.className.split(/\s+/));
+    sel.className = cls.join(' ');
+  }
 
   // Confirmación antes de cambiar estado de turno
   document.querySelectorAll('.agenda-status-select').forEach(function (sel) {
     sel.addEventListener('change', function () {
       var label = sel.options[sel.selectedIndex].text;
+      applyStatusColor(sel);
       if (confirm('¿Cambiar el estado del turno a «' + label + '»?')) {
         sel.form.submit();
       } else {
         var prev = sel.querySelector('[selected]');
-        if (prev) sel.value = prev.value;
+        if (prev) {
+          sel.value = prev.value;
+          applyStatusColor(sel);
+        }
       }
     });
   });
+
+  // El estado del modal de "nuevo turno" se colorea al elegirlo
+  var aStatus = document.getElementById('a-status');
+  if (aStatus) {
+    aStatus.addEventListener('change', function () { applyStatusColor(aStatus); });
+  }
 </script>
 {% endblock %}

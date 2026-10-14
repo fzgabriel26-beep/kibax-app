@@ -168,7 +168,7 @@ class Appointment(db.Model):
     planned_date = db.Column(db.Date, nullable=False)
     time = db.Column(db.String(5), nullable=False, default='10:00')  # formato HH:MM
     reason = db.Column(db.String(255))
-    status = db.Column(db.String(20), default='confirmado')  # pendiente, confirmado, presente, atendido, ausente, ausente_aviso, cancelado
+    status = db.Column(db.String(20), default='confirmado')  # pendiente, confirmado, presente, atendido, ausente_aviso, ausente_sin_aviso, cancelado
     created_at = db.Column(db.DateTime, default=_utcnow)
     created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 

@@ -76,7 +76,7 @@
     {% for grupo in grupos %}
     <div class="turno-group">
       <div class="turno-day-head">
-        <span class="turno-day-name">{{ grupo['date'].strftime('%A %d/%m/%Y')|capitalize }}</span>
+        <span class="turno-day-name">{{ grupo['date']|fecha_lista }}</span>
         {% if grupo['date'] == hoy %}<span class="turno-chip-hoy">Hoy</span>{% endif %}
         <span class="turno-day-count">{{ grupo['items']|length }}</span>
       </div>
@@ -99,9 +99,9 @@
             <form method="post" action="{{ url_for('agenda.estado', appt_id=a.id) }}" class="agenda-status-form">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="next" value="{{ url_for('agenda.turnos', profesional=profesional.id if profesional else '', estado=estado, rango=rango, q=q, fecha=fecha.isoformat() if fecha else '') }}">
-              <select name="status" class="form-select form-select-sm agenda-status-select" aria-label="Estado del turno">
+              <select name="status" class="form-select form-select-sm status-select agenda-status-select {{ a.status|estado_clase }}" aria-label="Estado del turno">
                 {% for key, label in statuses.items() %}
-                <option value="{{ key }}"{% if a.status == key %} selected{% endif %}>{{ label }}</option>
+                <option value="{{ key }}" class="{{ key|estado_clase }}"{% if a.status == key %} selected{% endif %}>{{ label }}</option>
                 {% endfor %}
               </select>
             </form>
@@ -166,15 +166,30 @@
     });
   });
 
+  // Colorea un <select> de estado según la opción elegida
+  function applyStatusColor(sel) {
+    var cls = sel.className.split(/\s+/).filter(function (c) {
+      return c.indexOf('st-') !== 0;
+    });
+    var opt = sel.options[sel.selectedIndex];
+    if (opt && opt.className) cls = cls.concat(opt.className.split(/\s+/));
+    sel.className = cls.join(' ');
+  }
+
   // Confirmación antes de cambiar estado de turno
   document.querySelectorAll('.agenda-status-select').forEach(function (sel) {
     sel.addEventListener('change', function () {
       var label = sel.options[sel.selectedIndex].text;
+      applyStatusColor(sel);
       if (confirm('¿Cambiar el estado del turno a «' + label + '»?')) {
         sel.form.submit();
       } else {
         // Restaurar al valor anterior
-        sel.value = sel.querySelector('[selected]').value;
+        var prev = sel.querySelector('[selected]');
+        if (prev) {
+          sel.value = prev.value;
+          applyStatusColor(sel);
+        }
       }
     });
   });

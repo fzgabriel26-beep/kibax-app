@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>{% block title %}Odontograma{% endblock %} · Consultorio</title>
+  <title>{% block title %}Inicio{% endblock %} · Kiba X</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/tooth.svg') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
@@ -14,7 +15,12 @@
   <nav class="app-navbar">
     <div class="container d-flex align-items-center justify-content-between py-2">
       <a class="brand" href="{{ url_for('index') }}">
-        <span class="brand-mark">◗</span> Kiba X
+        <svg class="brand-tooth" viewBox="0 0 240 225" aria-hidden="true" focusable="false">
+          <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+                fill="none" stroke="currentColor" stroke-width="16"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-text">Kiba<span class="brand-x">X</span></span>
       </a>
 
       {% if current_user.is_authenticated %}
@@ -30,25 +36,10 @@
         <div class="d-flex align-items-center gap-3 navbar-inner">
           <span class="navbar-user d-none d-md-inline">Dr/a. {{ current_user.full_name }}</span>
           <a class="btn-ghost" href="{{ url_for('patients.list_patients') }}">Pacientes</a>
-          <div class="nav-dropdown dropdown">
-            <button class="btn-ghost dropdown-toggle" type="button" id="navAgendaDropdown"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-              Agenda
-              {% if agenda_hoy %}<span class="agenda-badge">{{ agenda_hoy }}</span>{% endif %}
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navAgendaDropdown">
-              <li><a class="dropdown-item" href="{{ url_for('agenda.index') }}">Calendario</a></li>
-              <li>
-                <a class="dropdown-item d-flex align-items-center justify-content-between" href="{{ url_for('agenda.turnos') }}">
-                  Turnos
-                  {% if turnos_pendientes %}<span class="dropdown-badge">{{ turnos_pendientes }}</span>{% endif %}
-                </a>
-              </li>
-              <li><a class="dropdown-item" href="{{ url_for('agenda.horarios') }}">Horarios</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="{{ url_for('agenda.list_profesionales') }}">👩‍⚕️ Profesionales</a></li>
-            </ul>
-          </div>
+          <a class="btn-ghost nav-agenda-link" href="{{ url_for('agenda.index') }}">
+            Agenda
+            {% if agenda_hoy %}<span class="agenda-badge">{{ agenda_hoy }}</span>{% endif %}
+          </a>
           <button type="button" class="btn-ghost theme-toggle" id="themeToggle"
                   aria-label="Cambiar modo oscuro" title="Modo oscuro">
             <span class="theme-icon-dark">☀️</span>
@@ -136,10 +127,8 @@
         window.location.href = '{{ url_for("patients.list_patients") }}';
       } else if (key === 'a') {
         window.location.href = '{{ url_for("agenda.index") }}';
-      } else if (key === 't') {
-        window.location.href = '{{ url_for("agenda.turnos") }}';
       } else if (key === '?') {
-        showToast('Atajos: N=Nuevo paciente, P=Pacientes, A=Agenda, T=Turnos', 'info');
+        showToast('Atajos: N=Nuevo paciente, P=Pacientes, A=Agenda', 'info');
       }
     });
   </script>

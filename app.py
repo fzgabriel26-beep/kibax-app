@@ -62,24 +62,25 @@ def create_app():
     from flask_wtf.csrf import generate_csrf
     app.jinja_env.globals['csrf_token'] = generate_csrf
 
-    # Filtro de Jinja para mostrar la hora "real" de un turno cancelado o
-    # ausente: internamente se corre 1 minuto para no perder el registro
+    # Filtro de Jinja para mostrar la hora "real" de un turno no asistido
+    # (cancelado, ausente con o sin aviso): internamente se corre 1 minuto para no perder el registro
     # sin ocupar el horario original, pero en pantalla mostramos la hora
     # original para no confundir con un error de carga.
     app.jinja_env.filters['turno_hora'] = agenda.display_time
+    app.jinja_env.filters['fecha_larga'] = agenda.fecha_larga
+    app.jinja_env.filters['fecha_lista'] = agenda.fecha_lista
+    app.jinja_env.filters['estado_clase'] = agenda.status_class
 
     @app.context_processor
     def inject_agenda():
-        """Inyecta contadores para las insignias del navbar: turnos de hoy
-        y turnos pendientes de confirmar (en cualquier fecha)."""
+        """Inyecta contadores para las insignias del navbar: turnos de hoy."""
         from models import Appointment
         if current_user.is_authenticated:
             hoy = date.today()
             conteo = Appointment.query.filter_by(planned_date=hoy).filter(
                 Appointment.status != 'cancelado'
             ).count()
-            pendientes = Appointment.query.filter_by(status='pendiente').count()
-            return {'agenda_hoy': conteo, 'hoy': hoy, 'turnos_pendientes': pendientes}
+            return {'agenda_hoy': conteo, 'hoy': hoy}
         return {}
 
     @app.route('/')
