@@ -51,9 +51,20 @@ pip install -r requirements.txt
 
 Verificá la versión: `python --version` → debe decir 3.11.x o 3.12.x.
 
+> **Atajo:** los pasos 3, 4 y 5 se pueden hacer de una sola vez con
+> `./setup.sh --no-run` (crea el venv, instala dependencias, genera el `.env`
+> y aplica las migraciones, sin arrancar el servidor).
+
 ## Paso 4 — Variables de entorno (secretos)
 
-Creá el archivo `.env` (no se sube a git, queda solo en tu cuenta de PA):
+Si usaste `./setup.sh --no-run`, el `.env` ya existe: solo hace falta cambiarle
+el `REGISTRATION_CODE` de ejemplo por uno real:
+
+```bash
+python3 set_registration_code.py "tu-codigo-elegido"    # muestra el actual si no le pasás nada
+```
+
+Si NO usaste el atajo, creá el `.env` a mano:
 
 ```bash
 cd ~/kibax-app
@@ -63,7 +74,7 @@ cat .env       # copiate el REGISTRATION_CODE: es el código para registrar cuen
 
 `SECRET_KEY` queda aleatoria. El `REGISTRATION_CODE` es el que les vas a pasar
 a la gente para que se registre (o les creás cuentas vos con
-`python create_user.py`, ver paso 5).
+`python create_user.py`, ver más abajo).
 
 ## Paso 5 — Crear la base de datos
 
@@ -73,6 +84,15 @@ source venv/bin/activate
 export FLASK_APP=app.py
 flask db upgrade          # crea instance/odontograma.db con todas las tablas
 ```
+
+**Cómo saber si salió bien:**
+
+- Si aparecen líneas `Running upgrade  -> bbebc80425ac, ...` → se aplicaron las
+  migraciones. ✅
+- Si solo aparece `Context impl SQLiteImpl` y **ninguna** línea `Running upgrade`
+  → la base ya estaba al día (si ejecutás `flask db upgrade` por segunda vez, es
+  lo normal). ✅
+- Si hay un traceback con `Error:` → ahí sí falló; copialo y lo vemos.
 
 Verificación rápida de que la base quedó bien:
 
@@ -90,6 +110,13 @@ EOF
 ```bash
 python create_user.py amigo@mail.com --nombre "Amigo Uno" --password "Clave123!"
 ```
+
+---
+
+> **⚠️ No uses `./setup.sh` (sin `--no-run`) en el servidor:** arranca el
+> servidor de desarrollo Flask en `127.0.0.1:5000`, que en PythonAnywhere no
+> necesitás (la pestaña Web levanta la app con su propio servidor WSGI). Si ya
+> lo hiciste, simplemente detenelo con `Ctrl+C` — no rompe nada.
 
 ## Paso 6 — Configurar la app web
 
