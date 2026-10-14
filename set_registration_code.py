@@ -93,8 +93,10 @@ def main():
         print('Para cambiarlo:  python3 set_registration_code.py "el-nuevo-codigo"')
         return
 
-    print('\n⚠️  Reiniciá el servidor para que tome el nuevo valor'
-          ' (Ctrl+C y ./run.sh).')
+    print('\n⚠️  La app leyó el código al arrancar: para que tome el valor nuevo')
+    print('   hay que reiniciarla.')
+    print('   - En tu PC:            Ctrl+C y ./run.sh')
+    print('   - En PythonAnywhere:   botón "Reload" en la pestaña Web')
 
 
 if __name__ == '__main__':

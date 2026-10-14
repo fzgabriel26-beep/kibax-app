@@ -110,6 +110,10 @@ def main():
         print(f'   Contraseña: la que acabas de poner (no se muestra ni se guarda en texto)')
         print(f'   Nombre:     {user.full_name}')
         print('\nCon estos datos puede entrar en /auth/login.')
+        print('   - En tu PC:          la app ya está corriendo, entrá nomás.')
+        print('   - En PythonAnywhere: si el servidor ya estaba levantado, apretá')
+        print('     "Reload" en la pestaña Web (aunque para una cuenta nueva no')
+        print('     hace falta: la base se lee en cada request).')
 
 
 if __name__ == '__main__':
