@@ -10,6 +10,7 @@ Te va a pedir el email de la cuenta y la nueva contraseña.
 from getpass import getpass
 
 from app import create_app
+from auth import _password_strength
 from extensions import db
 from models import User
 
@@ -32,14 +33,18 @@ def main():
             print("No existe ningún usuario con ese email.")
             return
 
-        password = getpass("Nueva contraseña (mínimo 8 caracteres): ")
+        password = getpass("Nueva contraseña: ")
         password2 = getpass("Repetí la nueva contraseña: ")
 
         if password != password2:
             print("Las contraseñas no coinciden. Cancelado.")
             return
-        if len(password) < 8:
-            print("La contraseña debe tener al menos 8 caracteres. Cancelado.")
+
+        # Misma regla que el registro, para no guardar una clave que después
+        # la app hubiese rechazado.
+        error = _password_strength(password)
+        if error:
+            print(f"{error} Cancelado.")
             return
 
         user.set_password(password)
