@@ -170,6 +170,41 @@ Debería llevarte a `/auth/login`. Si no carga, revisá el **Error log** y el
 
 ---
 
+## Actualizar el deploy después de un git push
+
+La configuración de la pestaña Web (WSGI, virtualenv, estáticos) es **una sola
+vez**: no hay que repetirla. Cuando alguien (o vos) haga `git push`, para
+actualizar el deploy:
+
+```bash
+cd ~/kibax-app
+./update_deploy.sh
+```
+
+Eso baja los cambios de GitHub, y **si hace falta** reinstala dependencias
+(`requirements.txt` cambió) o aplica migraciones (`migrations/` cambió).
+Después, único paso manual: botón **Reload** en la pestaña Web.
+
+O a mano, que es lo mismo:
+
+```bash
+cd ~/kibax-app
+source venv/bin/activate
+git pull                                  # baja el código nuevo
+pip install -r requirements.txt           # solo si cambió requirements.txt
+flask db upgrade                          # solo si hay migraciones nuevas
+# y después: Reload en la pestaña Web
+```
+
+**Qué NO se toca al actualizar:** `.env` (tus secretos), `venv/` y `instance/`
+(base de datos + archivos subidos). No están en git, así que los usuarios,
+pacientes y fotos que carguen en el deploy **siguen ahí**.
+
+> Si `git pull` falla con "local changes would be overwritten", es porque se
+> editó algo directamente en el servidor. Revisá con `git status` y, si no te
+> importa lo editado, descartalo con `git checkout -- .` antes de volver a
+> probar.
+
 ## Dar acceso a la gente
 
 Dos opciones:
