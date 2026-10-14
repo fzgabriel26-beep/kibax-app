@@ -135,6 +135,33 @@ próximos cambios de modelo sí se aplican con `flask db upgrade` como
 cualquier otro caso.
 
 
+## Cambiar el código de registro (para crear cuentas)
+
+Para registrar una cuenta hace falta el `REGISTRATION_CODE`. Se guarda en el
+archivo `.env` y podés verlo o cambiarlo con un comando, sin editar el
+archivo a mano:
+
+```bash
+python3 set_registration_code.py                  # ver el código actual
+python3 set_registration_code.py "mi-codigo-2026" # poner uno propio
+python3 set_registration_code.py --generar        # generar uno aleatorio
+```
+
+Después de cambiarlo hay que **reiniciar el servidor** (`Ctrl+C` y `./run.sh`),
+porque la app lee el `.env` solo al arrancar.
+
+## Scripts utilitarios
+
+| Script | Para qué sirve |
+|--------|----------------|
+| `reset_password.py` | resetear la contraseña de tu cuenta si te la olvidaste |
+| `set_registration_code.py` | ver/cambiar el código de registro |
+| `seed_demo_patients.py 50` | cargar pacientes de prueba (datos inventados) |
+| `clear_all_patients.py` | borrar todos los pacientes (pide confirmación) |
+
+Todos se ejecutan con el Python del entorno virtual activado, p. ej.:
+`source venv/bin/activate && python reset_password.py`.
+
 ## Cómo funciona el odontograma
 
 - Los dientes se numeran del 1 al 32 (numeración universal). Cada botón
