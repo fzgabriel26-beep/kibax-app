@@ -18,17 +18,11 @@ REM Instalar dependencias
 echo Instalando dependencias...
 pip install -r requirements.txt
 
-REM Crear archivo .env si no existe
+REM Crear archivo .env si no existe (con SECRET_KEY aleatoria generada por Python)
 if not exist ".env" (
-    echo Creando archivo .env con valores por defecto...
-    echo SECRET_KEY=cambia-esta-clave-secreta > .env
-    echo REGISTRATION_CODE=cambiar-este-codigo >> .env
+    echo Creando archivo .env con SECRET_KEY aleatoria...
+    python -c "import secrets; open('.env','w').write('# Generado por setup.bat - NO subir a git\nSECRET_KEY=%s\nREGISTRATION_CODE=mi-codigo-seguro\n' % secrets.token_hex(32))"
     echo   Editá el archivo .env y cambia REGISTRATION_CODE por uno seguro.
-)
-
-REM Cargar variables de entorno
-for /f "usebackq tokens=1,* delims==" %%A in (".env") do (
-    set "%%A=%%B"
 )
 
 REM Inicializar base de datos
@@ -37,12 +31,14 @@ if not exist "migrations" (
     flask db init
 )
 
-flask db migrate -m "estado inicial"
+REM Las migraciones ya vienen commiteadas en el repo: solo aplicarlas.
+REM (NO usar "flask db migrate" acá: crearía una migración duplicada.)
 flask db upgrade
 
 echo.
-echo === ¡Listo! ===
-echo Para arrancar la app:  python app.py
-echo Abrí http://localhost:5000
+echo ===========================================
+echo   Odontograma listo en http://localhost:5000
+echo ===========================================
 echo.
+python app.py
 pause

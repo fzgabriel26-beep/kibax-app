@@ -29,41 +29,68 @@ odontograma_app/
 └── instance/            # (se crea sola) DB SQLite + archivos subidos
 ```
 
-## Cómo correrlo localmente (primera vez)
+## Cómo correrlo localmente (primera vez) — un solo comando
 
 ```bash
-cd odontograma_app
+git clone <url-del-repo> && cd kibax-app
+./setup.sh
+```
+
+Eso hace **todo**: crea el entorno virtual, instala las dependencias,
+genera el `.env` con una `SECRET_KEY` aleatoria, aplica las migraciones
+(que ya vienen en el repo, no hace falta `flask db init`) y arranca el
+servidor. Cuando termine, abrí **http://localhost:5000**.
+
+Para los días siguientes:
+
+```bash
+./run.sh            # arranque rápido (las dependencias ya están instaladas)
+```
+
+Otras opciones útiles:
+
+```bash
+./setup.sh --no-run   # solo instala deps y prepara la base, sin arrancar
+make setup            # equivalente (Makefile)
+make run              # arranca la app
+make test             # corre los tests
+```
+
+En Windows: ejecutá `setup.bat` con doble clic (hace lo mismo y arranca).
+
+La primera vez que abras la web vas a tener que registrarte como
+odontólogo/a en `/auth/register`, usando el `REGISTRATION_CODE` que
+definiste en el `.env`. Una vez creada la cuenta, iniciá sesión y empezá
+a dar de alta pacientes.
+
+### Qué hace `setup.sh` paso a paso (por si algo falla)
+
+| Paso | Comando que ejecuta por vos |
+|------|------------------------------|
+| Entorno virtual | `python3 -m venv venv` |
+| Dependencias | `pip install -r requirements.txt` |
+| Secretos | genera `.env` con `SECRET_KEY` aleatoria (si no existe) |
+| Base de datos | `flask db upgrade` (aplica las migraciones del repo) |
+| Servidor | `python app.py` |
+
+Si preferís hacerlo a mano (modo tradicional), el orden es el mismo:
+
+```bash
 python3 -m venv venv
 source venv/bin/activate          # en Windows: venv\Scripts\activate
-
 pip install -r requirements.txt
-
-# Variables de entorno (ver .env.example) — al menos definí estas dos:
+cp .env.example .env              # y editar SECRET_KEY / REGISTRATION_CODE
 export SECRET_KEY="una-clave-larga-y-aleatoria"
 export REGISTRATION_CODE="un-codigo-que-solo-vos-conozcas"
+
+flask db upgrade                  # crea las tablas en instance/odontograma.db
+python app.py                     # http://localhost:5000
 ```
 
-Este proyecto usa **Flask-Migrate** (Alembic) para crear y actualizar las
-tablas de la base de datos — ya no se crean solas al arrancar `app.py`.
-La primera vez que instalás el proyecto (o si borraste `instance/`),
-tenés que inicializar y aplicar las migraciones:
-
-```bash
-flask db init                              # solo la primera vez: crea la carpeta migrations/
-flask db migrate -m "estado inicial"
-flask db upgrade                           # crea las tablas en instance/odontograma.db
-```
-
-Recién ahí corrés la app normalmente:
-
-```bash
-python app.py
-```
-
-Abrí `http://localhost:5000`. La primera vez vas a tener que registrarte
-como odontólogo/a en `/auth/register`, usando el `REGISTRATION_CODE` que
-definiste. Una vez creada la cuenta, iniciá sesión y empezá a dar de alta
-pacientes.
+> **Nota:** las migraciones ya están commiteadas en `migrations/`, así que
+> **no** necesitás `flask db init` ni `flask db migrate` en un clon nuevo;
+> con `flask db upgrade` alcanza. `flask db migrate` se usa solo cuando
+> cambiás `models.py` y querés generar una migración nueva.
 
 ## Cómo actualizar la base cuando cambia un modelo
 

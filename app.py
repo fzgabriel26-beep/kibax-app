@@ -4,6 +4,11 @@ import shutil
 from datetime import date
 from logging.handlers import RotatingFileHandler
 
+# .env se carga antes de importar config, para que SECRET_KEY, DATABASE_URL y
+# REGISTRATION_CODE estén disponibles tanto con `python app.py` como con `flask run`.
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, redirect, url_for, request, flash, send_file, jsonify
 from flask_login import current_user, login_required
 
