@@ -610,3 +610,168 @@ class TestSlotMenu:
         assert i != -1
         assert 'slot-book-btn' in html
         assert 'status-cancelado' in html
+
+
+class TestNoCitar:
+    """"Anular turno" marca un horario como NO CITAR, con turno o sin él."""
+
+    def _url(self):
+        return f'/agenda/?fecha={_lunes_siguiente().strftime("%Y-%m-%d")}'
+
+    def _anular(self, c, prof_id, hora, **extra):
+        data = {
+            'fecha': _lunes_siguiente().strftime('%Y-%m-%d'),
+            'hora': hora,
+            'professional_id': prof_id,
+            'next': self._url(),
+        }
+        data.update(extra)
+        return c.post('/agenda/no-citar', data=data, follow_redirects=True)
+
+    def _agendar(self, c, app, prof_id, hora):
+        pid = _create_patient(app, full_name='Ana Paciente', document_id='51111111')
+        return c.post('/agenda/nuevo', data={
+            'patient_id': pid,
+            'professional_id': prof_id,
+            'fecha': _lunes_siguiente().strftime('%Y-%m-%d'),
+            'hora': hora,
+            'status': 'confirmado',
+        }, follow_redirects=True)
+
+    def test_anular_empty_slot_marks_it_no_citar(self, app):
+        """Sin turno cargado, el horario queda bloqueado igual."""
+        from models import ScheduleException
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+
+        r = self._anular(c, prof_id, '11:00')
+        assert r.status_code == 200
+        assert 'NO CITAR' in r.data.decode()
+
+        with app.app_context():
+            exc = ScheduleException.query.one()
+            assert exc.start_time == '11:00'
+            assert exc.end_time == '11:30'
+            assert exc.reason == 'No citar'
+
+        html = c.get(f'/agenda/?profesional={prof_id}'
+                     f'&fecha={_lunes_siguiente().strftime("%Y-%m-%d")}').data.decode()
+        assert 'slot-row blocked' in html
+        assert 'data-hora="11:00"' in html
+        # la fila expone el permiso para poder deshacerlo desde el menú
+        assert f'data-exc-id="{exc.id}"' in html
+
+    def test_available_rows_carry_empty_exc_id(self, app):
+        """Las filas libres avisan con exc_id vacío que no hay nada que habilitar."""
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        html = c.get(f'/agenda/?profesional={prof_id}'
+                     f'&fecha={_lunes_siguiente().strftime("%Y-%m-%d")}').data.decode()
+        assert 'data-exc-id=""' in html
+
+    def test_anular_slot_with_appointment_cancels_and_blocks(self, app):
+        """Con turno: se da de baja el turno y además queda NO CITAR."""
+        from models import ScheduleException
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._agendar(c, app, prof_id, '09:30')
+
+        r = self._anular(c, prof_id, '09:30')
+        assert 'NO CITAR' in r.data.decode()
+
+        with app.app_context():
+            appt = Appointment.query.one()
+            assert appt.status == 'cancelado'
+            assert ScheduleException.query.count() == 1
+
+        html = c.get(f'/agenda/?profesional={prof_id}'
+                     f'&fecha={_lunes_siguiente().strftime("%Y-%m-%d")}').data.decode()
+        i = html.find('data-hora="09:30"')
+        assert i != -1
+        # la fila que sigue siendo la de 09:30 es la de NO CITAR, no una
+        # fila extra con la hora corrida (09:31)
+        assert 'slot-row blocked' in html
+        assert 'status-cancelado' not in html
+
+    def test_no_citar_slot_cannot_be_booked(self, app):
+        """Ni normal ni como sobreturno: un NO CITAR se respeta."""
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._anular(c, prof_id, '11:00')
+
+        pid = _create_patient(app, full_name='Paciente Bloqueado',
+                              document_id='53333333')
+        base = {
+            'patient_id': pid,
+            'professional_id': prof_id,
+            'fecha': _lunes_siguiente().strftime('%Y-%m-%d'),
+            'hora': '11:00',
+            'status': 'confirmado',
+        }
+        for extra in ({}, {'sobreturno': '1'}):
+            data = dict(base, **extra)
+            r = c.post('/agenda/nuevo', data=data, follow_redirects=True)
+            assert 'NO CITAR' in r.data.decode()
+
+        with app.app_context():
+            assert Appointment.query.count() == 0
+
+    def test_no_citar_blocks_intermediate_sobreturno(self, app):
+        """Un sobreturno de 11:15 tampoco entra dentro de un NO CITAR 11:00."""
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._anular(c, prof_id, '11:00')
+        pid = _create_patient(app, full_name='Rosa Diaz', document_id='52222222')
+        c.post('/agenda/nuevo', data={
+            'patient_id': pid,
+            'professional_id': prof_id,
+            'fecha': _lunes_siguiente().strftime('%Y-%m-%d'),
+            'hora': '11:15',
+            'sobreturno': '1',
+            'status': 'confirmado',
+        }, follow_redirects=True)
+        with app.app_context():
+            assert Appointment.query.count() == 0
+
+    def test_enabling_a_blocked_slot_frees_it(self, app):
+        """El mismo menú sirve para deshacer: habilita el horario."""
+        from models import ScheduleException
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._anular(c, prof_id, '11:00')
+        with app.app_context():
+            exc_id = ScheduleException.query.one().id
+
+        r = self._anular(c, prof_id, '11:00', exc_id=exc_id)
+        assert 'habilitado' in r.data.decode()
+        with app.app_context():
+            assert ScheduleException.query.count() == 0
+
+        html = c.get(f'/agenda/?profesional={prof_id}'
+                     f'&fecha={_lunes_siguiente().strftime("%Y-%m-%d")}').data.decode()
+        assert 'slot-row blocked' not in html
+        assert 'data-exc-id=""' in html
+
+    def test_no_citar_requires_professional(self, app):
+        c = _create_and_login(app)
+        _create_professional(app)
+        r = c.post('/agenda/no-citar', data={
+            'fecha': _lunes_siguiente().strftime('%Y-%m-%d'),
+            'hora': '11:00',
+        }, follow_redirects=True)
+        assert 'Seleccioná un profesional' in r.data.decode()
+
+    def test_menu_shows_habilitar_when_slot_is_blocked(self, app):
+        """El menú alterna el rótulo según si el horario está bloqueado."""
+        from models import ScheduleException
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._anular(c, prof_id, '11:00')
+        with app.app_context():
+            exc_id = ScheduleException.query.one().id
+
+        html = c.get(f'/agenda/?profesional={prof_id}'
+                     f'&fecha={_lunes_siguiente().strftime("%Y-%m-%d")}').data.decode()
+        assert 'Habilitar turno' in html
+        assert f'data-exc-id="{exc_id}"' in html
+        assert 'anularLabel' in html

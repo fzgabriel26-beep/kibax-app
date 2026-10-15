@@ -145,6 +145,24 @@ def _exceptions_for(prof, d):
             .all())
 
 
+def _exc_cubre(e, t):
+    """¿La suspensión/permiso e cubre la hora t (HH:MM)?
+
+    `start_time is None` significa que suspende el día completo. Si hay
+    `start_time` sin `end_time`, se toma como "desde esa hora en adelante".
+    """
+    if e.start_time is None:
+        return True
+    if e.end_time is None:
+        return e.start_time <= t
+    return e.start_time <= t < e.end_time
+
+
+def _exc_que_cubre(exceptions, t):
+    """Primera suspensión de la lista que cubre la hora t (o None)."""
+    return next((e for e in exceptions if _exc_cubre(e, t)), None)
+
+
 def _is_available(prof, d, t):
     """True si se puede agendar con prof el día d a la hora t (HH:MM).
 
@@ -156,11 +174,8 @@ def _is_available(prof, d, t):
     rows = _schedule_rows(prof, d)
     if rows and not any(r.start_time <= t < r.end_time for r in rows):
         return False
-    for e in _exceptions_for(prof, d):
-        if e.start_time is None:
-            return False
-        if e.start_time <= t < e.end_time:
-            return False
+    if _exc_que_cubre(_exceptions_for(prof, d), t) is not None:
+        return False
     if not rows:
         # Sin horario cargado: rango genérico de la consulta
         return '08:00' <= t < '20:00'
@@ -196,10 +211,14 @@ def _month_availability(year, month, profesionales):
                 rows = _schedule_rows(u, d)
                 if not rows:
                     continue
+                dias = exc_by_key.get((u.id, d), [])
                 avail.setdefault(iso, {})[u.id] = {
                     'start': min(r.start_time for r in rows),
                     'end': max(r.end_time for r in rows),
-                    'suspended': bool(exc_by_key.get((u.id, d))),
+                    # 'suspended' significa "el día entero": una franja
+                    # parcial (o un "no citar" de media hora) no tacha
+                    # el día en el calendario.
+                    'suspended': any(e.start_time is None for e in dias),
                 }
     return avail
 
@@ -303,19 +322,19 @@ def index():
         h, m = sh, sm
         while (h, m) < (eh, em):
             t = f'{h:02d}:{m:02d}'
+            # Un "no citar" suspende ese horario aunque el profesional no
+            # tenga horario cargado (franja genérica 8:00-20:00).
+            exc = _exc_que_cubre(exceptions, t)
             if schedule:
                 is_work = any(r.start_time <= t < r.end_time for r in schedule)
-                is_excepted = any(
-                    (e.start_time is None) or (e.start_time <= t < e.end_time)
-                    for e in exceptions
-                )
-                available = is_work and not is_excepted
+                available = is_work and exc is None
             else:
-                available = True
+                available = exc is None
             day_slots.append({
                 'time': t,
                 'available': available,
                 'appointment': appts_by_time.get(t),
+                'suspension': exc,
             })
             m += 30
             if m >= 60:
@@ -326,8 +345,15 @@ def index():
         # lo agregamos al final para que nunca se pierda de vista.
         placed = {s['time'] for s in day_slots}
         for t, a in sorted(appts_by_time.items()):
-            if t not in placed:
-                day_slots.append({'time': t, 'available': False, 'appointment': a})
+            if t in placed:
+                continue
+            # Un turno anulado cuyo horario quedó marcado como NO CITAR no
+            # se muestra aparte: la fila del bloque ya lo representa y una
+            # fila extra (09:31) solo enredaría la vista.
+            if a.status in NO_SHOW_STATUSES and \
+                    _exc_que_cubre(exceptions, display_time(a)) is not None:
+                continue
+            day_slots.append({'time': t, 'available': False, 'appointment': a})
         day_slots.sort(key=lambda s: s['time'])
 
     # Contar turnos y disponibles para el header
@@ -532,6 +558,17 @@ def nuevo():
         flash('Profesional inválido.', 'danger')
         return redirect(url_for('agenda.index'))
 
+    # Un "NO CITAR" es una decisión explícita: se respeta aunque el turno
+    # se cargue como sobreturno (el sobreturno solo saltea el horario del
+    # profesional, no un horario que se mandó a anular).
+    marcado = _exc_que_cubre(_exceptions_for(profesional, fecha), hora)
+    if marcado is not None:
+        detalle = marcado.reason or 'horario bloqueado'
+        flash(f'Las {hora} están marcadas como NO CITAR ({detalle}). '
+              f'Para agendar ahí, habilitalas desde el menú del horario '
+              f'o desde Suspensiones.', 'danger')
+        return redirect(_volver_a(fecha, profesional))
+
     fuera_de_horario = not _is_available(profesional, fecha, hora)
     if fuera_de_horario and not es_sobreturno:
         flash(f'{profesional.full_name} no atiende {fecha.strftime("%d/%m/%Y")} a las {hora} '
@@ -660,6 +697,94 @@ def estado(appt_id):
         db.session.commit()
         flash('Estado del turno actualizado.', 'success')
     return redirect(_safe_next(url_for('agenda.index', profesional=prof)))
+
+
+@bp.route('/no-citar', methods=['POST'])
+@login_required
+def no_citar():
+    """"Anular turno" desde el menú de la agenda.
+
+    Marca un horario como NO CITAR, haya turno cargado o no:
+
+    * con turno  -> da de baja el turno y bloquea el horario
+    * sin turno  -> bloquea directamente el horario
+
+    Si el horario ya estaba bloqueado se elimina el permiso y vuelve a
+    quedar disponible (así el mismo menú sirve para deshacer).
+    """
+    fecha = _parse_fecha_ar(request.form.get('fecha'))
+    hora = _parse_hora(request.form.get('hora'))
+    prof_raw = request.form.get('professional_id', type=int)
+    appt_id = request.form.get('appt_id', type=int)
+    exc_id = request.form.get('exc_id', type=int)
+
+    if not fecha:
+        flash('Fecha inválida para anular un horario.', 'danger')
+        return redirect(_safe_next(url_for('agenda.index')))
+
+    profesional = db.session.get(User, prof_raw) if prof_raw else None
+    if not profesional:
+        flash('Seleccioná un profesional para anular un horario.', 'danger')
+        return redirect(_safe_next(url_for('agenda.index')))
+
+    volver = _safe_next(_volver_a(fecha, profesional))
+
+    if exc_id:
+        # Ya estaba marcado como NO CITAR: lo habilitamos de nuevo.
+        exc = db.session.get(ScheduleException, exc_id)
+        if exc and exc.user_id == profesional.id:
+            db.session.delete(exc)
+            db.session.commit()
+            flash(f'Horario de las {exc.start_time or "--:--"} habilitado.',
+                  'info')
+        return redirect(volver)
+
+    if not hora:
+        flash('Horario inválido para anular.', 'danger')
+        return redirect(volver)
+
+    # Si en ese horario había un turno cargado, lo damos de baja.
+    cancelado = None
+    turno = db.session.get(Appointment, appt_id) if appt_id else None
+    if turno is None:
+        # Por si el menú no mandó el id: buscamos el turno de ese horario.
+        turno = (Appointment.query
+                 .filter_by(planned_date=fecha, time=hora,
+                            professional_id=profesional.id)
+                 .filter(Appointment.status.notin_(NO_SHOW_STATUSES))
+                 .first())
+    if turno and turno.professional_id == profesional.id \
+            and turno.status not in NO_SHOW_STATUSES:
+        turno.status = 'cancelado'
+        turno.time = _bump_minute(turno.time)
+        cancelado = turno
+
+    # Bloqueamos la media hora siguiente ("NO CITAR ESTE TURNO").
+    fin = _bump_minute(hora, 30)
+    existente = (ScheduleException.query
+                 .filter_by(user_id=profesional.id, date=fecha,
+                            start_time=hora, end_time=fin)
+                 .first())
+    if not existente:
+        db.session.add(ScheduleException(
+            user_id=profesional.id,
+            date=fecha,
+            start_time=hora,
+            end_time=fin,
+            reason='No citar',
+        ))
+    db.session.commit()
+
+    nombre = cancelado.patient.full_name if cancelado and cancelado.patient else ''
+    if nombre:
+        flash(f'Turno de {nombre} anulado y horario de las {hora} '
+              f'marcado como NO CITAR.', 'success')
+    else:
+        flash(f'Horario de las {hora} marcado como NO CITAR.', 'success')
+
+    return redirect(_safe_next(
+        url_for('agenda.index', fecha=fecha.isoformat(),
+                profesional=profesional.id)))
 
 
 @bp.route('/<int:appt_id>/reprogramar', methods=['POST'])

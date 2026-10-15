@@ -162,7 +162,7 @@
     <!-- Tabla de turnos del día -->
     {% if profesional and fecha and day_slots %}
     <div class="slots-table-wrap">
-      <table class="slots-table">
+      <table class="slots-table" data-prof="{{ profesional.id }}">
         <thead>
           <tr>
             <th class="col-hora">Hora</th>
@@ -177,7 +177,8 @@
           <tr class="slot-row has-appt status-{{ slot.appointment.status }}"
               data-hora="{{ slot.appointment|turno_hora }}"
               data-fecha="{{ fecha.isoformat() }}"
-              data-appt-id="{{ slot.appointment.id }}">
+              data-appt-id="{{ slot.appointment.id }}"
+              data-exc-id="">
             <td class="col-hora">
               <span class="slot-time">{{ slot.time }}</span>
               {% if slot.appointment.status == 'pendiente' %}<span class="slot-dot dot-pendiente"></span>{% endif %}
@@ -213,7 +214,8 @@
           </tr>
           {% elif slot.available %}
           <tr class="slot-row available"
-              data-hora="{{ slot.time }}" data-fecha="{{ fecha.isoformat() }}">
+              data-hora="{{ slot.time }}" data-fecha="{{ fecha.isoformat() }}"
+              data-exc-id="">
             <td class="col-hora"><span class="slot-time">{{ slot.time }}</span></td>
             <td class="col-estado"></td>
             <td class="col-paciente">
@@ -227,14 +229,15 @@
           </tr>
           {% else %}
           <tr class="slot-row blocked"
-              data-hora="{{ slot.time }}" data-fecha="{{ fecha.isoformat() }}">
+              data-hora="{{ slot.time }}" data-fecha="{{ fecha.isoformat() }}"
+              data-exc-id="{{ slot.suspension.id if slot.suspension else '' }}">
             <td class="col-hora">
               <span class="slot-time">{{ slot.time }}</span>
               <span class="slot-dot dot-blocked"></span>
             </td>
             <td class="col-estado"></td>
             <td class="col-paciente blocked-text">NO CITAR ESTE TURNO</td>
-            <td class="col-obs">-</td>
+            <td class="col-obs">{{ slot.suspension.reason if slot.suspension and slot.suspension.reason else '-' }}</td>
           </tr>
           {% endif %}
           {% endfor %}
@@ -430,7 +433,7 @@
     <span class="slot-menu-ico" aria-hidden="true">⏰</span> Nuevo sobreturno
   </button>
   <button type="button" class="slot-menu-item danger" data-act="anular" role="menuitem">
-    <span class="slot-menu-ico" aria-hidden="true">🚫</span> Anular turno
+    <span class="slot-menu-ico" aria-hidden="true" id="anularIco">🚫</span><span id="anularLabel"> Anular turno</span>
   </button>
 </div>
 {% endblock %}
@@ -473,7 +476,10 @@
 
     var timeEl = document.getElementById('slotMenuTime');
     var closeBtn = document.getElementById('slotMenuClose');
-    var slot = { hora: '', fecha: '', apptId: '' };
+    var anularItem = menu.querySelector('[data-act="anular"]');
+    var anularIco = document.getElementById('anularIco');
+    var anularLabel = document.getElementById('anularLabel');
+    var slot = { hora: '', fecha: '', apptId: '', excId: '', profId: '' };
 
     function close() { menu.hidden = true; }
 
@@ -481,8 +487,24 @@
       slot.hora = row.dataset.hora || '';
       slot.fecha = row.dataset.fecha || '';
       slot.apptId = row.dataset.apptId || '';
+      slot.excId = row.dataset.excId || '';
+      var tbl = row.closest('table');
+      slot.profId = (tbl && tbl.dataset.prof) || '';
 
       timeEl.textContent = slot.hora;
+
+      // Si el horario ya está marcado como NO CITAR, la misma opción sirve
+      // para habilitarlo de nuevo.
+      if (slot.excId) {
+        anularIco.textContent = '✅';
+        anularLabel.textContent = ' Habilitar turno';
+        anularItem.classList.remove('danger');
+      } else {
+        anularIco.textContent = '🚫';
+        anularLabel.textContent = ' Anular turno';
+        anularItem.classList.add('danger');
+      }
+
       menu.hidden = false;
 
       var box = menu.getBoundingClientRect();
@@ -545,33 +567,39 @@
     }
 
     function anular() {
-      if (!slot.apptId) {
-        // Sin turno cargado no hay nada que anular: lo avisamos en vez de
-        // dejar el botón gris, así se puede usar desde cualquier fila.
-        window.alert(
-          'No hay ningún turno cargado en las ' + (slot.hora || 'este horario') +
-          ', así que no hay nada que anular.\n\n' +
-          'Para poner un turno en ese horario usá «Nuevo turno».'
-        );
-        return;
-      }
-      var row = tbody.querySelector('tr[data-appt-id="' + slot.apptId + '"]');
+      var row = slot.apptId
+        ? tbody.querySelector('tr[data-appt-id="' + slot.apptId + '"]') : null;
       var nombre = '';
       if (row) {
         var link = row.querySelector('.patient-link');
         nombre = link ? link.textContent.trim() : '';
       }
-      var ok = window.confirm(
-        '¿Anular el turno' + (nombre ? ' de ' + nombre : '') +
-        ' de las ' + slot.hora + '?' +
-        '\n\nQueda marcado como Cancelado y el horario vuelve a quedar libre ' +
-        'para darlo a otro paciente.'
-      );
+
+      var ok;
+      if (slot.excId) {
+        // Ya estaba marcado: se deshace.
+        ok = window.confirm(
+          '¿Habilitar el horario de las ' + slot.hora + '?\n\n' +
+          'Se quita la marca NO CITAR y vuelve a poder agendar turnos ahí.'
+        );
+      } else if (nombre) {
+        ok = window.confirm(
+          '¿Anular el turno de ' + nombre + ' de las ' + slot.hora + '?\n\n' +
+          'El turno pasa a Cancelado y este horario queda marcado como ' +
+          'NO CITAR ESTE TURNO.'
+        );
+      } else {
+        ok = window.confirm(
+          '¿Marcar las ' + slot.hora + ' como NO CITAR ESTE TURNO?\n\n' +
+          'Nadie va a poder agendar en este horario hasta que lo ' +
+          'habilites de nuevo desde este mismo menú.'
+        );
+      }
       if (!ok) return;
 
       var form = document.createElement('form');
       form.method = 'post';
-      form.action = '/agenda/' + slot.apptId + '/estado';
+      form.action = '/agenda/no-citar';
 
       var add = function (name, value) {
         var i = document.createElement('input');
@@ -582,9 +610,12 @@
       };
       var meta = document.querySelector('meta[name="csrf-token"]');
       add('csrf_token', meta ? meta.content : '');
-      add('status', 'cancelado');
-      var next = row ? row.querySelector('input[name="next"]') : null;
-      if (next) add('next', next.value);
+      add('fecha', slot.fecha);
+      add('hora', slot.hora);
+      add('professional_id', slot.profId);
+      add('appt_id', slot.apptId);
+      add('exc_id', slot.excId);
+      add('next', window.location.pathname + window.location.search);
 
       document.body.appendChild(form);
       form.submit();
