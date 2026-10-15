@@ -473,7 +473,6 @@
 
     var timeEl = document.getElementById('slotMenuTime');
     var closeBtn = document.getElementById('slotMenuClose');
-    var anularBtn = menu.querySelector('[data-act="anular"]');
     var slot = { hora: '', fecha: '', apptId: '' };
 
     function close() { menu.hidden = true; }
@@ -484,8 +483,6 @@
       slot.apptId = row.dataset.apptId || '';
 
       timeEl.textContent = slot.hora;
-      // "Anular turno" sólo tiene sentido si en esa fila hay un turno cargado
-      anularBtn.disabled = !slot.apptId;
       menu.hidden = false;
 
       var box = menu.getBoundingClientRect();
@@ -548,7 +545,16 @@
     }
 
     function anular() {
-      if (!slot.apptId) return;
+      if (!slot.apptId) {
+        // Sin turno cargado no hay nada que anular: lo avisamos en vez de
+        // dejar el botón gris, así se puede usar desde cualquier fila.
+        window.alert(
+          'No hay ningún turno cargado en las ' + (slot.hora || 'este horario') +
+          ', así que no hay nada que anular.\n\n' +
+          'Para poner un turno en ese horario usá «Nuevo turno».'
+        );
+        return;
+      }
       var row = tbody.querySelector('tr[data-appt-id="' + slot.apptId + '"]');
       var nombre = '';
       if (row) {

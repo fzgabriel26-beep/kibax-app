@@ -1177,10 +1177,6 @@ body.dark .slot-row.blocked { background: #2A2222; }
 .slot-menu-item.danger:hover {
   background: var(--st-ausente-sin-aviso-bg); color: var(--st-ausente-sin-aviso);
 }
-.slot-menu-item:disabled {
-  opacity: .4; cursor: not-allowed;
-  color: var(--ink-soft); background: transparent;
-}
 
 /* Pista que muestra el modal cuando se carga un sobreturno */
 .sobreturno-hint {
