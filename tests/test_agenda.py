@@ -490,3 +490,123 @@ class TestWaitingList:
         with app.app_context():
             assert WaitingListEntry.query.count() == 1
             assert Appointment.query.count() == 1
+
+
+class TestSlotMenu:
+    """Menú contextual (Nuevo turno / Nuevo sobreturno / Anular turno)."""
+
+    def _agendar(self, c, app, prof_id, hora, **extra):
+        pid = _create_patient(app, full_name='Paciente Menú', document_id='47777777')
+        data = {
+            'patient_id': pid,
+            'professional_id': prof_id,
+            'fecha': _lunes_siguiente().strftime('%Y-%m-%d'),
+            'hora': hora,
+            'status': 'confirmado',
+        }
+        data.update(extra)
+        return c.post('/agenda/nuevo', data=data, follow_redirects=True)
+
+    def test_menu_is_rendered_in_day_view(self, app):
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        html = c.get(f'/agenda/?profesional={prof_id}'
+                     f'&fecha={_lunes_siguiente().strftime("%Y-%m-%d")}').data.decode()
+        assert 'id="slotMenu"' in html
+        assert 'Nuevo turno' in html
+        assert 'Nuevo sobreturno' in html
+        assert 'Anular turno' in html
+        # el modal sabe cuándo es sobreturno
+        assert 'name="sobreturno"' in html
+
+    def test_rows_carry_slot_data(self, app):
+        """Cada fila expone la hora y la fecha para poder abrir el menú."""
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._agendar(c, app, prof_id, '09:00')
+        html = c.get(f'/agenda/?profesional={prof_id}'
+                     f'&fecha={_lunes_siguiente().strftime("%Y-%m-%d")}').data.decode()
+        assert 'data-hora="09:00"' in html
+        assert 'data-fecha="' in html
+        assert 'data-appt-id="' in html
+
+    def test_regular_turno_outside_schedule_is_blocked(self, app):
+        """07:00 está fuera del horario L-V 08:00-16:00."""
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        r = self._agendar(c, app, prof_id, '07:00')
+        assert r.status_code == 200
+        assert 'no atiende' in r.data.decode()
+        with app.app_context():
+            assert Appointment.query.count() == 0
+
+    def test_sobreturno_outside_schedule_is_allowed(self, app):
+        """El mismo horario sí entra si se marca como sobreturno."""
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        r = self._agendar(c, app, prof_id, '07:00', sobreturno='1')
+        assert r.status_code == 200
+        assert 'Sobreturno agendado' in r.data.decode()
+        with app.app_context():
+            appt = Appointment.query.one()
+            assert appt.time == '07:00'
+
+    def test_sobreturno_at_intermediate_time(self, app):
+        """09:15 dentro del bloque 09:00-09:30 convive con el turno de 09:00."""
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._agendar(c, app, prof_id, '09:00')
+        r = self._agendar(c, app, prof_id, '09:15', sobreturno='1')
+        assert 'Sobreturno agendado' in r.data.decode()
+        with app.app_context():
+            assert Appointment.query.count() == 2
+            times = sorted(a.time for a in Appointment.query.all())
+            assert times == ['09:00', '09:15']
+
+    def test_exact_time_double_booking_is_still_rejected(self, app):
+        """Un sobreturno no debe pisar un turno en la misma hora exacta."""
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._agendar(c, app, prof_id, '10:00')
+        r = self._agendar(c, app, prof_id, '10:00', sobreturno='1')
+        assert 'ya tiene un turno' in r.data.decode()
+        with app.app_context():
+            assert Appointment.query.count() == 1
+
+    def test_invalid_time_format_is_rejected(self, app):
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        for mala in ('25:99', '9:15', 'ab:cd', '1000'):
+            self._agendar(c, app, prof_id, mala, sobreturno='1')
+            with app.app_context():
+                assert Appointment.query.count() == 0, f'aceptó hora {mala!r}'
+
+    def test_anular_turno_frees_the_slot(self, app):
+        """Anular marca cancelado, corre la hora 1 min y libera la celda."""
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._agendar(c, app, prof_id, '09:30')
+        with app.app_context():
+            appt_id = Appointment.query.one().id
+
+        r = c.post(f'/agenda/{appt_id}/estado', data={
+            'status': 'cancelado',
+            'next': f'/agenda/?fecha={_lunes_siguiente().strftime("%Y-%m-%d")}'
+                    f'&profesional={prof_id}',
+        }, follow_redirects=True)
+        assert r.status_code == 200
+        assert 'Estado del turno actualizado' in r.data.decode()
+
+        with app.app_context():
+            appt = Appointment.query.first()
+            assert appt.status == 'cancelado'
+            # la hora se corre para que esa celda vuelva a estar libre
+            assert appt.time == '09:31'
+
+        html = c.get(f'/agenda/?profesional={prof_id}'
+                     f'&fecha={_lunes_siguiente().strftime("%Y-%m-%d")}').data.decode()
+        # la fila 09:30 existe y ya no tiene turno encima
+        i = html.find('data-hora="09:30"')
+        assert i != -1
+        assert 'slot-book-btn' in html
+        assert 'status-cancelado' in html

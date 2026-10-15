@@ -174,7 +174,10 @@
         <tbody>
           {% for slot in day_slots %}
           {% if slot.appointment %}
-          <tr class="slot-row has-appt status-{{ slot.appointment.status }}">
+          <tr class="slot-row has-appt status-{{ slot.appointment.status }}"
+              data-hora="{{ slot.appointment|turno_hora }}"
+              data-fecha="{{ fecha.isoformat() }}"
+              data-appt-id="{{ slot.appointment.id }}">
             <td class="col-hora">
               <span class="slot-time">{{ slot.time }}</span>
               {% if slot.appointment.status == 'pendiente' %}<span class="slot-dot dot-pendiente"></span>{% endif %}
@@ -209,7 +212,8 @@
             </td>
           </tr>
           {% elif slot.available %}
-          <tr class="slot-row available">
+          <tr class="slot-row available"
+              data-hora="{{ slot.time }}" data-fecha="{{ fecha.isoformat() }}">
             <td class="col-hora"><span class="slot-time">{{ slot.time }}</span></td>
             <td class="col-estado"></td>
             <td class="col-paciente">
@@ -222,7 +226,8 @@
             <td class="col-obs"></td>
           </tr>
           {% else %}
-          <tr class="slot-row blocked">
+          <tr class="slot-row blocked"
+              data-hora="{{ slot.time }}" data-fecha="{{ fecha.isoformat() }}">
             <td class="col-hora">
               <span class="slot-time">{{ slot.time }}</span>
               <span class="slot-dot dot-blocked"></span>
@@ -287,13 +292,14 @@
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Agendar turno</h5>
+        <h5 class="modal-title" id="a-titulo">Agendar turno</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
         <form method="post" action="{{ url_for('agenda.nuevo') }}" class="agenda-form mb-0 pb-0 border-0" id="nuevoTurnoForm">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="waitlist_id" id="a-waitlist-id" value="">
+          <input type="hidden" name="sobreturno" id="a-sobreturno" value="">
           <div class="row g-2">
             <div class="col-md-6">
               <label class="form-label" for="a-profesional">Profesional</label>
@@ -328,8 +334,7 @@
             <div class="col-md-4">
               <label class="form-label" for="a-hora">Hora</label>
               <input type="time" class="form-control" id="a-hora" name="hora" value="10:00" required>
-            </div>
-            <div class="col-md-4">
+            </div>            <div class="col-md-4">
               <label class="form-label" for="a-status">Estado</label>
               <select class="form-select status-select" id="a-status" name="status">
                 {% for key, label in statuses.items() %}
@@ -338,8 +343,13 @@
               </select>
             </div>
           </div>
+          <div class="sobreturno-hint" id="a-sobreturno-hint" hidden>
+            💡 <strong>Sobreturno:</strong> podés escribir cualquier hora
+            (ej. <span id="a-sobreturno-ejemplo">09:15</span>), aunque no
+            coincida con un horario ni el profesional esté en ese rango.
+          </div>
           <input type="text" name="reason" class="form-control mt-2" placeholder="Motivo (opcional)">
-          <button type="submit" class="btn-solid mt-3 w-100">Agendar turno</button>
+          <button type="submit" class="btn-solid mt-3 w-100" id="a-submit">Agendar turno</button>
         </form>
       </div>
     </div>
@@ -405,15 +415,46 @@
     </div>
   </div>
 </div>
+
+<!-- Menú contextual: se abre al clickear un horario de la tabla del día -->
+<div class="slot-menu" id="slotMenu" role="menu" aria-label="Acciones del horario" hidden>
+  <div class="slot-menu-head">
+    <span class="slot-menu-time" id="slotMenuTime">00:00</span>
+    <button type="button" class="slot-menu-close" id="slotMenuClose"
+            aria-label="Cerrar menú">✕</button>
+  </div>
+  <button type="button" class="slot-menu-item" data-act="nuevo" role="menuitem">
+    <span class="slot-menu-ico" aria-hidden="true">👤</span> Nuevo turno
+  </button>
+  <button type="button" class="slot-menu-item" data-act="sobreturno" role="menuitem">
+    <span class="slot-menu-ico" aria-hidden="true">⏰</span> Nuevo sobreturno
+  </button>
+  <button type="button" class="slot-menu-item danger" data-act="anular" role="menuitem">
+    <span class="slot-menu-ico" aria-hidden="true">🚫</span> Anular turno
+  </button>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+  // Modo sobreturno: marca/desmarca el campo oculto y la pista del modal
+  function setSobreturno(on) {
+    var s = document.getElementById('a-sobreturno');
+    var hint = document.getElementById('a-sobreturno-hint');
+    var btn = document.getElementById('a-submit');
+    var titulo = document.getElementById('a-titulo');
+    if (s) s.value = on ? '1' : '';
+    if (hint) hint.hidden = !on;
+    if (btn) btn.textContent = on ? 'Agendar sobreturno' : 'Agendar turno';
+    if (titulo) titulo.textContent = on ? 'Nuevo sobreturno' : 'Agendar turno';
+  }
+
   // Modal: prellenar fecha/hora desde botón "+ Agendar" en un slot
   document.querySelectorAll('.slot-book-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var f = document.getElementById('a-fecha');
       var h = document.getElementById('a-hora');
+      setSobreturno(false);
       if (f && btn.dataset.fecha) {
         var parts = btn.dataset.fecha.split('-');
         f.value = parts[2] + '/' + parts[1] + '/' + parts[0];
@@ -423,6 +464,136 @@
       }
     });
   });
+
+  // Menú contextual: al clickear un horario de la tabla del día
+  (function () {
+    var menu = document.getElementById('slotMenu');
+    var tbody = document.querySelector('.slots-table tbody');
+    if (!menu || !tbody) return;
+
+    var timeEl = document.getElementById('slotMenuTime');
+    var closeBtn = document.getElementById('slotMenuClose');
+    var anularBtn = menu.querySelector('[data-act="anular"]');
+    var slot = { hora: '', fecha: '', apptId: '' };
+
+    function close() { menu.hidden = true; }
+
+    function open(row, x, y) {
+      slot.hora = row.dataset.hora || '';
+      slot.fecha = row.dataset.fecha || '';
+      slot.apptId = row.dataset.apptId || '';
+
+      timeEl.textContent = slot.hora;
+      // "Anular turno" sólo tiene sentido si en esa fila hay un turno cargado
+      anularBtn.disabled = !slot.apptId;
+      menu.hidden = false;
+
+      var box = menu.getBoundingClientRect();
+      var left = Math.min(x, window.innerWidth - box.width - 8);
+      var top = Math.min(y, window.innerHeight - box.height - 8);
+      menu.style.left = Math.max(8, left) + 'px';
+      menu.style.top = Math.max(8, top) + 'px';
+    }
+
+    tbody.addEventListener('click', function (e) {
+      // Lo que ya tiene acción propia (link al paciente, select de estado,
+      // botones de turno) no debe abrir el menú.
+      if (e.target.closest('a, button, select, input, option, label')) return;
+      var row = e.target.closest('.slot-row');
+      if (row) open(row, e.clientX, e.clientY);
+    });
+
+    closeBtn.addEventListener('click', close);
+    // Al hacer scroll o redimensionar el menú queda colgado lejos de su fila
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    document.addEventListener('click', function (e) {
+      if (menu.hidden) return;
+      if (menu.contains(e.target)) return;
+      if (e.target.closest('.slot-row')) return;
+      close();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !menu.hidden) close();
+    });
+
+    function abrirModal(esSobreturno) {
+      var f = document.getElementById('a-fecha');
+      var h = document.getElementById('a-hora');
+
+      if (f && slot.fecha) {
+        var p = slot.fecha.split('-');
+        f.value = p[2] + '/' + p[1] + '/' + p[0];
+      }
+      if (h && slot.hora) h.value = slot.hora;
+      setSobreturno(esSobreturno);
+
+      // Ejemplo de hora intermedia para el sobreturno (horario + 15 min)
+      var ej = document.getElementById('a-sobreturno-ejemplo');
+      if (ej && slot.hora) {
+        var hhmm = slot.hora.split(':');
+        var total = (parseInt(hhmm[0], 10) * 60 + parseInt(hhmm[1], 10) + 15) % 1440;
+        ej.textContent = ('0' + Math.floor(total / 60)).slice(-2) + ':' +
+                         ('0' + (total % 60)).slice(-2);
+      }
+
+      var modalEl = document.getElementById('turnoModal');
+      if (window.bootstrap && modalEl) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        if (esSobreturno && h) {
+          setTimeout(function () { h.focus(); if (h.showPicker) { try { h.showPicker(); } catch (err) {} } }, 350);
+        }
+      }
+      close();
+    }
+
+    function anular() {
+      if (!slot.apptId) return;
+      var row = tbody.querySelector('tr[data-appt-id="' + slot.apptId + '"]');
+      var nombre = '';
+      if (row) {
+        var link = row.querySelector('.patient-link');
+        nombre = link ? link.textContent.trim() : '';
+      }
+      var ok = window.confirm(
+        '¿Anular el turno' + (nombre ? ' de ' + nombre : '') +
+        ' de las ' + slot.hora + '?' +
+        '\n\nQueda marcado como Cancelado y el horario vuelve a quedar libre ' +
+        'para darlo a otro paciente.'
+      );
+      if (!ok) return;
+
+      var form = document.createElement('form');
+      form.method = 'post';
+      form.action = '/agenda/' + slot.apptId + '/estado';
+
+      var add = function (name, value) {
+        var i = document.createElement('input');
+        i.type = 'hidden';
+        i.name = name;
+        i.value = value;
+        form.appendChild(i);
+      };
+      var meta = document.querySelector('meta[name="csrf-token"]');
+      add('csrf_token', meta ? meta.content : '');
+      add('status', 'cancelado');
+      var next = row ? row.querySelector('input[name="next"]') : null;
+      if (next) add('next', next.value);
+
+      document.body.appendChild(form);
+      form.submit();
+    }
+
+    menu.querySelectorAll('.slot-menu-item').forEach(function (item) {
+      item.addEventListener('click', function () {
+        if (item.disabled) return;
+        var act = item.dataset.act;
+        if (act === 'nuevo') abrirModal(false);
+        else if (act === 'sobreturno') abrirModal(true);
+        else if (act === 'anular') { close(); anular(); }
+      });
+    });
+  })();
 
   // Autocomplete de pacientes. Sirve para el modal de turnos y para el de
   // lista de espera: solo cambian los ids.
@@ -513,6 +684,7 @@
 
   function resetTurnoModal() {
     if (turnosAC) turnosAC.clear();
+    setSobreturno(false);
     var w = document.getElementById('a-waitlist-id');
     if (w) w.value = '';
     if (turnoModalEl) {

@@ -66,6 +66,21 @@ def display_time(appt):
         return _bump_minute(appt.time, -1)
     return appt.time
 
+
+def _parse_hora(raw):
+    """Valida y normaliza una hora a 'HH:MM'. Devuelve None si no es válida."""
+    raw = (raw or '').strip()
+    if len(raw) != 5 or raw[2] != ':':
+        return None
+    try:
+        hh, mm = int(raw[:2]), int(raw[3:])
+    except ValueError:
+        return None
+    if not (0 <= hh <= 23 and 0 <= mm <= 59):
+        return None
+    return '%02d:%02d' % (hh, mm)
+
+
 def _parse_fecha_ar(raw):
     """Parsea una fecha en formato argentino dd/mm/aaaa, ISO aaaa-mm-dd o
     aaaa-día-mes (formato erróneo que enviaba una versión vieja del JS del
@@ -491,14 +506,21 @@ def disponibilidad_json():
 def nuevo():
     patient_id = request.form.get('patient_id')
     fecha_raw = request.form.get('fecha')
-    hora = request.form.get('hora', '10:00')
     reason = request.form.get('reason', '').strip()
     status = request.form.get('status', 'confirmado')
     prof_raw = request.form.get('professional_id')
+    # Un sobreturno elige el horario a mano (ej. 09:15 dentro del bloque de
+    # 09:00 a 09:30) y puede caer fuera del horario del profesional.
+    es_sobreturno = request.form.get('sobreturno') in ('1', 'true', 'on', 'si', 'sí')
+    hora = _parse_hora(request.form.get('hora'))
 
     if not patient_id or not fecha_raw or not prof_raw:
         flash('Paciente, profesional y fecha son obligatorios.', 'danger')
         return redirect(url_for('agenda.index'))
+
+    if not hora:
+        flash('La hora debe tener formato HH:MM (ej. 09:15).', 'danger')
+        return redirect(_safe_next(url_for('agenda.index')))
 
     fecha = _parse_fecha_ar(fecha_raw)
     if not fecha:
@@ -510,9 +532,10 @@ def nuevo():
         flash('Profesional inválido.', 'danger')
         return redirect(url_for('agenda.index'))
 
-    if not _is_available(profesional, fecha, hora):
+    fuera_de_horario = not _is_available(profesional, fecha, hora)
+    if fuera_de_horario and not es_sobreturno:
         flash(f'{profesional.full_name} no atiende {fecha.strftime("%d/%m/%Y")} a las {hora} '
-              f'(fuera de su horario o suspendido).', 'warning')
+              f'(fuera de su horario o suspendido). Si es un sobreturno, cargalo como tal.', 'warning')
         return redirect(_volver_a(fecha, profesional))
 
     choque = (Appointment.query
@@ -528,14 +551,18 @@ def nuevo():
         patient_id=int(patient_id),
         professional_id=profesional.id,
         planned_date=fecha,
-        time=hora or '10:00',
+        time=hora,
         reason=reason or None,
         status=status if status in APPOINTMENT_STATUSES else 'confirmado',
         created_by_id=current_user.id,
     )
     db.session.add(turno)
     db.session.commit()
-    flash('Turno agendado.', 'success')
+    if fuera_de_horario:
+        flash(f'Sobreturno agendado a las {hora}, fuera del horario habitual de '
+              f'{profesional.full_name}.', 'success')
+    else:
+        flash('Sobreturno agendado.' if es_sobreturno else 'Turno agendado.', 'success')
 
     # Si el turno salió de la lista de espera, sacamos la fila para que no
     # siga figurando como pendiente de agenda.
