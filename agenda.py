@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, abort
 from flask_login import login_required, current_user
 
+from audit import audit
 from extensions import db
 from models import (
     Appointment, Patient, User, WorkSchedule, ScheduleException,
@@ -594,6 +595,16 @@ def nuevo():
         created_by_id=current_user.id,
     )
     db.session.add(turno)
+    db.session.flush()   # para registrar el id en la auditoría antes del commit
+    audit('appointment', turno.id, 'create', {
+        'paciente': turno.patient.full_name if turno.patient else None,
+        'profesional': profesional.full_name,
+        'fecha': fecha.isoformat(),
+        'hora': hora,
+        'status': turno.status,
+        'motivo': reason or None,
+        'sobreturno': bool(es_sobreturno),
+    })
     db.session.commit()
     if fuera_de_horario:
         flash(f'Sobreturno agendado a las {hora}, fuera del horario habitual de '
@@ -675,6 +686,11 @@ def lista_espera_eliminar(entry_id):
 def eliminar(appt_id):
     turno = Appointment.query.get_or_404(appt_id)
     prof = turno.professional_id
+    audit('appointment', turno.id, 'delete', {
+        'paciente': turno.patient.full_name if turno.patient else None,
+        'fecha': turno.planned_date.isoformat() if turno.planned_date else None,
+        'hora': display_time(turno),
+    })
     db.session.delete(turno)
     db.session.commit()
     flash('Turno eliminado.', 'info')
@@ -694,6 +710,12 @@ def estado(appt_id):
         # conservar el registro sin ocupar el horario original.
         if nuevo in NO_SHOW_STATUSES and anterior not in NO_SHOW_STATUSES:
             turno.time = _bump_minute(turno.time)
+        audit('appointment', turno.id, 'update', {
+            'paciente': turno.patient.full_name if turno.patient else None,
+            'status': {'antes': anterior, 'después': nuevo},
+            'fecha': turno.planned_date.isoformat() if turno.planned_date else None,
+            'hora': display_time(turno),
+        })
         db.session.commit()
         flash('Estado del turno actualizado.', 'success')
     return redirect(_safe_next(url_for('agenda.index', profesional=prof)))
@@ -733,6 +755,12 @@ def no_citar():
         # Ya estaba marcado como NO CITAR: lo habilitamos de nuevo.
         exc = db.session.get(ScheduleException, exc_id)
         if exc and exc.user_id == profesional.id:
+            audit('schedule_exception', exc.id, 'delete', {
+                'profesional': profesional.full_name,
+                'fecha': exc.date.isoformat() if exc.date else None,
+                'de': exc.start_time, 'a': exc.end_time,
+                'motivo': exc.reason,
+            })
             db.session.delete(exc)
             db.session.commit()
             flash(f'Horario de las {exc.start_time or "--:--"} habilitado.',
@@ -755,6 +783,13 @@ def no_citar():
                  .first())
     if turno and turno.professional_id == profesional.id \
             and turno.status not in NO_SHOW_STATUSES:
+        audit('appointment', turno.id, 'update', {
+            'paciente': turno.patient.full_name if turno.patient else None,
+            'status': {'antes': turno.status, 'después': 'cancelado'},
+            'accion': 'anulado desde el menú de la agenda',
+            'fecha': turno.planned_date.isoformat() if turno.planned_date else None,
+            'hora': display_time(turno),
+        })
         turno.status = 'cancelado'
         turno.time = _bump_minute(turno.time)
         cancelado = turno
@@ -766,13 +801,21 @@ def no_citar():
                             start_time=hora, end_time=fin)
                  .first())
     if not existente:
-        db.session.add(ScheduleException(
+        bloqueo = ScheduleException(
             user_id=profesional.id,
             date=fecha,
             start_time=hora,
             end_time=fin,
             reason='No citar',
-        ))
+        )
+        db.session.add(bloqueo)
+        db.session.flush()
+        audit('schedule_exception', bloqueo.id, 'create', {
+            'profesional': profesional.full_name,
+            'fecha': fecha.isoformat(),
+            'de': hora, 'a': fin,
+            'motivo': 'No citar',
+        })
     db.session.commit()
 
     nombre = cancelado.patient.full_name if cancelado and cancelado.patient else ''
@@ -822,6 +865,14 @@ def reprogramar(appt_id):
               f'{choque.patient.full_name}.', 'danger')
         return redirect(back)
 
+    audit('appointment', turno.id, 'update', {
+        'paciente': turno.patient.full_name if turno.patient else None,
+        'fecha': {'antes': turno.planned_date.isoformat() if turno.planned_date else None,
+                  'después': fecha.isoformat()},
+        'hora': {'antes': display_time(turno), 'después': hora},
+        'profesional': {'antes': turno.professional_id,
+                        'después': profesional.id},
+    })
     turno.planned_date = fecha
     turno.time = hora
     turno.professional_id = profesional.id
@@ -930,13 +981,21 @@ def suspension_nueva():
     if start and end and start >= end:
         return _bad('Franja de suspensión inválida (inicio < fin).')
 
-    db.session.add(ScheduleException(
+    exc = ScheduleException(
         user_id=profesional.id,
         date=fecha,
         start_time=start,
         end_time=end,
         reason=reason or None,
-    ))
+    )
+    db.session.add(exc)
+    db.session.flush()
+    audit('schedule_exception', exc.id, 'create', {
+        'profesional': profesional.full_name,
+        'fecha': fecha.isoformat(),
+        'de': start, 'a': end,
+        'motivo': reason or None,
+    })
     db.session.commit()
     flash('Suspensión registrada.', 'success')
     return redirect(url_for('agenda.horarios'))
@@ -946,6 +1005,12 @@ def suspension_nueva():
 @login_required
 def suspension_eliminar(exc_id):
     exc = ScheduleException.query.get_or_404(exc_id)
+    audit('schedule_exception', exc.id, 'delete', {
+        'profesional': exc.dentist.full_name if exc.dentist else None,
+        'fecha': exc.date.isoformat() if exc.date else None,
+        'de': exc.start_time, 'a': exc.end_time,
+        'motivo': exc.reason,
+    })
     db.session.delete(exc)
     db.session.commit()
     flash('Suspensión eliminada.', 'info')

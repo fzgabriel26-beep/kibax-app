@@ -1,6 +1,5 @@
 import csv
 import io
-import json
 import os
 import shutil
 import uuid
@@ -14,6 +13,7 @@ from flask import (
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
+from audit import audit as _audit
 from extensions import db
 from models import (
     Patient, ToothStatus, ProcedureLog, Attachment,
@@ -33,18 +33,6 @@ STATUS_LABELS = {
     'protesis': 'Prótesis',
     'ausente': 'Ausente',
 }
-
-
-def _audit(entity_type, entity_id, action, changes=None):
-    """Registra una acción de auditoría."""
-    log = AuditLog(
-        user_id=current_user.id if current_user.is_authenticated else None,
-        entity_type=entity_type,
-        entity_id=entity_id,
-        action=action,
-        changes=json.dumps(changes, ensure_ascii=False, default=str) if changes else None,
-    )
-    db.session.add(log)
 
 
 def _validate_patient_email(email):

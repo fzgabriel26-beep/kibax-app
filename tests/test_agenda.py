@@ -1,6 +1,8 @@
 """Tests para el blueprint de agenda."""
+import json
 from datetime import date, timedelta
-from models import Appointment, Patient, WorkSchedule, WaitingListEntry
+from models import (Appointment, AuditLog, Patient, ScheduleException,
+                    WorkSchedule, WaitingListEntry)
 from extensions import db as _db
 from tests.conftest import _create_and_login, _create_patient, _create_professional, _make_client
 
@@ -775,3 +777,153 @@ class TestNoCitar:
         assert 'Habilitar turno' in html
         assert f'data-exc-id="{exc_id}"' in html
         assert 'anularLabel' in html
+
+
+class TestAgendaAudit:
+    """El registro de auditoría (AuditLog) también cubre la agenda."""
+
+    def _fecha(self):
+        return _lunes_siguiente().strftime('%Y-%m-%d')
+
+    def _agendar(self, c, app, prof_id, hora='09:00', **extra):
+        pid = _create_patient(app, full_name='Laura Testeo',
+                              document_id='61111111')
+        data = {
+            'patient_id': pid,
+            'professional_id': prof_id,
+            'fecha': self._fecha(),
+            'hora': hora,
+            'status': 'confirmado',
+        }
+        data.update(extra)
+        return c.post('/agenda/nuevo', data=data, follow_redirects=True)
+
+    def _anular(self, c, prof_id, hora, **extra):
+        data = {'fecha': self._fecha(), 'hora': hora,
+                'professional_id': prof_id}
+        data.update(extra)
+        return c.post('/agenda/no-citar', data=data, follow_redirects=True)
+
+    def _logs(self, app, **filtros):
+        with app.app_context():
+            return [(l.entity_type, l.action, l.entity_id, l.user_id,
+                     json.loads(l.changes) if l.changes else None)
+                    for l in AuditLog.query.filter_by(**filtros)
+                    .order_by(AuditLog.id).all()]
+
+    def test_crear_turno_registra_auditoria(self, app):
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._agendar(c, app, prof_id, '09:00')
+
+        with app.app_context():
+            assert Appointment.query.count() == 1
+        logs = self._logs(app, entity_type='appointment', action='create')
+        assert len(logs) == 1
+        _, _, entity_id, user_id, datos = logs[0]
+        assert user_id == _logged_user_id(app)
+        assert datos['hora'] == '09:00'
+        assert datos['paciente'] == 'Laura Testeo'
+        assert datos['sobreturno'] is False
+
+    def test_cambiar_estado_registra_antes_y_despues(self, app):
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._agendar(c, app, prof_id, '10:00')
+        with app.app_context():
+            appt_id = Appointment.query.one().id
+
+        c.post(f'/agenda/{appt_id}/estado', data={'status': 'ausente_aviso'},
+               follow_redirects=True)
+        logs = self._logs(app, entity_type='appointment', action='update')
+        assert len(logs) == 1
+        datos = logs[0][4]
+        assert datos['status'] == {'antes': 'confirmado',
+                                   'después': 'ausente_aviso'}
+        assert datos['paciente'] == 'Laura Testeo'
+
+    def test_eliminar_turno_registra_el_borrado(self, app):
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._agendar(c, app, prof_id, '10:30')
+        with app.app_context():
+            appt_id = Appointment.query.one().id
+
+        c.post(f'/agenda/{appt_id}/eliminar', follow_redirects=True)
+        logs = self._logs(app, entity_type='appointment', action='delete')
+        assert len(logs) == 1
+        assert logs[0][2] == appt_id
+        assert logs[0][4]['paciente'] == 'Laura Testeo'
+
+    def test_reprogramar_registra_el_cambio(self, app):
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._agendar(c, app, prof_id, '11:00')
+        with app.app_context():
+            appt_id = Appointment.query.one().id
+
+        c.post(f'/agenda/{appt_id}/reprogramar', data={
+            'fecha': self._fecha(), 'hora': '14:00',
+            'professional_id': prof_id,
+        }, follow_redirects=True)
+        datos = self._logs(app, entity_type='appointment',
+                           action='update')[0][4]
+        assert datos['hora'] == {'antes': '11:00', 'después': '14:00'}
+
+    def test_no_citar_registra_el_bloqueo(self, app):
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._anular(c, prof_id, '15:00')
+
+        logs = self._logs(app, entity_type='schedule_exception',
+                          action='create')
+        assert len(logs) == 1
+        assert logs[0][3] == _logged_user_id(app)
+        datos = logs[0][4]
+        assert datos['fecha'] == self._fecha()
+        assert datos['de'] == '15:00'
+        assert datos['a'] == '15:30'
+        assert datos['motivo'] == 'No citar'
+        assert datos['profesional']  # nombre del profesional
+
+    def test_anular_turno_con_paciente_registra_ambas_cosas(self, app):
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._agendar(c, app, prof_id, '15:30')
+        self._anular(c, prof_id, '15:30')
+
+        exc = self._logs(app, entity_type='schedule_exception',
+                         action='create')
+        assert len(exc) == 1
+        cancel = self._logs(app, entity_type='appointment', action='update')
+        assert len(cancel) == 1
+        assert cancel[0][4]['status'] == {'antes': 'confirmado',
+                                         'después': 'cancelado'}
+        assert cancel[0][4]['accion'] == 'anulado desde el menú de la agenda'
+
+    def test_habilitar_registra_el_borrado_del_bloqueo(self, app):
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        self._anular(c, prof_id, '15:00')
+        with app.app_context():
+            exc_id = ScheduleException.query.one().id
+
+        self._anular(c, prof_id, '15:00', exc_id=exc_id)
+        borrado = self._logs(app, entity_type='schedule_exception',
+                             action='delete')
+        assert len(borrado) == 1
+        assert borrado[0][2] == exc_id
+
+    def test_suspension_tambien_queda_registrada(self, app):
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        c.post('/agenda/suspensiones/nuevo', data={
+            'user_id': prof_id, 'fecha': self._fecha(),
+            'start_time': '12:00', 'end_time': '13:00',
+            'reason': 'Almuerzo',
+        }, follow_redirects=True)
+        datos = self._logs(app, entity_type='schedule_exception',
+                           action='create')[0][4]
+        assert datos['de'] == '12:00'
+        assert datos['a'] == '13:00'
+        assert datos['motivo'] == 'Almuerzo'
