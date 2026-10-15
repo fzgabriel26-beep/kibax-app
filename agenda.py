@@ -6,7 +6,10 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import login_required, current_user
 
 from extensions import db
-from models import Appointment, Patient, User, WorkSchedule, ScheduleException
+from models import (
+    Appointment, Patient, User, WorkSchedule, ScheduleException,
+    WaitingListEntry, WAITLIST_SHIFTS,
+)
 
 bp = Blueprint('agenda', __name__, url_prefix='/agenda')
 
@@ -219,6 +222,11 @@ def index():
     profesional_raw = request.args.get('profesional', type=int)
     profesional = next((u for u in profesionales if u.id == profesional_raw), None)
 
+    # Lista de espera del panel lateral: lo más viejo primero.
+    waitlist = (WaitingListEntry.query
+                .order_by(WaitingListEntry.created_at.asc())
+                .all())
+
     # La agenda siempre es de UN profesional: si no eligieron, mostramos el
     # primero de la lista y caemos en el día de hoy (redirigimos para que la
     # URL quede compartible).
@@ -226,7 +234,6 @@ def index():
         params = {k: v for k, v in request.args.to_dict().items() if v}
         # Sobrescribimos siempre: si el id venía vacío o era inválido
         # (profesional eliminado), evitamos un redirect loop.
-        params['profesional'] = str(profesionales[0].id)
         params['profesional'] = str(profesionales[0].id)
         params.setdefault('fecha', today.isoformat())
         params.setdefault('mes', f'{today.year:04d}-{today.month:02d}')
@@ -342,6 +349,8 @@ def index():
         disponibles=disponibles,
         prev_day=prev_day,
         next_day=next_day,
+        waitlist=waitlist,
+        waitlist_shifts=WAITLIST_SHIFTS,
     )
 
 
@@ -527,7 +536,74 @@ def nuevo():
     db.session.add(turno)
     db.session.commit()
     flash('Turno agendado.', 'success')
+
+    # Si el turno salió de la lista de espera, sacamos la fila para que no
+    # siga figurando como pendiente de agenda.
+    wait_id = request.form.get('waitlist_id', type=int)
+    if wait_id:
+        entrada = db.session.get(WaitingListEntry, wait_id)
+        if entrada:
+            db.session.delete(entrada)
+            db.session.commit()
+            flash('Paciente quitado de la lista de espera.', 'info')
+
     return redirect(_volver_a(fecha, profesional))
+
+
+@bp.route('/lista-espera', methods=['POST'])
+@login_required
+def lista_espera_nueva():
+    """Agrega un paciente a la lista de espera del panel lateral."""
+    patient_id = request.form.get('patient_id', type=int)
+    prof_raw = request.form.get('professional_id', type=int)
+    shift = request.form.get('shift', 'manana')
+    note = (request.form.get('note') or '').strip()
+
+    if not patient_id:
+        flash('Elegí un paciente de la lista.', 'danger')
+        return redirect(_safe_next(url_for('agenda.index')))
+
+    paciente = db.session.get(Patient, patient_id)
+    if not paciente:
+        flash('Paciente inválido.', 'danger')
+        return redirect(_safe_next(url_for('agenda.index')))
+
+    if shift not in WAITLIST_SHIFTS:
+        shift = 'manana'
+
+    profesional = db.session.get(User, prof_raw) if prof_raw else None
+
+    repetida = (WaitingListEntry.query
+                .filter_by(patient_id=paciente.id)
+                .first())
+    if repetida:
+        flash(f'{paciente.full_name} ya está en la lista de espera.', 'warning')
+        return redirect(_safe_next(url_for('agenda.index')))
+
+    db.session.add(WaitingListEntry(
+        patient_id=paciente.id,
+        professional_id=profesional.id if profesional else None,
+        shift=shift,
+        note=note or None,
+        created_by_id=current_user.id,
+    ))
+    db.session.commit()
+    flash(f'{paciente.full_name} agregado a la lista de espera.', 'success')
+    return redirect(_safe_next(url_for('agenda.index')))
+
+
+@bp.route('/lista-espera/<int:entry_id>/eliminar', methods=['POST'])
+@login_required
+def lista_espera_eliminar(entry_id):
+    """Quita un paciente de la lista de espera."""
+    entrada = db.session.get(WaitingListEntry, entry_id)
+    if not entrada:
+        abort(404)
+    nombre = entrada.patient.full_name
+    db.session.delete(entrada)
+    db.session.commit()
+    flash(f'{nombre} quitado de la lista de espera.', 'success')
+    return redirect(_safe_next(url_for('agenda.index')))
 
 
 @bp.route('/<int:appt_id>/eliminar', methods=['POST'])

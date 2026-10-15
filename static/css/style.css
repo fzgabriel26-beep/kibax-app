@@ -885,6 +885,94 @@ body.dark .auth-logo {
 }
 .btn-sidebar:hover { background: var(--primary-tint); color: var(--primary); }
 
+/* --- Lista de espera (sidebar izquierdo, abajo) --- */
+.waitlist-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border);
+}
+.waitlist-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: .5rem; margin-bottom: .5rem;
+}
+.waitlist-head .sidebar-title { margin-bottom: 0; }
+.waitlist-count {
+  min-width: 20px; padding: 0 .45rem; border-radius: 999px;
+  background: var(--accent); color: #5A4530;
+  font-size: .68rem; font-weight: 700; line-height: 18px; text-align: center;
+}
+.waitlist-count.zero { background: var(--border); color: var(--ink-soft); }
+
+.waitlist {
+  list-style: none; padding: 0; margin: 0 0 .6rem;
+  display: flex; flex-direction: column; gap: .4rem;
+}
+.waitlist-item {
+  padding: .45rem .55rem;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition), background var(--transition);
+}
+.waitlist-item:hover,
+.waitlist-item:focus-within {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+.waitlist-top { display: flex; align-items: center; justify-content: space-between; gap: .4rem; }
+.waitlist-name {
+  font-size: .82rem; font-weight: 600; color: var(--ink);
+  text-decoration: none; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.waitlist-name:hover { color: var(--primary); text-decoration: underline; }
+
+.waitlist-shift {
+  flex-shrink: 0; font-size: .62rem; font-weight: 700; line-height: 1.5;
+  padding: .05rem .45rem; border-radius: 999px;
+  text-transform: uppercase; letter-spacing: .03em;
+}
+.shift-manana { background: var(--st-ausente-aviso-bg); color: var(--st-ausente-aviso); }
+.shift-tarde  { background: var(--st-presente-bg); color: var(--st-presente); }
+
+.waitlist-meta {
+  display: flex; flex-wrap: wrap; gap: .15rem .4rem;
+  font-size: .7rem; color: var(--ink-soft); margin-top: .15rem;
+}
+.waitlist-meta > span {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.waitlist-note { font-style: italic; max-width: 100%; }
+
+.waitlist-actions { display: none; gap: .35rem; margin-top: .4rem; align-items: stretch; }
+.waitlist-item:hover .waitlist-actions,
+.waitlist-item:focus-within .waitlist-actions { display: flex; }
+.waitlist-actions form { display: flex; gap: .35rem; margin: 0; flex: 1; }
+
+.waitlist-btn {
+  border: 1px solid var(--border); background: var(--surface);
+  border-radius: 6px; font-size: .7rem; font-weight: 600;
+  padding: .22rem .4rem; cursor: pointer; color: var(--ink);
+  transition: all var(--transition); line-height: 1.4;
+}
+.waitlist-btn.assign { flex: 1; }
+.waitlist-btn.assign:hover {
+  background: var(--primary); border-color: var(--primary); color: #fff;
+}
+.waitlist-btn.remove { flex: 0 0 26px; padding: .22rem 0; color: var(--ink-soft); }
+.waitlist-btn.remove:hover {
+  background: var(--st-ausente-sin-aviso-bg);
+  border-color: var(--st-ausente-sin-aviso);
+  color: var(--st-ausente-sin-aviso);
+}
+
+/* Tocá sin hover (celular): las acciones siempre visibles */
+@media (hover: none) {
+  .waitlist-actions { display: flex; }
+}
+body.dark .shift-manana { background: var(--st-ausente-aviso-bg); color: var(--st-ausente-aviso); }
+body.dark .shift-tarde { background: var(--st-presente-bg); color: var(--st-presente); }
+
 /* --- Main area --- */
 .agenda-main { padding: 0 1.5rem 1.5rem; }
 

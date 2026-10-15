@@ -1,6 +1,6 @@
 """Tests para el blueprint de agenda."""
 from datetime import date, timedelta
-from models import Appointment, Patient, WorkSchedule
+from models import Appointment, Patient, WorkSchedule, WaitingListEntry
 from extensions import db as _db
 from tests.conftest import _create_and_login, _create_patient, _create_professional, _make_client
 
@@ -350,3 +350,143 @@ class TestHorarios:
         }, follow_redirects=True)
         assert r.status_code == 200
         assert 'asignado' in r.data.decode()
+
+
+def _lunes_siguiente():
+    """Un lunes futuro, para caer siempre en día laborable del test."""
+    d = date.today() + timedelta(days=7)
+    while d.weekday() != 0:
+        d += timedelta(days=1)
+    return d
+
+
+class TestWaitingList:
+    """Lista de espera del panel lateral de la agenda."""
+
+    def test_requires_login(self, app):
+        r = _make_client(app).post('/agenda/lista-espera', data={'patient_id': 1})
+        assert r.status_code == 302
+        assert '/auth/login' in r.headers['Location']
+
+    def test_section_renders_in_sidebar(self, app):
+        """El panel aparece en el sidebar con el contador en cero."""
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        html = c.get(f'/agenda/?profesional={prof_id}').data.decode()
+        assert 'Lista de espera' in html
+        assert 'waitlist-section' in html
+        assert 'Nadie espera turno' in html
+
+    def test_add_entry(self, app):
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        pid = _create_patient(app, full_name='Paciente Lista', document_id='41111111')
+
+        r = c.post('/agenda/lista-espera', data={
+            'patient_id': pid,
+            'professional_id': prof_id,
+            'shift': 'tarde',
+            'note': 'solo de tarde',
+        }, follow_redirects=True)
+        assert r.status_code == 200
+        assert 'agregado a la lista de espera' in r.data.decode()
+
+        with app.app_context():
+            e = WaitingListEntry.query.one()
+            assert e.patient_id == pid
+            assert e.professional_id == prof_id
+            assert e.shift == 'tarde'
+            assert e.note == 'solo de tarde'
+
+        html = c.get(f'/agenda/?profesional={prof_id}').data.decode()
+        assert 'Paciente Lista' in html
+        assert 'solo de tarde' in html
+        assert 'Tarde' in html
+
+    def test_add_without_patient_is_rejected(self, app):
+        c = _create_and_login(app)
+        _create_professional(app)
+        c.post('/agenda/lista-espera', data={'shift': 'manana'})
+        with app.app_context():
+            assert WaitingListEntry.query.count() == 0
+
+    def test_invalid_shift_defaults_to_manana(self, app):
+        c = _create_and_login(app)
+        _create_professional(app)
+        pid = _create_patient(app, full_name='Paciente Turno', document_id='42222222')
+        c.post('/agenda/lista-espera', data={'patient_id': pid, 'shift': 'medianoche'})
+        with app.app_context():
+            assert WaitingListEntry.query.one().shift == 'manana'
+
+    def test_duplicate_patient_is_not_added_twice(self, app):
+        c = _create_and_login(app)
+        _create_professional(app)
+        pid = _create_patient(app, full_name='Paciente Repetido', document_id='43333333')
+        c.post('/agenda/lista-espera', data={'patient_id': pid})
+        r = c.post('/agenda/lista-espera', data={'patient_id': pid}, follow_redirects=True)
+        assert 'ya está en la lista de espera' in r.data.decode()
+        with app.app_context():
+            assert WaitingListEntry.query.count() == 1
+
+    def test_delete_entry(self, app):
+        c = _create_and_login(app)
+        _create_professional(app)
+        pid = _create_patient(app, full_name='Paciente Sale', document_id='44444444')
+        c.post('/agenda/lista-espera', data={'patient_id': pid})
+        with app.app_context():
+            entry_id = WaitingListEntry.query.one().id
+
+        r = c.post(f'/agenda/lista-espera/{entry_id}/eliminar', follow_redirects=True)
+        assert r.status_code == 200
+        assert 'quitado de la lista de espera' in r.data.decode()
+        with app.app_context():
+            assert WaitingListEntry.query.count() == 0
+
+    def test_delete_unknown_entry_is_404(self, app):
+        c = _create_and_login(app)
+        _create_professional(app)
+        assert c.post('/agenda/lista-espera/999999/eliminar').status_code == 404
+
+    def test_assigning_turn_removes_from_list(self, app):
+        """Al agendar el turno con waitlist_id, la fila se da de baja sola."""
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        pid = _create_patient(app, full_name='Paciente Asignado', document_id='45555555')
+        c.post('/agenda/lista-espera', data={
+            'patient_id': pid, 'professional_id': prof_id, 'shift': 'manana',
+        })
+        with app.app_context():
+            entry_id = WaitingListEntry.query.one().id
+
+        lunes = _lunes_siguiente()
+        r = c.post('/agenda/nuevo', data={
+            'patient_id': pid,
+            'professional_id': prof_id,
+            'fecha': lunes.strftime('%Y-%m-%d'),
+            'hora': '10:00',
+            'status': 'confirmado',
+            'waitlist_id': entry_id,
+        }, follow_redirects=True)
+        assert r.status_code == 200
+
+        with app.app_context():
+            assert WaitingListEntry.query.count() == 0
+            assert Appointment.query.count() == 1
+
+    def test_creating_turn_without_waitlist_id_keeps_list(self, app):
+        """Un turno normal no debe tocar la lista de espera."""
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        pid = _create_patient(app, full_name='Paciente Queda', document_id='46666666')
+        c.post('/agenda/lista-espera', data={'patient_id': pid})
+
+        c.post('/agenda/nuevo', data={
+            'patient_id': pid,
+            'professional_id': prof_id,
+            'fecha': _lunes_siguiente().strftime('%Y-%m-%d'),
+            'hora': '11:00',
+            'status': 'confirmado',
+        })
+        with app.app_context():
+            assert WaitingListEntry.query.count() == 1
+            assert Appointment.query.count() == 1

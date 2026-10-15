@@ -177,6 +177,33 @@ class Appointment(db.Model):
     dentist = db.relationship('User', foreign_keys=[created_by_id])
 
 
+# Turnos preferidos de la lista de espera (no es horario exacto, solo franja)
+WAITLIST_SHIFTS = {'manana': 'Mañana', 'tarde': 'Tarde'}
+
+
+class WaitingListEntry(db.Model):
+    """Lista de espera: paciente que quiere turno pero todavía no hay hueco.
+
+    Se muestra en el panel lateral de la agenda. Al agendarle un turno se
+    quita de la lista, así nunca queda cargado dos veces."""
+
+    __tablename__ = 'waiting_list_entry'
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    professional_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    shift = db.Column(db.String(10), default='manana')  # manana | tarde
+    note = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=_utcnow, index=True)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    patient = db.relationship('Patient', backref='waiting_entries')
+    professional = db.relationship('User', foreign_keys=[professional_id])
+
+    @property
+    def shift_label(self):
+        return WAITLIST_SHIFTS.get(self.shift, '')
+
+
 class WorkSchedule(db.Model):
     """Horario semanal de trabajo de un profesional dentro de una vigencia.
     Una fila por día de la semana (0 = lunes .. 6 = domingo) con su franja
