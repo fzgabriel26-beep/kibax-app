@@ -30,5 +30,9 @@ Thumbs.db
 *.zip
 *.tar.gz
 
+# Agent skills (OpenCode / Agent Skills format)
+# Scripts y referencias se suben; la biblioteca de assets pesada se deja local.
+skills/*/assets/
+
 # Migrations that shouldn't be committed (optional, comment out if you DO commit migrations)
 # migrations/
