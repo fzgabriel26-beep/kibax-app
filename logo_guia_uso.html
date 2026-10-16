@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guía de Uso — Kiba X Consultorio Odontológico</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f7f8fa;
+      color: #2d3436;
+      line-height: 1.6;
+      padding: 40px 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #dfe6e9;
+    }
+    h1 {
+      font-size: 34px;
+      color: #1e3a8a;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+    .subtitle {
+      font-size: 17px;
+      color: #636e72;
+    }
+    .hero {
+      background: #fff;
+      border: 1px solid #dfe6e9;
+      border-radius: 16px;
+      padding: 50px 40px;
+      margin-bottom: 60px;
+      text-align: center;
+    }
+    .hero svg { width: 260px; height: auto; margin-bottom: 24px; }
+    .hero h2 { font-size: 64px; font-weight: 700; color: #1e3a8a; text-transform: uppercase; letter-spacing: 10px; margin-bottom: 4px; }
+    .hero .x { color: #5fb3a6; letter-spacing: 20px; }
+    .hero .tag { font-size: 15px; color: #636e72; letter-spacing: 2px; margin-top: 10px; display: block; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-bottom: 60px;
+    }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+    .panel {
+      background: #fff;
+      border: 1px solid #dfe6e9;
+      border-radius: 16px;
+      padding: 32px 28px;
+    }
+    .panel h3 { font-size: 18px; color: #1e3a8a; margin-bottom: 20px; font-weight: 700; }
+    .panel svg { width: 160px; height: auto; display: block; margin: 0 auto 20px auto; }
+    .panel p { font-size: 14px; color: #636e72; margin-bottom: 16px; text-align: center; }
+    .colores {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 60px;
+    }
+    .color-card {
+      background: #fff;
+      border: 1px solid #dfe6e9;
+      border-radius: 16px;
+      padding: 28px 20px;
+      text-align: center;
+    }
+    .chip {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      margin: 0 auto 16px auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .color-card h4 { font-size: 16px; margin-bottom: 6px; color: #2d3436; }
+    .color-card .code { font-size: 13px; font-family: monospace; color: #636e72; display: block; margin-bottom: 8px; }
+    .color-card .usage { font-size: 12px; color: #8e9aaf; }
+    .do-dont {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-bottom: 60px;
+    }
+    .do-dont .panel h3 { color: #10b981; }
+    .dont .panel h3 { color: #e74c3c; }
+    .do-dont p { font-size: 13.5px; color: #636e72; margin-bottom: 12px; line-height: 1.7; }
+    .do-dont ul { list-style: none; padding: 0; }
+    .do-dont li { margin-bottom: 8px; font-size: 13px; color: #636e72; padding-left: 20px; position: relative; }
+    .do-dont li::before { content: "✓"; position: absolute; left: 0; color: #10b981; font-weight: 700; }
+    .dont li::before { content: "✗"; color: #e74c3c; }
+    .clear-space {
+      background: #fff;
+      border: 1px solid #dfe6e9;
+      border-radius: 16px;
+      padding: 32px 28px;
+      margin-bottom: 60px;
+      text-align: center;
+    }
+    .clear-space svg { width: 140px; margin-bottom: 20px; }
+    .clear-space .zone {
+      border: 2px dashed #1e3a8a;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      margin: 0 auto 16px auto;
+      position: relative;
+    }
+    .clear-space .label { font-size: 13px; color: #636e72; }
+    .favicon {
+      background: #fff;
+      border: 1px solid #dfe6e9;
+      border-radius: 16px;
+      padding: 32px 28px;
+      margin-bottom: 60px;
+    }
+    .favicon h3 { font-size: 18px; color: #1e3a8a; margin-bottom: 16px; }
+    .favicon-grid {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .favicon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .favicon-item img, .favicon-item svg {
+      width: 48px;
+      height: 48px;
+      border: 1px solid #dfe6e9;
+      border-radius: 8px;
+      background: #fff;
+    }
+    .favicon-item span { font-size: 11px; color: #636e72; font-family: monospace; }
+    .footer {
+      text-align: center;
+      color: #636e72;
+      font-size: 12px;
+      margin-top: 50px;
+      padding-top: 24px;
+      border-top: 1px solid #dfe6e9;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Kiba X — Consultorio Odontológico</h1>
+  <div class="subtitle">Guía de uso de marca · Sistema de Odontograma y Radiografías</div>
+</header>
+
+<!-- Hero principal -->
+<div class="hero">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 225">
+    <defs>
+      <linearGradient id="kibaxHero" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0" stop-color="#5FB3A6"/>
+        <stop offset="1" stop-color="#A9DCD2"/>
+      </linearGradient>
+    </defs>
+    <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+          fill="none" stroke="url(#kibaxHero)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <h2>KIBA<span class="x">X</span></h2>
+  <span class="tag">Sistema de Odontograma y Radiografías</span>
+</div>
+
+<!-- Versiones principales -->
+<div class="grid-2">
+  <div class="panel">
+    <h3>Horizontal</h3>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 240">
+      <defs>
+        <linearGradient id="tealGrad" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="#5FB3A6"/>
+          <stop offset="1" stop-color="#A9DCD2"/>
+        </linearGradient>
+      </defs>
+      <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+            transform="translate(60, 15)"
+            fill="none" stroke="url(#tealGrad)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="360" y="155" font-family="'Inter', sans-serif" font-size="72" font-weight="700" fill="#1E3A8A" text-anchor="start" letter-spacing="8">KIBA</text>
+      <text x="700" y="155" font-family="'Inter', sans-serif" font-size="72" font-weight="700" fill="#5FB3A6" text-anchor="start" letter-spacing="2">X</text>
+      <text x="360" y="195" font-family="'Inter', sans-serif" font-size="18" fill="#636E72" text-anchor="start" letter-spacing="2">SISTEMA DE ODONTOGRAMA Y RADIOGRAFÍAS</text>
+    </svg>
+    <p>Uso principal: encabezados, sitio web, tarjetas de presentación, señalética.</p>
+  </div>
+  <div class="panel">
+    <h3>Apilado</h3>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560">
+      <defs>
+        <linearGradient id="tealGradStack" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="#5FB3A6"/>
+          <stop offset="1" stop-color="#A9DCD2"/>
+        </linearGradient>
+      </defs>
+      <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+            transform="translate(80, 40)"
+            fill="none" stroke="url(#tealGradStack)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="200" y="390" font-family="'Inter', sans-serif" font-size="56" font-weight="700" fill="#1E3A8A" text-anchor="middle" letter-spacing="6">KIBA</text>
+      <text x="200" y="450" font-family="'Inter', sans-serif" font-size="56" font-weight="700" fill="#5FB3A6" text-anchor="middle" letter-spacing="2">X</text>
+      <text x="200" y="495" font-family="'Inter', sans-serif" font-size="17" fill="#636E72" text-anchor="middle" letter-spacing="2">SISTEMA DE ODONTOGRAMA Y RADIOGRAFÍAS</text>
+    </svg>
+    <p>Uso secundario: redes sociales, perfiles, aplicaciones móviles, merchandising vertical.</p>
+  </div>
+</div>
+
+<!-- Colores -->
+<div class="colores">
+  <div class="color-card">
+    <div class="chip" style="background:#5FB3A6;"></div>
+    <h4>Teal Principal</h4>
+    <span class="code">#5FB3A6</span>
+    <span class="usage">Gradiente inicio · Color de la X · Símbolo principal</span>
+  </div>
+  <div class="color-card">
+    <div class="chip" style="background:#A9DCD2;"></div>
+    <h4>Teal Secundario</h4>
+    <span class="code">#A9DCD2</span>
+    <span class="usage">Gradiente final · Fondos claros · Elementos decorativos</span>
+  </div>
+  <div class="color-card">
+    <div class="chip" style="background:#1E3A8A;"></div>
+    <h4>Azul Marino</h4>
+    <span class="code">#1E3A8A</span>
+    <span class="usage">Texto KIBA · Títulos · Texto principal</span>
+  </div>
+  <div class="color-card">
+    <div class="chip" style="background:#10B981;"></div>
+    <h4>Verde Menta</h4>
+    <span class="code">#10B981</span>
+    <span class="usage">Acentos · Enlaces · Botones · Checkmarks</span>
+  </div>
+  <div class="color-card">
+    <div class="chip" style="background:#00CEC9;"></div>
+    <h4>Cian Turquesa</h4>
+    <span class="code">#00CEC9</span>
+    <span class="usage">Alternativa de acento · Paleta B (secundaria)</span>
+  </div>
+  <div class="color-card">
+    <div class="chip" style="background:#2D3436;"></div>
+    <h4>Carbón</h4>
+    <span class="code">#2D3436</span>
+    <span class="usage">Texto secundario · Versión monocromática · Fondo oscuro</span>
+  </div>
+</div>
+
+<!-- Clear space -->
+<div class="clear-space">
+  <h3>Espacio libre (Clear space)</h3>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 225">
+    <defs>
+      <linearGradient id="kibaxClear" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0" stop-color="#5FB3A6"/>
+        <stop offset="1" stop-color="#A9DCD2"/>
+      </linearGradient>
+    </defs>
+    <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+          fill="none" stroke="url(#kibaxClear)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <div class="zone"></div>
+  <p class="label">Respetá un espacio mínimo alrededor del símbolo equivalente al ancho del diente (área punteada). No superpongas texto ni otros elementos dentro de esta zona.</p>
+</div>
+
+<!-- Qué hacer / qué no hacer -->
+<div class="do-dont">
+  <div class="panel do">
+    <h3>✓ Qué hacer</h3>
+    <ul>
+      <li>Usá siempre el archivo SVG original para escalar sin perder calidad.</p>
+      <li>Mantené las proporciones del símbolo sin distorsionar (no estires ni achiques solo un eje).</li>
+      <li>Usá la versión monocromática blanca sobre fondos oscuros.</li>
+      <li>Usá el ícono cuadrado para favicon y app icon.</li>
+      <li>Respetá el clear space alrededor del logo.</li>
+    </ul>
+  </div>
+  <div class="panel dont">
+    <h3>✗ Qué no hacer</h3>
+    <ul>
+      <li>No cambies los colores del gradiente por otros tonos no autorizados.</li>
+      <li>No rotés el símbolo ni lo inclines.</li>
+      <li>No le agregues efectos de sombra, brillo o contorno.</li>
+      <li>No lo uses sobre fondos con mucho ruido visual o fotos saturadas.</li>
+      <li>No modifiques el espaciado entre KIBA y la X.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Versiones monocromáticas -->
+<div class="grid-2">
+  <div class="panel">
+    <h3>Monocromática Negra</h3>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 225">
+      <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+            fill="none" stroke="#1A1A1A" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <p>Para documentos en blanco y negro, facturas, recibos y papelería monocromática.</p>
+  </div>
+  <div class="panel">
+    <h3>Monocromática Blanca</h3>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 225">
+      <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+            fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <p>Para fondos oscuros, modo noche, camisetas negras y materiales oscuros.</p>
+  </div>
+</div>
+
+<!-- Favicon / App icon -->
+<div class="favicon">
+  <h3>Favicon / App Icon</h3>
+  <p>Usá el archivo <code>assets/logo/kibax_icon.svg</code> y exportalo a los tamaños necesarios:</p>
+  <div class="favicon-grid">
+    <div class="favicon-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <rect width="512" height="512" fill="#FFFFFF"/>
+        <defs>
+          <linearGradient id="ti" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stop-color="#5FB3A6"/>
+            <stop offset="1" stop-color="#A9DCD2"/>
+          </linearGradient>
+        </defs>
+        <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+              transform="translate(136, 80) scale(2.2)"
+              fill="none" stroke="url(#ti)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>16×16 px</span>
+    </div>
+    <div class="favicon-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <rect width="512" height="512" fill="#FFFFFF"/>
+        <defs>
+          <linearGradient id="ti2" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stop-color="#5FB3A6"/>
+            <stop offset="1" stop-color="#A9DCD2"/>
+          </linearGradient>
+        </defs>
+        <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+              transform="translate(136, 80) scale(2.2)"
+              fill="none" stroke="url(#ti2)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>32×32 px</span>
+    </div>
+    <div class="favicon-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <rect width="512" height="512" fill="#FFFFFF"/>
+        <defs>
+          <linearGradient id="ti3" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stop-color="#5FB3A6"/>
+            <stop offset="1" stop-color="#A9DCD2"/>
+          </linearGradient>
+        </defs>
+        <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+              transform="translate(136, 80) scale(2.2)"
+              fill="none" stroke="url(#ti3)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>180×180 px</span>
+    </div>
+    <div class="favicon-item">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <rect width="512" height="512" fill="#FFFFFF"/>
+        <defs>
+          <linearGradient id="ti4" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stop-color="#5FB3A6"/>
+            <stop offset="1" stop-color="#A9DCD2"/>
+          </linearGradient>
+        </defs>
+        <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+              transform="translate(136, 80) scale(2.2)"
+              fill="none" stroke="url(#ti4)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>512×512 px</span>
+    </div>
+  </div>
+  <p style="font-size: 13px; color: #636e72; margin-top: 16px;">Tamaños recomendados: 16×16 (favicon navegador), 32×32 (favicon retina), 180×180 (apple touch icon), 512×512 (android / PWA).</p>
+</div>
+
+<div class="footer">
+  Generado con la Agent Skill de diseño de logos · Kiba X Consultorio Odontológico · Paleta basada en tu referencia de diente minimalista (Concepto 1).
+</div>
+
+</body>
+</html>

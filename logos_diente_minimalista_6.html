@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6 Conceptos de Diente Minimalista — Kiba X</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f7f8fa;
+      color: #2d3436;
+      line-height: 1.5;
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #dfe6e9;
+    }
+    h1 {
+      font-size: 32px;
+      color: #1e3a8a;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+    .subtitle {
+      font-size: 17px;
+      color: #636e72;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-bottom: 50px;
+    }
+    .concepto {
+      background: #fff;
+      border: 1px solid #dfe6e9;
+      border-radius: 16px;
+      padding: 30px 22px;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .concepto:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 14px 28px rgba(0,0,0,0.07);
+    }
+    .concepto svg {
+      width: 150px;
+      height: auto;
+      margin-bottom: 20px;
+      display: block;
+    }
+    .tag {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+    .tag.a { background: #e8eef7; color: #1e3a8a; }
+    .tag.b { background: #e0f7f6; color: #008b8b; }
+    .tag.o { background: #eef2f5; color: #5fb3a6; }
+    h2 {
+      font-size: 18px;
+      color: #2d3436;
+      margin-bottom: 6px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    p.descripcion {
+      font-size: 12.5px;
+      color: #636e72;
+      margin-bottom: 16px;
+      max-width: 200px;
+    }
+    .colores {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      width: 100%;
+    }
+    .chip {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .recomendado::before {
+      content: "RECOMENDADO";
+      position: relative;
+      top: -8px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: #10b981;
+      display: block;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .footer {
+      text-align: center;
+      color: #636e72;
+      font-size: 12px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #dfe6e9;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    }
+    @media (max-width: 600px) {
+      body { padding: 20px 16px; }
+      .grid { grid-template-columns: 1fr; gap: 20px; }
+      h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Kiba X — Consultorio Odontológico</h1>
+  <div class="subtitle">6 conceptos de diente minimalista · basados en tu referencia</div>
+</header>
+
+<div class="grid">
+
+  <!-- 1. Referente — Gradiente Teal (fiel a tu SVG) -->
+  <div class="concepto recomendado" id="c1">
+    <div class="tag o">Paleta Original</div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 225">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="#5FB3A6"/>
+          <stop offset="1" stop-color="#A9DCD2"/>
+        </linearGradient>
+      </defs>
+      <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+            fill="none" stroke="url(#g1)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h2>1 · Referente Teal</h2>
+    <p class="descripcion">Diente outline con gradiente teal, tal como en tu referencia. Limpio, orgánico, amigable.</p>
+    <div class="colores">
+      <div class="chip" style="background:#5FB3A6;" title="#5FB3A6"></div>
+      <div class="chip" style="background:#A9DCD2;" title="#A9DCD2"></div>
+    </div>
+  </div>
+
+  <!-- 2. Monocromático Menta -->
+  <div class="concepto" id="c2">
+    <div class="tag b">Monocromático</div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 225">
+      <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+            fill="none" stroke="#10B981" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h2>2 · Menta Puro</h2>
+    <p class="descripcion">Un solo color (#10B981), stroke más fino. Minimalista, fácil de aplicar en sellos y uniformes.</p>
+    <div class="colores">
+      <div class="chip" style="background:#10B981;" title="#10B981"></div>
+    </div>
+  </div>
+
+  <!-- 3. Azul Marino + Menta (Paleta A) -->
+  <div class="concepto" id="c3">
+    <div class="tag a">Paleta A</div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 225">
+      <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+            fill="none" stroke="#1E3A8A" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Detalle raíz en menta -->
+      <path d="M120 186 Q 150 200 158 199 M120 186 Q 90 200 82 199" stroke="#10B981" stroke-width="10" fill="none" stroke-linecap="round"/>
+    </svg>
+    <h2>3 · Marino + Menta</h2>
+    <p class="descripcion">Diente azul marino con raíces en verde menta. Confianza + frescura bucal.</p>
+    <div class="colores">
+      <div class="chip" style="background:#1E3A8A;" title="#1E3A8A"></div>
+      <div class="chip" style="background:#10B981;" title="#10B981"></div>
+    </div>
+  </div>
+
+  <!-- 4. Carbón + Cian (Paleta B) -->
+  <div class="concepto" id="c4">
+    <div class="tag b">Paleta B</div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 225">
+      <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+            fill="none" stroke="#2D3436" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M140 42 Q 150 28 160 30 M100 42 Q 90 28 80 30" stroke="#00CEC9" stroke-width="10" fill="none" stroke-linecap="round"/>
+    </svg>
+    <h2>4 · Carbón + Cian</h2>
+    <p class="descripcion">Diente carbón con acentos cian en los picos superiores. Moderno y técnico.</p>
+    <div class="colores">
+      <div class="chip" style="background:#2D3436;" title="#2D3436"></div>
+      <div class="chip" style="background:#00CEC9;" title="#00CEC9"></div>
+    </div>
+  </div>
+
+  <!-- 5. Diente Relleno -->
+  <div class="concepto" id="c5">
+    <div class="tag o">Sólido</div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 225">
+      <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+            fill="#0F6B5E"/>
+    </svg>
+    <h2>5 · Diente Sólido</h2>
+    <p class="descripcion">Relleno teal oscuro sin contornos. Más marcaje, ideal para iconos pequeños y favicons.</p>
+    <div class="colores">
+      <div class="chip" style="background:#0F6B5E;" title="#0F6B5E"></div>
+    </div>
+  </div>
+
+  <!-- 6. Outline Delgado + Texto Apilado -->
+  <div class="concepto" id="c6">
+    <div class="tag o">Ligero</div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 225">
+      <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"
+            fill="none" stroke="#5FB3A6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h2>6 · Outline Delgado</h2>
+    <p class="descripcion">Stroke fino (#5FB3A6), símbolo arriba y texto apilado. Muy ligero y digital.</p>
+    <div class="colores">
+      <div class="chip" style="background:#5FB3A6;" title="#5FB3A6"></div>
+      <div class="chip" style="background:#A9DCD2;" title="#A9DCD2"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Generado con la Agent Skill de diseño de logos · Kiba X Consultorio Odontológico · 6 conceptos basados en tu referencia de diente minimalista.
+</div>
+
+</body>
+</html>
