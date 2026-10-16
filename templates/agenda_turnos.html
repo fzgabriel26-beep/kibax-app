@@ -10,7 +10,7 @@
   <div class="d-flex gap-2">
     <a href="{{ url_for('agenda.index', profesional=profesional.id if profesional else '') }}" class="btn-outline">Ver calendario</a>
     <a href="{{ url_for('agenda.horarios') }}" class="btn-outline">Horarios de profesionales</a>
-    <a href="{{ url_for('agenda.export_ics', profesional=profesional.id if profesional else '', rango=rango) }}" class="btn-outline" download>📥 Exportar .ics</a>
+    <a href="{{ url_for('agenda.export_ics', profesional=profesional.id if profesional else '', rango=rango) }}" class="btn-outline" download>Exportar .ics</a>
   </div>
 </div>
 

@@ -69,15 +69,15 @@
 
     <!-- Acciones rápidas -->
     <div class="sidebar-section">
-      <a href="{{ url_for('agenda.horarios') }}" class="btn-sidebar">🕐 Horarios de profesionales</a>
-      <a href="{{ url_for('agenda.list_profesionales') }}" class="btn-sidebar">👩‍⚕️ Gestionar profesionales</a>
-      <a href="{{ url_for('agenda.export_ics', profesional=profesional.id if profesional else '') }}" class="btn-sidebar">📥 Exportar .ics</a>
+      <a href="{{ url_for('agenda.horarios') }}" class="btn-sidebar">Horarios de profesionales</a>
+      <a href="{{ url_for('agenda.list_profesionales') }}" class="btn-sidebar">Gestionar profesionales</a>
+      <a href="{{ url_for('agenda.export_ics', profesional=profesional.id if profesional else '') }}" class="btn-sidebar">Exportar .ics</a>
     </div>
 
     <!-- Lista de espera -->
     <div class="sidebar-section waitlist-section">
       <div class="waitlist-head">
-        <h4 class="sidebar-title">⏳ Lista de espera</h4>
+        <h4 class="sidebar-title">Lista de espera</h4>
         <span class="waitlist-count {{ 'zero' if not waitlist|length }}">{{ waitlist|length }}</span>
       </div>
 
@@ -152,7 +152,7 @@
     </div>
     {% else %}
     <div class="empty-state">
-      <div class="empty-icon">👩‍⚕️</div>
+      <div class="empty-icon"></div>
       <h3>No hay profesionales cargados</h3>
       <p>Altá un profesional para empezar a usar la agenda.</p>
       <a href="{{ url_for('agenda.nuevo_profesional') }}" class="btn-solid mt-2">+ Agregar profesional</a>
@@ -282,7 +282,7 @@
 
     {% else %}
     <div class="empty-state">
-      <div class="empty-icon">📅</div>
+      <div class="empty-icon"></div>
       <h3>No hay turnos para mostrar</h3>
       <p>Hacé clic en un día del mini calendario para ver los horarios disponibles de {{ profesional.full_name }}.</p>
     </div>
@@ -347,7 +347,7 @@
             </div>
           </div>
           <div class="sobreturno-hint" id="a-sobreturno-hint" hidden>
-            💡 <strong>Sobreturno:</strong> podés escribir cualquier hora
+            <strong>Sobreturno:</strong> podés escribir cualquier hora
             (ej. <span id="a-sobreturno-ejemplo">09:15</span>), aunque no
             coincida con un horario ni el profesional esté en ese rango.
           </div>
@@ -427,10 +427,10 @@
             aria-label="Cerrar menú">✕</button>
   </div>
   <button type="button" class="slot-menu-item" data-act="nuevo" role="menuitem">
-    <span class="slot-menu-ico" aria-hidden="true">👤</span> Nuevo turno
+    <span class="slot-menu-ico" aria-hidden="true"></span> Nuevo turno
   </button>
   <button type="button" class="slot-menu-item" data-act="sobreturno" role="menuitem">
-    <span class="slot-menu-ico" aria-hidden="true">⏰</span> Nuevo sobreturno
+    <span class="slot-menu-ico" aria-hidden="true"></span> Nuevo sobreturno
   </button>
   <button type="button" class="slot-menu-item danger" data-act="anular" role="menuitem">
     <span class="slot-menu-ico" aria-hidden="true" id="anularIco">🚫</span><span id="anularLabel"> Anular turno</span>
