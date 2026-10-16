@@ -109,6 +109,16 @@ body.dark .auth-card { background: rgba(34,44,42,.8); backdrop-filter: blur(20px
 body.dark .form-control, body.dark .form-select {
   background: #1A2020; border-color: var(--border); color: #D8E2DF;
 }
+
+body.dark ::placeholder {
+  color: rgba(216, 226, 223, 0.45);
+  opacity: 1;
+}
+
+body.dark .form-select option {
+  color: #D8E2DF;
+  background: #1A2020;
+}
 body.dark .form-control:focus, body.dark .form-select:focus {
   border-color: #7EBFB5; box-shadow: 0 0 0 3px rgba(126,191,181,.12);
 }
