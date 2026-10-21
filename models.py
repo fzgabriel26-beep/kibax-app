@@ -59,12 +59,24 @@ class Patient(db.Model):
     full_name = db.Column(db.String(150), nullable=False, index=True)
     document_id = db.Column(db.String(60), index=True)
     birth_date = db.Column(db.Date)
+    gender = db.Column(db.String(30))
     phone = db.Column(db.String(40), index=True)
     email = db.Column(db.String(120), index=True)
     address = db.Column(db.String(200))
     medical_notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=_utcnow)
     created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    @property
+    def age(self):
+        """Edad en años cumplidos, o None si no hay fecha de nacimiento."""
+        if not self.birth_date:
+            return None
+        today = datetime.date.today()
+        if self.birth_date > today:
+            return None
+        return (today.year - self.birth_date.year
+                - ((today.month, today.day) < (self.birth_date.month, self.birth_date.day)))
 
     tooth_statuses = db.relationship(
         'ToothStatus', backref='patient', lazy=True,

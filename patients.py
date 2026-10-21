@@ -233,6 +233,7 @@ def new_patient():
             full_name=full_name,
             document_id=request.form.get('document_id', '').strip(),
             birth_date=birth_date,
+            gender=request.form.get('gender', '').strip(),
             phone=request.form.get('phone', '').strip(),
             email=email,
             address=request.form.get('address', '').strip(),
@@ -275,6 +276,7 @@ def edit_patient(patient_id):
                 birth_date = None
 
         # Registrar cambios para auditoría
+        gender = request.form.get('gender', '').strip()
         changes = {}
         if paciente.full_name != full_name:
             changes['full_name'] = {'old': paciente.full_name, 'new': full_name}
@@ -282,10 +284,13 @@ def edit_patient(patient_id):
             changes['email'] = {'old': paciente.email, 'new': email}
         if (paciente.phone or '') != request.form.get('phone', '').strip():
             changes['phone'] = {'old': paciente.phone, 'new': request.form.get('phone', '').strip()}
+        if (paciente.gender or '') != gender:
+            changes['gender'] = {'old': paciente.gender, 'new': gender}
 
         paciente.full_name = full_name
         paciente.document_id = request.form.get('document_id', '').strip()
         paciente.birth_date = birth_date
+        paciente.gender = gender
         paciente.phone = request.form.get('phone', '').strip()
         paciente.email = email
         paciente.address = request.form.get('address', '').strip()
@@ -304,6 +309,7 @@ def edit_patient(patient_id):
         'full_name': paciente.full_name or '',
         'document_id': paciente.document_id or '',
         'birth_date': paciente.birth_date.isoformat() if paciente.birth_date else '',
+        'gender': paciente.gender or '',
         'phone': paciente.phone or '',
         'email': paciente.email or '',
         'address': paciente.address or '',

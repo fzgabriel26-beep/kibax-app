@@ -102,9 +102,12 @@
 
     <div class="print-data">
       {% if paciente.document_id %}<div><b>Documento:</b> {{ paciente.document_id }}</div>{% endif %}
+      {% if paciente.age is not none %}<div><b>Edad:</b> {{ paciente.age }} años</div>{% endif %}
+      {% if paciente.gender %}<div><b>Género:</b> {{ paciente.gender }}</div>{% endif %}
       {% if paciente.birth_date %}<div><b>Nacimiento:</b> {{ paciente.birth_date.strftime('%d/%m/%Y') }}</div>{% endif %}
       {% if paciente.phone %}<div><b>Teléfono:</b> {{ paciente.phone }}</div>{% endif %}
       {% if paciente.email %}<div><b>Email:</b> {{ paciente.email }}</div>{% endif %}
+      {% if paciente.address %}<div style="grid-column: 1 / -1;"><b>Domicilio:</b> {{ paciente.address }}</div>{% endif %}
     </div>
     {% if paciente.medical_notes %}
     <p class="print-notes"><b>Antecedentes:</b> {{ paciente.medical_notes }}</p>

@@ -25,24 +25,35 @@
              value="{{ form.get('birth_date','') }}">
     </div>
     <div class="col-md-4 mb-3">
+      <label class="form-label" for="gender">Género</label>
+      <select class="form-select" id="gender" name="gender">
+        <option value="">Sin especificar</option>
+        {% for option in ['Femenino', 'Masculino', 'No binario', 'Otro', 'Prefiero no decirlo'] %}
+        <option value="{{ option }}" {% if form.get('gender','') == option %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4 mb-3">
       <label class="form-label" for="phone">Teléfono</label>
       <input class="form-control" type="text" id="phone" name="phone"
              value="{{ form.get('phone','') }}" maxlength="40"
              placeholder="Ej: 11-5555-1234">
     </div>
-    <div class="col-md-4 mb-3">
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
       <label class="form-label" for="email">Email</label>
       <input class="form-control" type="email" id="email" name="email"
              value="{{ form.get('email','') }}" maxlength="120"
              placeholder="Ej: maria@email.com">
     </div>
-  </div>
-
-  <div class="mb-3">
-    <label class="form-label" for="address">Dirección</label>
-    <input class="form-control" type="text" id="address" name="address"
-           value="{{ form.get('address','') }}" maxlength="200"
-           placeholder="Ej: Av. Corrientes 1234, CABA">
+    <div class="col-md-6 mb-3">
+      <label class="form-label" for="address">Dirección</label>
+      <input class="form-control" type="text" id="address" name="address"
+             value="{{ form.get('address','') }}" maxlength="200"
+             placeholder="Ej: Av. Corrientes 1234, CABA">
+    </div>
   </div>
 
   <div class="mb-4">

@@ -1,4 +1,6 @@
 """Tests para el blueprint de pacientes."""
+from datetime import date
+
 from models import Patient, ToothStatus
 from extensions import db as _db
 from tests.conftest import _create_and_login, _create_patient
@@ -37,12 +39,16 @@ class TestNewPatient:
         r = c.post('/pacientes/nuevo', data={
             'full_name': 'María García', 'document_id': '87654321',
             'phone': '11-5555-1234', 'email': 'maria@test.com',
-            'birth_date': '1990-05-15',
+            'birth_date': '1990-05-15', 'gender': 'Femenino',
+            'address': 'Av. Corrientes 1234, CABA',
         }, follow_redirects=True)
         assert r.status_code == 200
         assert 'María García' in r.data.decode()
         with app.app_context():
-            assert Patient.query.filter_by(full_name='María García').first() is not None
+            p = Patient.query.filter_by(full_name='María García').first()
+            assert p is not None
+            assert p.gender == 'Femenino'
+            assert p.address == 'Av. Corrientes 1234, CABA'
 
     def test_create_patient_without_name(self, app):
         c = _create_and_login(app)
@@ -66,6 +72,35 @@ class TestPatientDetail:
         c = _create_and_login(app)
         r = c.get('/pacientes/99999')
         assert r.status_code == 404
+
+
+class TestPatientExport:
+    def test_export_includes_age_gender_and_address(self, app):
+        c = _create_and_login(app)
+        birth = date(1990, 5, 15)
+        pid = _create_patient(
+            app, full_name='María García', document_id='87654321',
+            birth_date=birth, gender='Femenino',
+            address='Av. Corrientes 1234, CABA',
+        )
+        r = c.get(f'/pacientes/{pid}/exportar')
+        assert r.status_code == 200
+        html = r.data.decode()
+        today = date.today()
+        age = today.year - birth.year - ((today.month, today.day) < (birth.month, birth.day))
+        assert f'Edad:</b> {age} años' in html
+        assert 'Género:</b> Femenino' in html
+        assert 'Domicilio:</b> Av. Corrientes 1234, CABA' in html
+
+    def test_edit_patient_gender(self, app):
+        c = _create_and_login(app)
+        pid = _create_patient(app)
+        r = c.post(f'/pacientes/{pid}/editar', data={
+            'full_name': 'Juan Pérez', 'gender': 'Masculino',
+        }, follow_redirects=True)
+        assert r.status_code == 200
+        with app.app_context():
+            assert _db.session.get(Patient, pid).gender == 'Masculino'
 
 
 class TestDeletePatient:
