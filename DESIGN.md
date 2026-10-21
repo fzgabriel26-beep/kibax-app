@@ -3,20 +3,23 @@ name: Kiba X
 description: "Sistema visual del consultorio odontológico: menta clínica, vidrio suave y acento arena."
 colors:
   menta-clinica: "#7EBFB5"
-  menta-profunda: "#5A9E94"
+  menta-profunda: "#2F6F67"
   menta-en-reposo: "#EDF7F5"
   arena-calida: "#E8B87A"
   arena-encendida: "#F0CB9A"
-  marron-de-sobre: "#5A4530"
+  marron-de-sobre: "#3F2E1F"
   lienzo-consultorio: "#F4F6F5"
   vidrio-claro: "#FFFFFF"
   vidrio-con-sol: "#FAFCFB"
   grafito-clinico: "#3A4543"
-  grafito-suave: "#7E8C88"
+  grafito-suave: "#5C6B67"
   borde-instrumental: "#E4EAE7"
   borde-tenue: "#EDF1EF"
-  terracota-alerta: "#B06060"
+  terracota-alerta: "#A04949"
   terracota-reposo: "#FDF0EE"
+  tinta-navbar: "#14332F"
+  tinta-navbar-suave: "#24564F"
+  tinta-sobre-claro: "#1C2825"
   consultorio-nocturno: "#1A2020"
   vidrio-nocturno: "#222C2A"
   vidrio-nocturno-iluminado: "#2A3532"
@@ -193,14 +196,15 @@ El modo oscuro es un ciudadano de primera, no un afterthought: no invierte color
 Paleta de consultorio: una menta desaturada que estructura, una arena cálida que invita a la acción y un grafito verdoso que sostiene la lectura.
 
 ### Primary
-- **Menta Clínica**: color de la barra de navegación, de los enlaces y del anillo de foco. Es estructura, no decoración.
-- **Menta Profunda**: texto y bordes sobre fondos de menta en reposo; también el estado activo de pestañas y selectores.
+- **Menta Clínica**: color de la barra de navegación y de los rellenos menta (selecciones, hover, tintes). Es estructura, no decoración; los enlaces y el anillo de foco usan Menta Profunda.
+- **Menta Profunda**: texto y bordes sobre fondos de menta en reposo; también el estado activo de pestañas y selectores, y la tinta de los enlaces. Es el tono de menta legible sobre vidrio claro (≥4.5:1); la Menta Clínica queda para rellenos, bordes y halos, donde no hace falta leerla.
 - **Menta en Reposo**: relleno de hover, fondos de badges de rol y tarjetas de aviso. Es el tinte que aparece cuando algo se toca.
 - **Menta Nocturna**: el mismo rol en modo oscuro, sobre el vidrio nocturno.
 
 ### Secondary
 - **Arena Cálida**: color de la acción principal (dar de alta, guardar, cerrar sesión) y de los avatares. Aparece en gradiente hacia **Arena Encendida** en botones y paginación activa.
-- **Marrón de Sobre**: texto sobre arena. Nunca blanco puro sobre el acento: el contraste y el tono cálido se pierden.
+- **Marrón de Sobre**: texto sobre arena. Nunca blanco puro sobre el acento: el contraste y el tono cálido se pierden. Es lo bastante oscuro para pasar 4.5:1 sobre los dos extremos del gradiente, también en modo oscuro.
+- **Tinta de Navbar** / **Tinta de Navbar Suave**: la marca y los enlaces de la barra menta. La navbar es clara en los dos temas, así que su texto es grafito profundo, nunca blanco (que daba 1.7:1).
 
 ### Neutral
 - **Lienzo de Consultorio**: fondo general, con un degradado diagonal apenas perceptible entre tres grises verdosos.
@@ -208,6 +212,7 @@ Paleta de consultorio: una menta desaturada que estructura, una arena cálida qu
 - **Grafito Clínico** / **Grafito Suave**: texto principal y texto secundario (metadatos, ayudas, pies).
 - **Borde de Instrumental** / **Borde Tenue**: bordes de 1 px; el tenue se usa en superficies flotantes y separadores internos.
 - **Terracota de Alerta** / **Terracota en Reposo**: acciones destructivas, textos de error y estados bloqueados.
+- **Tinta sobre relleno claro**: el relleno de menta o arena es claro en los dos temas, así que su texto es siempre una tinta profunda (`--ink-on-light`, `--accent-ink`). El blanco sobre pastel —menta seleccionada, contadores arena, toasts— quedó descartado por contraste.
 - **Consultorio Nocturno**, **Vidrio Nocturno**, **Grafito Claro**, **Grafito Medio**, **Borde Nocturno**: la contraparte oscura de la misma familia. El modo oscuro no reutiliza los grises claros con opacidad: define valores propios.
 
 ### Semántica del odontograma
@@ -274,7 +279,7 @@ El sistema usa **capas translúcidas**: las superficies flotan sobre el lienzo c
 - **Halo menta** (`0 0 20px rgba(126,191,181,.1)`): refuerzo de hover sobre superficies menta; nunca se usa solo.
 
 ### Named Rules
-**La Regla del Vidrio Discreto.** El desenfoque de fondo se reserva para lo que flota o cubre: navbar, modales, menús, autocompletado, toasts y tarjetas de autenticación. Un panel de contenido quieto no lleva `backdrop-filter`.
+**La Regla del Vidrio Discreto.** El vidrio es el material de todas las superficies y su desenfoque crece con la elevación: 8 px en tarjetas de paciente, 12 px en paneles de contenido y formularios, 16–20 px en navbar, menús, autocompletado y modales. El vidrio nunca se anida dentro de otro vidrio ni se apoya sobre una imagen.
 
 **La Regla de una Sola Elevación.** Una tarjeta en reposo tiene una sombra; en hover puede sumar halo, pero no cambia de nivel dos veces. Los menús y modales son los únicos que llegan al nivel flotante.
 
@@ -295,8 +300,8 @@ Lenguaje de esquinas generosas y bordes finos. La escala principal es 10 / 14 / 
 ### Buttons
 - **Shape:** rectángulo de radio 10 px, padding 0.5 rem × 1 rem, tipografía Inter 600 a 0.85 rem.
 - **Primary:** gradiente arena, texto marrón de sobre, sombra cálida baja. Es la única acción principal por pantalla.
-- **Hover / Focus:** la primaria sube 1 px y profundiza la sombra; contorno y fantasma cambian a menta en reposo con texto menta. El foco es un anillo de 3 px con el halo menta, nunca `outline` por defecto.
-- **Secondary / Ghost:** contorno con borde de instrumental sobre vidrio claro; fantasma con borde blanco translúcido sobre la navbar; peligro en terracota con borde propio.
+- **Hover / Focus:** la primaria sube 1 px y profundiza la sombra; contorno y fantasma cambian a menta en reposo con texto menta. El foco es un anillo de 2 px en menta profunda (`outline`, con 2 px de separación) en enlaces y botones, y el halo menta de 3 px se reserva a los campos de formulario. Sobre la navbar el anillo es de tinta.
+- **Secondary / Ghost:** contorno con borde de instrumental sobre vidrio claro; fantasma con borde de tinta translúcida sobre la navbar; peligro en terracota con borde propio.
 - **Tamaños:** existe una variante compacta (`btn-sm`, 0.35 × 0.75 rem) para acciones dentro de tablas y una extra compacta (`btn-xs`, 0.28 × 0.6 rem) para filas de agenda.
 
 ### Inputs / Fields
@@ -315,23 +320,23 @@ Lenguaje de esquinas generosas y bordes finos. La escala principal es 10 / 14 / 
 ### Chips & Badges
 - **Style:** píldora completa, tipografía 0.68–0.7 rem en mayúsculas con tracking leve.
 - **Role:** menta en reposo con texto menta profunda para odontólogos; gris de superficie para secretarios.
-- **Counters:** arena con texto blanco (o marrón de sobre en la lista de espera); gris cuando el contador está en cero.
+- **Counters:** arena con tinta de sobre (marrón, nunca blanco: daba 1.8:1); gris cuando el contador está en cero.
 
 ### Navigation
-- **Style:** barra menta translúcida con desenfoque de 20 px, texto blanco, marca con isotipo de diente y la "X" atenuada.
-- **Default / Hover:** los enlaces son píldoras fantasma con borde blanco translúcido; el hover sube la opacidad del fondo, no cambia el color del texto.
+- **Style:** barra menta translúcida con desenfoque de 20 px, texto de tinta profunda (Menta Clínica 1.7:1 y blanco sobre menta quedaron descartados), marca con isotipo de diente y la "X" en tinta suave.
+- **Default / Hover:** los enlaces son píldoras fantasma con borde de tinta translúcida; el hover sube la opacidad del fondo, no cambia el color del texto.
 - **Active:** no hay estado activo pintado en la navbar; la ubicación se comunica con el título y el `eyebrow` de la página.
-- **Mobile:** por debajo de 768 px colapsa a hamburguesa; los enlaces pasan a ancho completo y el desplegable se vuelve estático y oscuro.
+- **Mobile:** por debajo de 768 px colapsa a hamburguesa; los enlaces pasan a ancho completo y el desplegable se vuelve estático, con superficie y borde propios del tema.
 - **Theme toggle:** icono sol/luna en el mismo lenguaje fantasma; el modo oscuro se guarda en `localStorage` y respeta `prefers-color-scheme` la primera vez.
 
 ### Section Tabs
-Pestañas de ficha clínica: borde de instrumental, radio superior de 10 px, inactivas en grafito suave y activas en vidrio claro con texto menta profunda y peso 700. El panel debajo pierde el borde superior y toma radio inferior de 16 px.
+Pestañas de ficha clínica: borde de instrumental, radio superior de 10 px, inactivas en grafito suave y activas en vidrio claro con texto menta profunda y peso 700. La primera pestaña nace activa (`active show`, `aria-selected="true"`): la ficha nunca se muestra con el panel de pestañas vacío. El panel debajo pierde el borde superior y toma radio inferior de 16 px.
 
 ### Agenda Slot Menu
 Menú contextual flotante que se abre al tocar una fila de horario: radio 14 px, sombra flotante + halo, animación de entrada de 130 ms con desplazamiento y escala leve. Los ítems son filas de 0.5 × 0.6 rem con icono a la izquierda; la acción destructiva va en terracota y su hover usa el tinte de ausencia.
 
 ### Tooth Button (signature)
-El diente es un SVG de 40×40 con cinco caras (superior, derecha, inferior, izquierda y oclusal) y un número FDI debajo en Inter 700. Cada cara se pinta con un color de estado; los estados que afectan el diente completo se resuelven con un overlay semitransparente o un trazo punteado. En hover el diente sube 3 px y gana una sombra proyectada; al tocar baja a 0.95. Los dientes temporarios usan la variante `size-small` (34×46 px, 30×42 px en mobile). La leyenda es interactiva: al elegir un estado, los dientes que no coinciden bajan a 25% de opacidad y pierden saturación.
+El diente es un SVG de 40×40 con cinco caras (superior, derecha, inferior, izquierda y oclusal) y un número FDI debajo en Inter 700. Cada cara se pinta con un color de estado; los estados que afectan el diente completo se resuelven con un overlay semitransparente o un trazo punteado. El botón mide 44×56 px y no se encoge dentro de la arcada (`flex-shrink: 0`): cuando no entra, la arcada scrollea en horizontal. Los dientes temporarios usan la variante `size-small` (34×46 px, 38×50 px en mobile). En hover el diente sube 3 px y gana una sombra proyectada; al tocar baja a 0.95. La leyenda es interactiva (clic o Enter/Espacio, con `aria-pressed`): al elegir un estado, los dientes que no coinciden bajan a 25% de opacidad y pierden saturación en las dos arcadas.
 
 ### Empty States
 Bloque punteado con radio 20 px, fondo translúcido y texto centrado en Grafito Suave, con un título en Space Grotesk y una acción primaria. Es el patrón para "Todavía no hay pacientes", listas de espera vacías y galerías sin fotos.
@@ -343,15 +348,16 @@ Bloque punteado con radio 20 px, fondo translúcido y texto centrado en Grafito 
 - **Do** reservar la arena para una sola acción principal por pantalla y para los avatares.
 - **Do** acompañar cada estado de turno con su par tinta + tinte suave y con texto legible.
 - **Do** mantener Space Grotesk en títulos y marca, e Inter en datos, horas y números FDI.
-- **Do** usar el halo menta como anillo de foco de 3 px en todo control interactivo.
+- **Do** usar un anillo de foco visible en todo control interactivo: 2 px de menta profunda en enlaces y botones, halo menta de 3 px en campos, tinta sobre la navbar.
 - **Do** verificar cada pantalla nueva en modo claro y oscuro antes de darla por terminada.
 - **Do** preferir espacio y borde tenue antes que líneas divisorias fuertes.
+- **Do** respetar `prefers-reduced-motion`: las animaciones y transiciones se apagan, no se acortan a medias.
 
 ### Don't:
 - **Don't** introducir azul corporativo, violeta de marca o degradados fríos: es la anti-referencia confirmada del sistema.
 - **Don't** reutilizar los colores de estado del odontograma o de los turnos como decoración o color de marca.
-- **Don't** poner texto blanco sobre la arena; usá marrón de sobre.
-- **Don't** aplicar `backdrop-filter` a paneles de contenido quietos ni apilar más de un nivel de elevación en una tarjeta.
+- **Don't** poner texto blanco sobre la arena ni sobre la menta clara; usá marrón de sobre o tinta sobre relleno claro.
+- **Don't** aplicar `backdrop-filter` sobre una imagen ni anidar dos superficies de vidrio, ni apilar más de un nivel de elevación en una tarjeta.
 - **Don't** crear esquinas rectas en superficies ni radios menores a 10 px fuera de controles en línea.
 - **Don't** agregar un framework CSS, un paso de build o una fuente nueva: el sistema se resuelve con Bootstrap, este stylesheet y JS vanilla.
-- **Don't** dar por cumplida la accesibilidad: el objetivo es WCAG 2.1 AA y la auditoría sigue pendiente.
+- **Don't** dar por cumplida la accesibilidad: el contraste de la ficha ya se midió en claro, oscuro y mobile (mínimo 4.5:1), pero la auditoría de accesibilidad del resto de la app sigue pendiente.

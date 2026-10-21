@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-21T15:55:42Z",
+  "generatedAt": "2026-10-21T17:02:05Z",
   "title": "Design System: Kiba X",
   "extensions": {
     "colorMeta": {
@@ -22,16 +22,16 @@
       "menta-profunda": {
         "role": "primary",
         "displayName": "Menta Profunda",
-        "canonical": "#5A9E94",
+        "canonical": "#2F6F67",
         "tonalRamp": [
           "#000F0C",
           "#002E29",
-          "#005149",
-          "#2E736A",
-          "#53978E",
-          "#79BDB3",
-          "#9FE4D9",
-          "#B9FFF3"
+          "#065049",
+          "#33736B",
+          "#58978E",
+          "#7CBCB3",
+          "#A2E3D9",
+          "#BCFEF4"
         ]
       },
       "menta-en-reposo": {
@@ -82,16 +82,61 @@
       "marron-de-sobre": {
         "role": "secondary",
         "displayName": "Marrón de Sobre",
-        "canonical": "#5A4530",
+        "canonical": "#3F2E1F",
         "tonalRamp": [
-          "#150800",
-          "#35220D",
-          "#55402C",
-          "#78614C",
-          "#9C846E",
-          "#C2A991",
-          "#E9CFB7",
-          "#FFEBD7"
+          "#150700",
+          "#332314",
+          "#534131",
+          "#756251",
+          "#998574",
+          "#BFAA98",
+          "#E6D0BD",
+          "#FFEAD9"
+        ]
+      },
+      "tinta-navbar": {
+        "role": "primary",
+        "displayName": "Tinta de Navbar",
+        "canonical": "#14332F",
+        "tonalRamp": [
+          "#000F0C",
+          "#0D2C29",
+          "#2D4C47",
+          "#4E6D69",
+          "#70918C",
+          "#94B6B1",
+          "#BADDD7",
+          "#D4F7F1"
+        ]
+      },
+      "tinta-navbar-suave": {
+        "role": "primary",
+        "displayName": "Tinta de Navbar Suave",
+        "canonical": "#24564F",
+        "tonalRamp": [
+          "#000F0C",
+          "#002E29",
+          "#1C4F48",
+          "#3F7169",
+          "#62948C",
+          "#87BAB1",
+          "#ACE1D8",
+          "#C6FBF2"
+        ]
+      },
+      "tinta-sobre-claro": {
+        "role": "neutral",
+        "displayName": "Tinta sobre Relleno Claro",
+        "canonical": "#1C2825",
+        "tonalRamp": [
+          "#040E0B",
+          "#1D2926",
+          "#3B4845",
+          "#5C6A66",
+          "#7F8D89",
+          "#A3B2AE",
+          "#C9D8D4",
+          "#E3F3EE"
         ]
       },
       "lienzo-consultorio": {
@@ -157,16 +202,16 @@
       "grafito-suave": {
         "role": "neutral",
         "displayName": "Grafito Suave",
-        "canonical": "#7E8C88",
+        "canonical": "#5C6B67",
         "tonalRamp": [
-          "#040E0B",
-          "#1E2926",
-          "#3C4845",
-          "#5C6966",
-          "#7F8D89",
-          "#A3B2AE",
-          "#C9D8D4",
-          "#E3F3EE"
+          "#030E0B",
+          "#1C2A26",
+          "#3A4945",
+          "#5B6A66",
+          "#7D8D89",
+          "#A2B2AE",
+          "#C8D9D4",
+          "#E2F3EE"
         ]
       },
       "borde-instrumental": {
@@ -202,15 +247,15 @@
       "terracota-alerta": {
         "role": "neutral",
         "displayName": "Terracota de Alerta",
-        "canonical": "#B06060",
+        "canonical": "#A04949",
         "tonalRamp": [
           "#1F0002",
-          "#4D030E",
-          "#72292C",
-          "#994B4C",
-          "#C06E6E",
-          "#E89392",
-          "#FFC3C1",
+          "#4F000B",
+          "#772427",
+          "#9E4747",
+          "#C66B69",
+          "#EF8F8D",
+          "#FFC3C0",
           "#FFE8E7"
         ]
       },
@@ -764,7 +809,7 @@
       "refersTo": "button-primary",
       "description": "Acción principal de la pantalla: dar de alta, guardar, cerrar sesión. Arena con texto marrón.",
       "html": "<button class=\"ds-btn-primary\">Dar de alta paciente</button>",
-      "css": ".ds-btn-primary { background-image: linear-gradient(135deg, var(--arena-calida, #E8B87A) 0%, var(--arena-encendida, #F0CB9A) 100%); color: var(--marron-de-sobre, #5A4530); font-family: 'Inter', system-ui, sans-serif; font-size: .85rem; font-weight: 600; padding: .5rem 1rem; border: 1px solid transparent; border-radius: var(--radius-sm, 10px); box-shadow: 0 2px 8px rgba(232,184,122,.25); cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-btn-primary:hover { box-shadow: 0 4px 16px rgba(232,184,122,.35); transform: translateY(-1px); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(126,191,181,.35); } .ds-btn-primary:active { transform: translateY(0); }"
+      "css": ".ds-btn-primary { background-image: linear-gradient(135deg, var(--arena-calida, #E8B87A) 0%, var(--arena-encendida, #F0CB9A) 100%); color: var(--marron-de-sobre, #3F2E1F); font-family: 'Inter', system-ui, sans-serif; font-size: .85rem; font-weight: 600; padding: .5rem 1rem; border: 1px solid transparent; border-radius: var(--radius-sm, 10px); box-shadow: 0 2px 8px rgba(232,184,122,.25); cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-btn-primary:hover { box-shadow: 0 4px 16px rgba(232,184,122,.35); transform: translateY(-1px); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(126,191,181,.35); } .ds-btn-primary:active { transform: translateY(0); }"
     },
     {
       "name": "Botón de contorno",
@@ -780,7 +825,7 @@
       "refersTo": "button-nav-ghost",
       "description": "Navegación sobre la barra menta: Pacientes, Agenda, tema.",
       "html": "<button class=\"ds-btn-ghost\">Agenda</button>",
-      "css": ".ds-btn-ghost { background: transparent; color: rgba(255,255,255,.9); font-family: 'Inter', system-ui, sans-serif; font-size: .85rem; font-weight: 600; padding: .5rem 1rem; border: 1px solid rgba(255,255,255,.3); border-radius: var(--radius-sm, 10px); cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-btn-ghost:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.45); color: #fff; } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(255,255,255,.35); }"
+      "css": ".ds-btn-ghost { background: transparent; color: var(--tinta-navbar, #14332F); font-family: 'Inter', system-ui, sans-serif; font-size: .85rem; font-weight: 600; padding: .5rem 1rem; border: 1px solid rgba(20,51,47,.28); border-radius: var(--radius-sm, 10px); cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-btn-ghost:hover { background: rgba(20,51,47,.08); border-color: rgba(20,51,47,.28); color: var(--tinta-navbar, #14332F); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--tinta-navbar, #14332F); outline-offset: 2px; }"
     },
     {
       "name": "Botón de peligro",
@@ -788,7 +833,7 @@
       "refersTo": "button-danger-ghost",
       "description": "Acción destructiva de bajo énfasis: eliminar paciente, borrar adjunto.",
       "html": "<button class=\"ds-btn-danger\">Eliminar</button>",
-      "css": ".ds-btn-danger { background: transparent; color: var(--terracota, #B06060); font-family: 'Inter', system-ui, sans-serif; font-size: .85rem; font-weight: 600; padding: .5rem 1rem; border: 1px solid #E8C4C0; border-radius: var(--radius-sm, 10px); cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-btn-danger:hover { background: #FDF0EE; border-color: #D4A0A0; } .ds-btn-danger:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(176,96,96,.3); }"
+      "css": ".ds-btn-danger { background: transparent; color: var(--terracota-alerta, #A04949); font-family: 'Inter', system-ui, sans-serif; font-size: .85rem; font-weight: 600; padding: .5rem 1rem; border: 1px solid var(--danger-border, #E0B8B4); border-radius: var(--radius-sm, 10px); cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-btn-danger:hover { background: var(--terracota-reposo, #FDF0EE); border-color: var(--terracota-alerta, #A04949); } .ds-btn-danger:focus-visible { outline: 2px solid var(--terracota-alerta, #A04949); outline-offset: 2px; }"
     },
     {
       "name": "Campo de texto",
@@ -796,7 +841,7 @@
       "refersTo": "input-field",
       "description": "Formularios clínicos y de agenda. Etiqueta arriba, borde de 1.5 px y foco menta.",
       "html": "<label class=\"ds-field\"><span class=\"ds-label\">Nombre completo</span><input class=\"ds-input\" type=\"text\" placeholder=\"Apellido, Nombre\"></label>",
-      "css": ".ds-field { display: block; font-family: 'Inter', system-ui, sans-serif; } .ds-label { display: block; font-size: .83rem; font-weight: 600; color: var(--ink, #3A4543); letter-spacing: -.01em; margin-bottom: .35rem; } .ds-input { width: 100%; box-sizing: border-box; background: var(--surface, #FFFFFF); color: var(--ink, #3A4543); font-family: inherit; font-size: 1rem; padding: .375rem .75rem; border: 1.5px solid var(--border, #E4EAE7); border-radius: var(--radius-sm, 10px); transition: border-color .2s cubic-bezier(.4,0,.2,1), box-shadow .2s cubic-bezier(.4,0,.2,1); } .ds-input::placeholder { color: #9AA8A4; } .ds-input:focus { outline: none; border-color: var(--primary, #7EBFB5); box-shadow: 0 0 0 3px rgba(126,191,181,.15); }"
+      "css": ".ds-field { display: block; font-family: 'Inter', system-ui, sans-serif; } .ds-label { display: block; font-size: .83rem; font-weight: 600; color: var(--ink, #3A4543); letter-spacing: -.01em; margin-bottom: .35rem; } .ds-input { width: 100%; box-sizing: border-box; background: var(--surface, #FFFFFF); color: var(--ink, #3A4543); font-family: inherit; font-size: 1rem; padding: .375rem .75rem; border: 1.5px solid var(--border, #E4EAE7); border-radius: var(--radius-sm, 10px); transition: border-color .2s cubic-bezier(.4,0,.2,1), box-shadow .2s cubic-bezier(.4,0,.2,1); } .ds-input::placeholder { color: #5C6B67; } .ds-input:focus { outline: none; border-color: var(--primary, #7EBFB5); box-shadow: 0 0 0 3px rgba(126,191,181,.15); }"
     },
     {
       "name": "Búsqueda de pacientes",
@@ -804,7 +849,7 @@
       "refersTo": "input-search",
       "description": "Buscador del listado, con lupa SVG embebida a la izquierda.",
       "html": "<input class=\"ds-search\" type=\"search\" placeholder=\"Buscá por nombre, DNI, teléfono o email…\">",
-      "css": ".ds-search { width: 100%; max-width: 480px; box-sizing: border-box; background-color: var(--surface, #FFFFFF); color: var(--ink, #3A4543); font-family: 'Inter', system-ui, sans-serif; font-size: 1rem; padding: .375rem .75rem .375rem 2.2rem; border: 1.5px solid var(--border, #E4EAE7); border-radius: var(--radius-sm, 10px); background-image: url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239BA8A4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'/%3e%3cline x1='21' y1='21' x2='16.65' y2='16.65'/%3e%3c/svg%3e\"); background-repeat: no-repeat; background-position: .65rem center; background-size: 1rem; transition: border-color .2s, box-shadow .2s; } .ds-search::placeholder { color: #9AA8A4; } .ds-search:focus { outline: none; border-color: var(--primary, #7EBFB5); box-shadow: 0 0 0 3px rgba(126,191,181,.15); }"
+      "css": ".ds-search { width: 100%; max-width: 480px; box-sizing: border-box; background-color: var(--surface, #FFFFFF); color: var(--ink, #3A4543); font-family: 'Inter', system-ui, sans-serif; font-size: 1rem; padding: .375rem .75rem .375rem 2.2rem; border: 1.5px solid var(--border, #E4EAE7); border-radius: var(--radius-sm, 10px); background-image: url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239BA8A4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'/%3e%3cline x1='21' y1='21' x2='16.65' y2='16.65'/%3e%3c/svg%3e\"); background-repeat: no-repeat; background-position: .65rem center; background-size: 1rem; transition: border-color .2s, box-shadow .2s; } .ds-search::placeholder { color: #5C6B67; } .ds-search:focus { outline: none; border-color: var(--primary, #7EBFB5); box-shadow: 0 0 0 3px rgba(126,191,181,.15); }"
     },
     {
       "name": "Panel de contenido",
@@ -812,7 +857,7 @@
       "refersTo": "panel",
       "description": "Contenedor base de odontograma, adjuntos, notas y agenda. Vidrio suave, radio 20 px.",
       "html": "<section class=\"ds-panel\"><h2 class=\"ds-panel-title\">Odontograma</h2><p class=\"ds-panel-sub\">Tocá una cara del diente para ver su historial.</p></section>",
-      "css": ".ds-panel { background: rgba(255,255,255,.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid #EDF1EF; border-radius: var(--radius-lg, 20px); padding: 1.5rem 1.5rem 1.75rem; box-shadow: 0 2px 8px rgba(0,0,0,.05); font-family: 'Inter', system-ui, sans-serif; } .ds-panel-title { font-family: 'Space Grotesk', 'Inter', sans-serif; font-size: 1.2rem; font-weight: 500; letter-spacing: -.02em; color: var(--ink, #3A4543); margin: 0 0 .2rem; } .ds-panel-sub { font-size: .85rem; color: #7E8C88; margin: 0 0 1.1rem; }"
+      "css": ".ds-panel { background: rgba(255,255,255,.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid #EDF1EF; border-radius: var(--radius-lg, 20px); padding: 1.5rem 1.5rem 1.75rem; box-shadow: 0 2px 8px rgba(0,0,0,.05); font-family: 'Inter', system-ui, sans-serif; } .ds-panel-title { font-family: 'Space Grotesk', 'Inter', sans-serif; font-size: 1.2rem; font-weight: 500; letter-spacing: -.02em; color: var(--ink, #3A4543); margin: 0 0 .2rem; } .ds-panel-sub { font-size: .85rem; color: #5C6B67; margin: 0 0 1.1rem; }"
     },
     {
       "name": "Tarjeta de paciente",
@@ -820,7 +865,7 @@
       "refersTo": "patient-card",
       "description": "Elemento del listado: avatar arena, nombre y documento/teléfono. Sube 3 px en hover.",
       "html": "<a class=\"ds-patient\" href=\"#\"><span class=\"ds-avatar\">M</span><span class=\"ds-patient-body\"><span class=\"ds-patient-name\">Gómez, María</span><span class=\"ds-patient-meta\">Doc. 30.111.222 · 11 5555-1234</span></span></a>",
-      "css": ".ds-patient { display: flex; align-items: center; gap: .85rem; background: rgba(255,255,255,.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid #EDF1EF; border-radius: var(--radius-md, 14px); padding: 1.1rem 1.2rem; text-decoration: none; color: var(--ink, #3A4543); box-shadow: 0 1px 2px rgba(0,0,0,.03); transition: all .2s cubic-bezier(.4,0,.2,1); font-family: 'Inter', system-ui, sans-serif; } .ds-patient:hover { border-color: var(--primary, #7EBFB5); box-shadow: 0 4px 16px rgba(0,0,0,.06), 0 0 20px rgba(126,191,181,.1); transform: translateY(-3px); } .ds-avatar { width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #5A4530; background-image: linear-gradient(135deg, #E8B87A 0%, #F0CB9A 100%); box-shadow: 0 2px 8px rgba(232,184,122,.2); } .ds-patient-body { display: flex; flex-direction: column; min-width: 0; } .ds-patient-name { font-size: 1rem; font-weight: 600; } .ds-patient-meta { font-size: .8rem; color: #7E8C88; }"
+      "css": ".ds-patient { display: flex; align-items: center; gap: .85rem; background: rgba(255,255,255,.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid #EDF1EF; border-radius: var(--radius-md, 14px); padding: 1.1rem 1.2rem; text-decoration: none; color: var(--ink, #3A4543); box-shadow: 0 1px 2px rgba(0,0,0,.03); transition: all .2s cubic-bezier(.4,0,.2,1); font-family: 'Inter', system-ui, sans-serif; } .ds-patient:hover { border-color: var(--primary, #7EBFB5); box-shadow: 0 4px 16px rgba(0,0,0,.06), 0 0 20px rgba(126,191,181,.1); transform: translateY(-3px); } .ds-avatar { width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--marron-de-sobre, #3F2E1F); background-image: linear-gradient(135deg, #E8B87A 0%, #F0CB9A 100%); box-shadow: 0 2px 8px rgba(232,184,122,.2); } .ds-patient-body { display: flex; flex-direction: column; min-width: 0; } .ds-patient-name { font-size: 1rem; font-weight: 600; } .ds-patient-meta { font-size: .8rem; color: #5C6B67; }"
     },
     {
       "name": "Pestaña de sección",
@@ -828,7 +873,7 @@
       "refersTo": "tab-active",
       "description": "Pestañas de la ficha clínica: odontograma, estudios, evolución, notas.",
       "html": "<div class=\"ds-tabs\"><button class=\"ds-tab is-active\">Odontograma</button><button class=\"ds-tab\">Notas</button></div>",
-      "css": ".ds-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--border, #E4EAE7); font-family: 'Inter', system-ui, sans-serif; } .ds-tab { font-size: .875rem; font-weight: 600; color: #7E8C88; background: transparent; border: 1px solid var(--border, #E4EAE7); border-bottom: none; border-radius: 10px 10px 0 0; padding: .55rem 1.1rem; cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-tab:hover { color: var(--primary, #7EBFB5); background: var(--primary-tint, #EDF7F5); } .ds-tab.is-active { color: var(--primary-dark, #5A9E94); background: #fff; font-weight: 700; } .ds-tab:focus-visible { outline: none; box-shadow: inset 0 0 0 2px rgba(126,191,181,.5); }"
+      "css": ".ds-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--border, #E4EAE7); font-family: 'Inter', system-ui, sans-serif; } .ds-tab { font-size: .875rem; font-weight: 600; color: #5C6B67; background: transparent; border: 1px solid var(--border, #E4EAE7); border-bottom: none; border-radius: 10px 10px 0 0; padding: .55rem 1.1rem; cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-tab:hover { color: var(--primary-dark, #2F6F67); background: var(--primary-tint, #EDF7F5); } .ds-tab.is-active { color: var(--primary-dark, #2F6F67); background: #fff; font-weight: 700; } .ds-tab:focus-visible { outline: 2px solid var(--primary-dark, #2F6F67); outline-offset: 2px; }"
     },
     {
       "name": "Selector de estado de turno",
@@ -844,7 +889,7 @@
       "refersTo": null,
       "description": "Componente firma: cinco caras SVG, número FDI debajo y estado por cara.",
       "html": "<button class=\"ds-tooth\" type=\"button\" aria-label=\"Diente 16\"><svg viewBox=\"0 0 40 40\" class=\"ds-tooth-svg\"><polygon class=\"f f-sano\" points=\"0,0 40,0 28,12 12,12\"></polygon><polygon class=\"f f-caries\" points=\"40,0 40,40 28,28 28,12\"></polygon><polygon class=\"f f-sano\" points=\"40,40 0,40 12,28 28,28\"></polygon><polygon class=\"f f-sano\" points=\"0,40 0,0 12,12 12,28\"></polygon><polygon class=\"f f-sano\" points=\"12,12 28,12 28,28 12,28\"></polygon></svg><span class=\"ds-tooth-num\">16</span></button>",
-      "css": ".ds-tooth { width: 44px; height: 56px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 2px; background: transparent; border: none; border-radius: 8px; cursor: pointer; font-family: 'Inter', system-ui, sans-serif; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-tooth:hover { background: var(--primary-tint, #EDF7F5); transform: scale(1.08); } .ds-tooth:active { transform: scale(.95); } .ds-tooth:focus-visible { outline: 2px solid var(--primary, #7EBFB5); outline-offset: 1px; } .ds-tooth-svg { width: 40px; height: 40px; border-radius: 4px; overflow: visible; transition: transform .12s, filter .12s; } .ds-tooth:hover .ds-tooth-svg { transform: translateY(-3px); filter: drop-shadow(0 4px 8px rgba(20,63,59,.18)); } .f { stroke: #E4EAE7; stroke-width: 1.4; } .f-sano { fill: #FFFFFF; } .f-caries { fill: #E8A0A0; } .ds-tooth-num { font-size: .78rem; font-weight: 700; line-height: 1; color: var(--ink, #3A4543); }"
+      "css": ".ds-tooth { width: 44px; height: 56px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 2px; background: transparent; border: none; border-radius: 8px; cursor: pointer; font-family: 'Inter', system-ui, sans-serif; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-tooth:hover { background: var(--primary-tint, #EDF7F5); transform: scale(1.08); } .ds-tooth:active { transform: scale(.95); } .ds-tooth:focus-visible { outline: 2px solid var(--primary-dark, #2F6F67); outline-offset: 2px; } .ds-tooth-svg { width: 40px; height: 40px; border-radius: 4px; overflow: visible; transition: transform .12s, filter .12s; } .ds-tooth:hover .ds-tooth-svg { transform: translateY(-3px); filter: drop-shadow(0 4px 8px rgba(20,63,59,.18)); } .f { stroke: #E4EAE7; stroke-width: 1.4; } .f-sano { fill: #FFFFFF; } .f-caries { fill: #E8A0A0; } .ds-tooth-num { font-size: .78rem; font-weight: 700; line-height: 1; color: var(--ink, #3A4543); }"
     }
   ],
   "narrative": {
@@ -852,7 +897,8 @@
     "overview": "Kiba X se ve como el gabinete de un consultorio ordenado: superficies de vidrio apenas lechoso, instrumentos alineados, una menta clínica que tiñe la navegación y un acento arena que marca lo que hay que tocar. La interfaz es clínica y aireada: mucho blanco entre bloques, bordes de un píxel, radios generosos y jerarquía tipográfica corta. Nada compite con el dato del paciente, y el odontograma —con sus nueve colores de estado— es el único lugar donde la paleta se permite saturación.",
     "keyCharacteristics": [
       "Vidrio suave: superficies blancas translúcidas con desenfoque de fondo (8–20 px) y sombras ambientales muy bajas.",
-      "Menta clínica como color de estructura (navbar, enlaces, foco) y arena cálida como color de acción.",
+      "Menta clínica como color de estructura (navbar, rellenos y tintes) y arena cálida como color de acción; enlaces y foco van en menta profunda.",
+      "Tinta profunda sobre todo relleno claro: la navbar menta, los contadores arena y los toasts llevan texto oscuro, nunca blanco.",
       "Aire: densidad baja, padding generoso, separación por espacio antes que por líneas.",
       "Semántica cromática reservada: estados de diente y de turno tienen su propia escala, ajena a la marca.",
       "Tipografía en dos voces: Space Grotesk para títulos y marca, Inter para todo lo demás."
@@ -890,7 +936,7 @@
       },
       {
         "name": "La Regla del Vidrio Discreto",
-        "body": "El desenfoque de fondo se reserva para lo que flota o cubre: navbar, modales, menús, autocompletado, toasts y tarjetas de autenticación. Un panel de contenido quieto no lleva backdrop-filter.",
+        "body": "El vidrio es el material de todas las superficies y su desenfoque crece con la elevación: 8 px en tarjetas de paciente, 12 px en paneles de contenido y formularios, 16–20 px en navbar, menús, autocompletado y modales. El vidrio nunca se anida dentro de otro vidrio ni se apoya sobre una imagen.",
         "section": "elevation"
       },
       {
@@ -909,18 +955,19 @@
       "Do reservar la arena para una sola acción principal por pantalla y para los avatares.",
       "Do acompañar cada estado de turno con su par tinta + tinte suave y con texto legible.",
       "Do mantener Space Grotesk en títulos y marca, e Inter en datos, horas y números FDI.",
-      "Do usar el halo menta como anillo de foco de 3 px en todo control interactivo.",
+      "Do usar un anillo de foco visible en todo control interactivo: 2 px de menta profunda en enlaces y botones, halo menta de 3 px en campos, tinta sobre la navbar.",
       "Do verificar cada pantalla nueva en modo claro y oscuro antes de darla por terminada.",
-      "Do preferir espacio y borde tenue antes que líneas divisorias fuertes."
+      "Do preferir espacio y borde tenue antes que líneas divisorias fuertes.",
+      "Do respetar prefers-reduced-motion: las animaciones y transiciones se apagan, no se acortan a medias."
     ],
     "donts": [
       "Don't introducir azul corporativo, violeta de marca o degradados fríos: es la anti-referencia confirmada del sistema.",
       "Don't reutilizar los colores de estado del odontograma o de los turnos como decoración o color de marca.",
-      "Don't poner texto blanco sobre la arena; usá marrón de sobre.",
-      "Don't aplicar backdrop-filter a paneles de contenido quietos ni apilar más de un nivel de elevación en una tarjeta.",
+      "Don't poner texto blanco sobre la arena ni sobre la menta clara; usá marrón de sobre o tinta sobre relleno claro.",
+      "Don't aplicar backdrop-filter sobre una imagen ni anidar dos superficies de vidrio, ni apilar más de un nivel de elevación en una tarjeta.",
       "Don't crear esquinas rectas en superficies ni radios menores a 10 px fuera de controles en línea.",
       "Don't agregar un framework CSS, un paso de build o una fuente nueva: el sistema se resuelve con Bootstrap, este stylesheet y JS vanilla.",
-      "Don't dar por cumplida la accesibilidad: el objetivo es WCAG 2.1 AA y la auditoría sigue pendiente."
+      "Don't dar por cumplida la accesibilidad: el contraste de la ficha ya se midió en claro, oscuro y mobile, pero la auditoría del resto de la app sigue pendiente."
     ]
   }
 }
