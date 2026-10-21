@@ -144,6 +144,42 @@ body.dark .tooth-history li { border-color: var(--border); }
 body.dark .attachment-list li { border-color: var(--border); }
 body.dark .agenda-cal td .no-schedule { background: #1E2625; border-color: var(--border); }
 
+/* --- Modales ---
+   Bootstrap deja .modal-content en blanco. Como .form-label, .modal-title
+   y casi todo lo demás heredan var(--ink) (que en modo oscuro es claro),
+   el modal quedaba con texto blanco sobre fondo blanco. Acá se lleva todo
+   a los tokens de la app, así se pinta en los dos modos. */
+.modal-content {
+  background-color: var(--surface);
+  color: var(--ink);
+  border-color: var(--border);
+}
+.modal-header { border-bottom-color: var(--border); }
+.modal-footer { border-top-color: var(--border); }
+.modal-title { color: var(--ink); }
+.modal-body { color: var(--ink); }
+
+/* El ✕ de Bootstrap es negro sobre fondo transparente: al poner fondo
+   oscuro se vuelve invisible. */
+body.dark .btn-close { filter: invert(1) grayscale(100%) brightness(180%); }
+
+/* Placeholders de los campos dentro de los modales. */
+body.dark .form-control::placeholder,
+body.dark .form-select::placeholder { color: var(--ink-soft); opacity: 1; }
+
+/* Botón "Elegir archivo": Bootstrap usa un gris claro de fondo. */
+body.dark .form-control::file-selector-button {
+  background-color: var(--surface-hover);
+  color: var(--ink);
+  border-color: var(--border);
+}
+body.dark .text-danger { color: #FF8A8A; }
+
+/* Fichas y botones con fondo blanco escrito a mano dentro del modal. */
+body.dark .tooth-history .th-btn,
+body.dark .tooth-file-item { background: var(--surface); }
+body.dark .tooth-files-col { border-left-color: var(--border); }
+
 /* --- Theme toggle button --- */
 .theme-toggle { font-size: 1rem; padding: .4rem .6rem; }
 body:not(.dark) .theme-icon-light { display: none; }
