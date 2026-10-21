@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 
 from extensions import db, limiter
-from models import User
+from models import User, ROLES
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -47,6 +47,7 @@ def register():
         password = request.form.get('password', '')
         password2 = request.form.get('password2', '')
         license_number = request.form.get('license_number', '').strip()
+        role = (request.form.get('role') or 'odontologo').strip().lower()
         code = request.form.get('registration_code', '')
 
         # El código de registro evita que cualquier visitante anónimo pueda
@@ -58,6 +59,15 @@ def register():
         if not full_name or not email or not password:
             flash('Completá todos los campos obligatorios.', 'danger')
             return render_template('auth/register.html', form=request.form)
+
+        if role not in ROLES:
+            flash('Elegí si la cuenta es de odontólogo/a o de secretario/a.', 'danger')
+            return render_template('auth/register.html', form=request.form)
+
+        # El secretario/a no tiene matrícula profesional: si el campo llegó
+        # con algo, se ignora.
+        if role == 'secretario':
+            license_number = ''
 
         email_error = _validate_email(email)
         if email_error:
@@ -77,7 +87,8 @@ def register():
             flash('Ya existe una cuenta con ese email.', 'danger')
             return render_template('auth/register.html', form=request.form)
 
-        user = User(full_name=full_name, email=email, license_number=license_number)
+        user = User(full_name=full_name, email=email,
+                    license_number=license_number, role=role)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()

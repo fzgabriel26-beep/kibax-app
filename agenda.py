@@ -9,7 +9,7 @@ from audit import audit
 from extensions import db
 from models import (
     Appointment, Patient, User, WorkSchedule, ScheduleException,
-    WaitingListEntry, WAITLIST_SHIFTS,
+    WaitingListEntry, WAITLIST_SHIFTS, ROLES,
 )
 
 bp = Blueprint('agenda', __name__, url_prefix='/agenda')
@@ -41,6 +41,23 @@ STATUS_CLASSES = {
     'ausente_sin_aviso': 'st-ausente-sin-aviso',
     'cancelado': 'st-cancelado',
 }
+
+
+def _odontologos():
+    """Usuarios que atienden: solo los odontólogos tienen agenda y horarios."""
+    return User.query.filter_by(role='odontologo').order_by(User.full_name)
+
+
+def _solo_odontologo():
+    """Redirección si el usuario actual no puede gestionar cuentas.
+
+    La gestión de usuarios queda reservada a los odontólogos/as para que un
+    secretario no pueda cambiarse el rol a sí mismo ni alterar otras cuentas.
+    """
+    if not current_user.is_odontologo:
+        flash('Solo un odontólogo/a puede gestionar usuarios.', 'danger')
+        return redirect(url_for('agenda.index'))
+    return None
 
 
 def status_class(status):
@@ -253,7 +270,7 @@ def index():
         except ValueError:
             fecha = None
 
-    profesionales = User.query.order_by(User.full_name).all()
+    profesionales = _odontologos().all()
     profesional_raw = request.args.get('profesional', type=int)
     profesional = next((u for u in profesionales if u.id == profesional_raw), None)
 
@@ -400,7 +417,7 @@ def index():
 @login_required
 def turnos():
     """Listado de turnos de todos los profesionales, con filtros."""
-    profesionales = User.query.order_by(User.full_name).all()
+    profesionales = _odontologos().all()
     profesional_raw = request.args.get('profesional', type=int)
     profesional = next((u for u in profesionales if u.id == profesional_raw), None)
 
@@ -521,9 +538,10 @@ def disponibilidad_json():
         return jsonify({'ok': False, 'error': 'Mes inválido.'}), 400
 
     if prof_raw:
-        usuarios = [u for u in [db.session.get(User, prof_raw)] if u]
+        usuario = db.session.get(User, prof_raw)
+        usuarios = [usuario] if usuario and usuario.is_odontologo else []
     else:
-        usuarios = User.query.all()
+        usuarios = _odontologos().all()
     availability = _month_availability(year, month, usuarios)
     return jsonify({'ok': True, 'availability': availability})
 
@@ -555,8 +573,8 @@ def nuevo():
         return redirect(url_for('agenda.index'))
 
     profesional = db.session.get(User, prof_raw)
-    if not profesional:
-        flash('Profesional inválido.', 'danger')
+    if not profesional or not profesional.is_odontologo:
+        flash('Seleccioná un odontólogo/a para el turno.', 'danger')
         return redirect(url_for('agenda.index'))
 
     # Un "NO CITAR" es una decisión explícita: se respeta aunque el turno
@@ -647,6 +665,9 @@ def lista_espera_nueva():
         shift = 'manana'
 
     profesional = db.session.get(User, prof_raw) if prof_raw else None
+    if profesional and not profesional.is_odontologo:
+        flash('La lista de espera se asigna a un odontólogo/a.', 'danger')
+        return redirect(_safe_next(url_for('agenda.index')))
 
     repetida = (WaitingListEntry.query
                 .filter_by(patient_id=paciente.id)
@@ -748,6 +769,9 @@ def no_citar():
     if not profesional:
         flash('Seleccioná un profesional para anular un horario.', 'danger')
         return redirect(_safe_next(url_for('agenda.index')))
+    if not profesional.is_odontologo:
+        flash('Seleccioná un odontólogo/a para anular un horario.', 'danger')
+        return redirect(_safe_next(url_for('agenda.index')))
 
     volver = _safe_next(_volver_a(fecha, profesional))
 
@@ -844,8 +868,8 @@ def reprogramar(appt_id):
         return redirect(url_for('agenda.index'))
 
     profesional = db.session.get(User, prof_raw)
-    if not profesional:
-        flash('Profesional inválido.', 'danger')
+    if not profesional or not profesional.is_odontologo:
+        flash('Seleccioná un odontólogo/a para reprogramar el turno.', 'danger')
         return redirect(url_for('agenda.index', fecha=fecha.isoformat()))
 
     back = _volver_a(fecha, profesional)
@@ -888,11 +912,15 @@ def reprogramar(appt_id):
 @bp.route('/horarios')
 @login_required
 def horarios():
-    profesionales = User.query.order_by(User.full_name).all()
+    profesionales = _odontologos().all()
     schedules = (WorkSchedule.query
+                 .join(User, WorkSchedule.user_id == User.id)
+                 .filter(User.role == 'odontologo')
                  .order_by(WorkSchedule.user_id, WorkSchedule.day_of_week)
                  .all())
     exceptions = (ScheduleException.query
+                  .join(User, ScheduleException.user_id == User.id)
+                  .filter(User.role == 'odontologo')
                   .order_by(ScheduleException.date.desc())
                   .all())
     hoy = date.today()
@@ -921,8 +949,8 @@ def horario_nuevo():
         return redirect(url_for('agenda.horarios'))
 
     profesional = db.session.get(User, prof_raw) if prof_raw else None
-    if not profesional:
-        return _bad('Seleccioná un profesional.')
+    if not profesional or not profesional.is_odontologo:
+        return _bad('Seleccioná un odontólogo/a.')
     if not days:
         return _bad('Marcá al menos un día de la semana.')
     if not start or not end or start >= end:
@@ -972,8 +1000,8 @@ def suspension_nueva():
         return redirect(url_for('agenda.horarios'))
 
     profesional = db.session.get(User, prof_raw) if prof_raw else None
-    if not profesional:
-        return _bad('Seleccioná un profesional.')
+    if not profesional or not profesional.is_odontologo:
+        return _bad('Seleccioná un odontólogo/a.')
 
     fecha = _parse_fecha_ar(fecha_raw)
     if not fecha:
@@ -1024,7 +1052,10 @@ def suspension_eliminar(exc_id):
 @bp.route('/profesionales')
 @login_required
 def list_profesionales():
-    """Listado de profesionales/odontólogos."""
+    """Listado de usuarios del consultorio (solo odontólogos/as)."""
+    denied = _solo_odontologo()
+    if denied:
+        return denied
     from models import User
     profesionales = User.query.order_by(User.full_name).all()
     return render_template('agenda/profesionales.html', profesionales=profesionales)
@@ -1033,7 +1064,10 @@ def list_profesionales():
 @bp.route('/profesionales/nuevo', methods=['GET', 'POST'])
 @login_required
 def nuevo_profesional():
-    """Crear un nuevo profesional."""
+    """Crear un nuevo usuario (odontólogo/a o secretario/a)."""
+    denied = _solo_odontologo()
+    if denied:
+        return denied
     from models import User
     from auth import _password_strength, _validate_email
 
@@ -1041,11 +1075,20 @@ def nuevo_profesional():
         full_name = request.form.get('full_name', '').strip()
         email = request.form.get('email', '').strip().lower()
         license_number = request.form.get('license_number', '').strip()
+        role = (request.form.get('role') or 'odontologo').strip().lower()
         password = request.form.get('password', '')
 
         if not full_name or not email:
             flash('Nombre y email son obligatorios.', 'danger')
             return render_template('agenda/profesional_form.html', form=request.form, action='create')
+
+        if role not in ROLES:
+            flash('Elegí si el usuario es odontólogo/a o secretario/a.', 'danger')
+            return render_template('agenda/profesional_form.html', form=request.form, action='create')
+
+        # El secretario/a no tiene matrícula profesional.
+        if role == 'secretario':
+            license_number = ''
 
         email_err = _validate_email(email)
         if email_err:
@@ -1065,11 +1108,12 @@ def nuevo_profesional():
             flash(pw_err, 'danger')
             return render_template('agenda/profesional_form.html', form=request.form, action='create')
 
-        u = User(full_name=full_name, email=email, license_number=license_number)
+        u = User(full_name=full_name, email=email,
+                 license_number=license_number, role=role)
         u.set_password(password)
         db.session.add(u)
         db.session.commit()
-        flash(f'Profesional {full_name} creado correctamente.', 'success')
+        flash(f'Usuario {full_name} creado correctamente.', 'success')
         return redirect(url_for('agenda.list_profesionales'))
 
     return render_template('agenda/profesional_form.html', form={}, action='create')
@@ -1078,7 +1122,10 @@ def nuevo_profesional():
 @bp.route('/profesionales/<int:user_id>/editar', methods=['GET', 'POST'])
 @login_required
 def editar_profesional(user_id):
-    """Editar un profesional existente."""
+    """Editar un usuario existente."""
+    denied = _solo_odontologo()
+    if denied:
+        return denied
     from models import User
     from auth import _validate_email
 
@@ -1090,9 +1137,14 @@ def editar_profesional(user_id):
         full_name = request.form.get('full_name', '').strip()
         email = request.form.get('email', '').strip().lower()
         license_number = request.form.get('license_number', '').strip()
+        role = (request.form.get('role') or user.role or 'odontologo').strip().lower()
 
         if not full_name or not email:
             flash('Nombre y email son obligatorios.', 'danger')
+            return render_template('agenda/profesional_form.html', form=request.form, action='edit', user=user)
+
+        if role not in ROLES:
+            flash('Elegí si el usuario es odontólogo/a o secretario/a.', 'danger')
             return render_template('agenda/profesional_form.html', form=request.form, action='edit', user=user)
 
         email_err = _validate_email(email)
@@ -1105,9 +1157,36 @@ def editar_profesional(user_id):
             flash('Ya existe otro profesional con ese email.', 'danger')
             return render_template('agenda/profesional_form.html', form=request.form, action='edit', user=user)
 
+        # Pasar de odontólogo/a a secretario/a solo si no quedan datos que lo
+        # sigan usando como profesional de la agenda.
+        if user.is_odontologo and role == 'secretario':
+            from datetime import date as _date
+            turnos_activos = Appointment.query.filter(
+                Appointment.professional_id == user.id,
+                Appointment.planned_date >= _date.today(),
+                Appointment.status.notin_(['cancelado', 'atendido']),
+            ).count()
+            if turnos_activos:
+                flash(f'{user.full_name} tiene {turnos_activos} turno(s) activo(s). '
+                      'Reasignalos antes de cambiar el rol a secretario/a.', 'danger')
+                return render_template('agenda/profesional_form.html', form=request.form, action='edit', user=user)
+
+            horarios_count = WorkSchedule.query.filter_by(user_id=user.id).count()
+            if horarios_count:
+                flash(f'{user.full_name} tiene {horarios_count} horario(s) cargado(s). '
+                      'Eliminá sus horarios antes de cambiar el rol a secretario/a.', 'danger')
+                return render_template('agenda/profesional_form.html', form=request.form, action='edit', user=user)
+
+            espera_count = WaitingListEntry.query.filter_by(professional_id=user.id).count()
+            if espera_count:
+                flash(f'{user.full_name} tiene {espera_count} paciente(s) en lista de espera. '
+                      'Reasignalos antes de cambiar el rol a secretario/a.', 'danger')
+                return render_template('agenda/profesional_form.html', form=request.form, action='edit', user=user)
+
         user.full_name = full_name
         user.email = email
-        user.license_number = license_number
+        user.role = role
+        user.license_number = license_number if role == 'odontologo' else None
 
         # Actualizar contraseña solo si se proporcionó una nueva
         new_password = request.form.get('password', '').strip()
@@ -1120,13 +1199,14 @@ def editar_profesional(user_id):
             user.set_password(new_password)
 
         db.session.commit()
-        flash(f'Profesional {full_name} actualizado.', 'success')
+        flash(f'Usuario {full_name} actualizado.', 'success')
         return redirect(url_for('agenda.list_profesionales'))
 
     form = {
         'full_name': user.full_name or '',
         'email': user.email or '',
         'license_number': user.license_number or '',
+        'role': user.role or 'odontologo',
     }
     return render_template('agenda/profesional_form.html', form=form, action='edit', user=user)
 
@@ -1134,7 +1214,10 @@ def editar_profesional(user_id):
 @bp.route('/profesionales/<int:user_id>/eliminar', methods=['POST'])
 @login_required
 def eliminar_profesional(user_id):
-    """Eliminar un profesional."""
+    """Eliminar un usuario."""
+    denied = _solo_odontologo()
+    if denied:
+        return denied
     from models import User
     user = db.session.get(User, user_id)
     if not user:
@@ -1154,9 +1237,16 @@ def eliminar_profesional(user_id):
         flash(f'{user.full_name} tiene {turnos_activos} turno(s) activo(s). Reasignalos antes de eliminar.', 'danger')
         return redirect(url_for('agenda.list_profesionales'))
 
+    # Limpiar configuración de agenda y referencias de lista de espera para no
+    # dejar filas huérfanas al borrar el usuario.
+    WorkSchedule.query.filter_by(user_id=user_id).delete()
+    ScheduleException.query.filter_by(user_id=user_id).delete()
+    WaitingListEntry.query.filter_by(professional_id=user_id).update(
+        {'professional_id': None}, synchronize_session=False)
+
     db.session.delete(user)
     db.session.commit()
-    flash(f'Profesional {user.full_name} eliminado.', 'info')
+    flash(f'Usuario {user.full_name} eliminado.', 'info')
     return redirect(url_for('agenda.list_profesionales'))
 
 

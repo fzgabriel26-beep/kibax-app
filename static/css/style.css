@@ -832,6 +832,31 @@ body.dark .auth-logo {
   font-size: .7rem; font-weight: 700; text-align: center; padding: .1rem .35rem;
   vertical-align: middle;
 }
+.role-badge {
+  display: inline-block; padding: .12rem .45rem; border-radius: 999px;
+  font-size: .68rem; font-weight: 700; letter-spacing: .02em;
+  text-transform: uppercase; background: var(--primary-tint);
+  color: var(--primary-dark); border: 1px solid var(--border);
+}
+.role-badge.role-secretario { background: var(--surface-hover); color: var(--ink-soft); }
+body.dark .role-badge { color: #7EBFB5; }
+body.dark .role-badge.role-secretario { color: var(--ink-soft); }
+.btn-check:checked + .btn-outline-secondary {
+  background: var(--primary-dark); border-color: var(--primary-dark); color: #fff;
+}
+.btn-check:focus-visible + .btn-outline-secondary { box-shadow: 0 0 0 .2rem var(--primary-glow); }
+.btn-outline-secondary:hover {
+  border-color: var(--primary); color: var(--primary-dark); background: var(--primary-tint);
+}
+body.dark .btn-outline-secondary { color: var(--ink); border-color: var(--border); }
+body.dark .btn-outline-secondary:hover { color: #7EBFB5; background: var(--primary-tint); }
+body.dark .btn-check:checked + .btn-outline-secondary {
+  background: var(--primary-dark); border-color: var(--primary-dark); color: #fff;
+}
+.btn-check:checked + .btn-outline-secondary:hover,
+body.dark .btn-check:checked + .btn-outline-secondary:hover {
+  background: var(--primary-dark); border-color: var(--primary-dark); color: #fff;
+}
 /* ---------- Agenda: horarios (página secundaria) ---------- */
 .agenda-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
 @media (max-width: 960px) { .agenda-layout { grid-template-columns: 1fr; } }

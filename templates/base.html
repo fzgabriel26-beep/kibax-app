@@ -34,7 +34,7 @@
       <!-- Nav colapsable -->
       <div class="collapse navbar-collapse-custom" id="navbarMain">
         <div class="d-flex align-items-center gap-3 navbar-inner">
-          <span class="navbar-user d-none d-md-inline">Dr/a. {{ current_user.full_name }}</span>
+          <span class="navbar-user d-none d-md-inline">{% if current_user.is_odontologo %}Dr/a. {% endif %}{{ current_user.full_name }}</span>
           <a class="btn-ghost" href="{{ url_for('patients.list_patients') }}">Pacientes</a>
           <a class="btn-ghost nav-agenda-link" href="{{ url_for('agenda.index') }}">
             Agenda

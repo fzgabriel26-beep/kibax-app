@@ -1,22 +1,39 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Editar' if action == 'edit' else 'Nuevo' }} profesional{% endblock %}
+{% block title %}{{ 'Editar' if action == 'edit' else 'Nuevo' }} usuario{% endblock %}
 {% block content %}
-<p class="eyebrow"><a href="{{ url_for('agenda.list_profesionales') }}" class="back-link">← Profesionales</a></p>
-<h1 class="mb-4">{{ 'Editar' if action == 'edit' else 'Nuevo' }} profesional</h1>
+<p class="eyebrow"><a href="{{ url_for('agenda.list_profesionales') }}" class="back-link">← Usuarios</a></p>
+<h1 class="mb-4">{{ 'Editar' if action == 'edit' else 'Nuevo' }} usuario</h1>
 
 <form method="post" class="form-card" novalidate>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <div class="row">
-    <div class="col-md-8 mb-3">
-      <label class="form-label" for="full_name">Nombre completo *</label>
-      <input class="form-control" type="text" id="full_name" name="full_name"
-             value="{{ form.get('full_name','') }}" required autofocus maxlength="120">
+  {% set rol = form.get('role', 'odontologo') %}
+  <div class="mb-4">
+    <span class="form-label d-block">Tipo de usuario *</span>
+    <div class="btn-group w-100" role="group" aria-label="Tipo de usuario">
+      <input type="radio" class="btn-check" name="role" id="role-odontologo"
+             value="odontologo" autocomplete="off" {% if rol != 'secretario' %}checked{% endif %}>
+      <label class="btn btn-outline-secondary flex-fill" for="role-odontologo">Odontólogo/a</label>
+      <input type="radio" class="btn-check" name="role" id="role-secretario"
+             value="secretario" autocomplete="off" {% if rol == 'secretario' %}checked{% endif %}>
+      <label class="btn btn-outline-secondary flex-fill" for="role-secretario">Secretario/a</label>
     </div>
-    <div class="col-md-4 mb-3">
-      <label class="form-label" for="license_number">Matrícula</label>
-      <input class="form-control" type="text" id="license_number" name="license_number"
-             value="{{ form.get('license_number','') }}" maxlength="60">
+    <div class="form-text">
+      Los odontólogos aparecen en la agenda y tienen horarios de atención.
+      Los secretarios gestionan pacientes y turnos, pero no reciben turnos.
+      Para pasar un odontólogo a secretario, primero reasigná sus turnos y eliminá sus horarios.
     </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label" for="full_name">Nombre completo *</label>
+    <input class="form-control" type="text" id="full_name" name="full_name"
+           value="{{ form.get('full_name','') }}" required autofocus maxlength="120">
+  </div>
+
+  <div class="mb-3" id="license-field">
+    <label class="form-label" for="license_number">Matrícula</label>
+    <input class="form-control" type="text" id="license_number" name="license_number"
+           value="{{ form.get('license_number','') }}" maxlength="60">
   </div>
 
   <div class="mb-3">
@@ -36,9 +53,28 @@
 
   <div class="d-flex gap-2">
     <button type="submit" class="btn-solid px-4 py-2">
-      {{ 'Guardar cambios' if action == 'edit' else 'Crear profesional' }}
+      {{ 'Guardar cambios' if action == 'edit' else 'Crear usuario' }}
     </button>
     <a href="{{ url_for('agenda.list_profesionales') }}" class="btn-ghost">Cancelar</a>
   </div>
 </form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var od = document.getElementById('role-odontologo');
+    var sec = document.getElementById('role-secretario');
+    var field = document.getElementById('license-field');
+    if (!od || !sec || !field) return;
+
+    function toggle() {
+      field.style.display = sec.checked ? 'none' : '';
+    }
+
+    od.addEventListener('change', toggle);
+    sec.addEventListener('change', toggle);
+    toggle();
+  })();
+</script>
 {% endblock %}

@@ -38,7 +38,11 @@ class TestRegister:
     def test_register_page_loads(self, app):
         r = _make_client(app).get('/auth/register')
         assert r.status_code == 200
-        assert 'Crear cuenta' in r.data.decode()
+        html = r.data.decode()
+        assert 'Crear cuenta' in html
+        assert 'Tipo de usuario' in html
+        assert 'Odontólogo/a' in html
+        assert 'Secretario/a' in html
 
     def test_register_success(self, app):
         with app.app_context():
@@ -51,7 +55,41 @@ class TestRegister:
         assert r.status_code == 200
         assert 'correctamente' in r.data.decode()
         with app.app_context():
-            assert User.query.filter_by(email='nuevo@test.com').first() is not None
+            u = User.query.filter_by(email='nuevo@test.com').first()
+            assert u is not None
+            assert u.role == 'odontologo'
+
+    def test_register_secretary_has_no_license(self, app):
+        with app.app_context():
+            app.config['REGISTRATION_CODE'] = 'testcode'
+        r = _make_client(app).post('/auth/register', data={
+            'full_name': 'Secretaria Nueva', 'email': 'secre@test.com',
+            'license_number': 'MAT-999',
+            'role': 'secretario',
+            'password': 'NewPass1!', 'password2': 'NewPass1!',
+            'registration_code': 'testcode',
+        }, follow_redirects=True)
+        assert r.status_code == 200
+        assert 'correctamente' in r.data.decode()
+        with app.app_context():
+            u = User.query.filter_by(email='secre@test.com').first()
+            assert u is not None
+            assert u.role == 'secretario'
+            assert not u.license_number
+
+    def test_register_invalid_role_fails(self, app):
+        with app.app_context():
+            app.config['REGISTRATION_CODE'] = 'testcode'
+        r = _make_client(app).post('/auth/register', data={
+            'full_name': 'Rol Inválido', 'email': 'rol@test.com',
+            'role': 'administrador',
+            'password': 'NewPass1!', 'password2': 'NewPass1!',
+            'registration_code': 'testcode',
+        }, follow_redirects=True)
+        assert r.status_code == 200
+        assert 'odontólogo' in r.data.decode().lower()
+        with app.app_context():
+            assert User.query.filter_by(email='rol@test.com').first() is None
 
     def test_register_wrong_code(self, app):
         r = _make_client(app).post('/auth/register', data={

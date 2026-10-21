@@ -4,7 +4,7 @@ Aplicación web (Flask + SQLite) para gestionar pacientes con un odontograma
 interactivo: se hace clic en un diente, se ve su historial y se agregan
 anotaciones (arreglos, diagnósticos). También permite subir imágenes y PDF
 de estudios por paciente. Todo el sistema requiere haber iniciado sesión
-como odontólogo/a — como invitado no se puede ver ni modificar nada.
+como odontólogo/a o secretario/a — como invitado no se puede ver ni modificar nada.
 
 > **¿Querés publicarla para que otras personas la prueben desde internet?**
 > Ver **[DEPLOY.md](DEPLOY.md)** (guía paso a paso para PythonAnyhere gratis,
@@ -65,9 +65,14 @@ make test             # corre los tests
 En Windows: ejecutá `setup.bat` con doble clic (hace lo mismo y arranca).
 
 La primera vez que abras la web vas a tener que registrarte como
-odontólogo/a en `/auth/register`, usando el `REGISTRATION_CODE` que
-definiste en el `.env`. Una vez creada la cuenta, iniciá sesión y empezá
+odontólogo/a o secretario/a en `/auth/register`, usando el `REGISTRATION_CODE`
+que definiste en el `.env`. Una vez creada la cuenta, iniciá sesión y empezá
 a dar de alta pacientes.
+
+Al crear la cuenta elegís el rol: **odontólogo/a** (atiende, tiene horarios y
+recibe turnos) o **secretario/a** (gestiona pacientes y agenda, pero no tiene
+horarios ni turnos propios). El rol se puede cambiar después desde
+**Agenda → Gestionar usuarios**.
 
 ### Qué hace `setup.sh` paso a paso (por si algo falla)
 
@@ -162,7 +167,7 @@ porque la app lee el `.env` solo al arrancar.
 |--------|----------------|
 | `reset_password.py` | resetear la contraseña de tu cuenta si te la olvidaste |
 | `set_registration_code.py` | ver/cambiar el código de registro |
-| `create_user.py` | crear una cuenta de odontólogo/a sin pasar por el registro web |
+| `create_user.py` | crear una cuenta de odontólogo/a o secretario/a sin pasar por el registro web |
 | `seed_demo_patients.py 50` | cargar pacientes de prueba (datos inventados) |
 | `clear_all_patients.py` | borrar todos los pacientes (pide confirmación) |
 

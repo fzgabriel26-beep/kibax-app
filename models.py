@@ -11,16 +11,27 @@ def _utcnow():
     return datetime.datetime.now(datetime.UTC)
 
 
+ROLES = {
+    'odontologo': 'Odontólogo/a',
+    'secretario': 'Secretario/a',
+}
+
+
 class User(UserMixin, db.Model):
-    """El odontólogo/a. Es el único tipo de usuario que puede registrarse
-    y es requisito estar logueado para ver o modificar cualquier dato
-    de pacientes (ver decorador @login_required en patients.py)."""
+    """Usuario del consultorio. Puede ser odontólogo/a o secretario/a.
+
+    Los odontólogos aparecen como profesionales en la agenda, tienen horarios
+    de atención y pueden recibir turnos. Los secretarios usan el sistema para
+    gestionar pacientes y agenda, pero no se les asignan horarios ni turnos.
+    """
 
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     license_number = db.Column(db.String(60))
+    role = db.Column(db.String(20), nullable=False, default='odontologo',
+                     server_default='odontologo')
     created_at = db.Column(db.DateTime, default=_utcnow)
 
     def set_password(self, password):
@@ -28,6 +39,19 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    @property
+    def is_odontologo(self):
+        """Los usuarios viejos sin rol se consideran odontólogos."""
+        return self.role != 'secretario'
+
+    @property
+    def is_secretario(self):
+        return self.role == 'secretario'
+
+    @property
+    def role_label(self):
+        return ROLES.get(self.role, ROLES['odontologo'])
 
 
 class Patient(db.Model):

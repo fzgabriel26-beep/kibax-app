@@ -1,9 +1,19 @@
 """Tests para las nuevas funcionalidades: editar paciente, ICS, paginación,
 profesionales, CSV import, auditoría."""
 from datetime import date, timedelta
-from models import Patient, Appointment, User, AuditLog
+from models import Patient, Appointment, User, AuditLog, WorkSchedule
 from extensions import db as _db
 from tests.conftest import _create_and_login, _create_patient, _create_professional, _make_client
+
+
+def _create_secretary(app, full_name='Secretaria Test', email='secre@test.com'):
+    """Crea una cuenta con rol secretario/a y devuelve su id."""
+    with app.app_context():
+        u = User(full_name=full_name, email=email, role='secretario')
+        u.set_password('TestPass1!')
+        _db.session.add(u)
+        _db.session.commit()
+        return u.id
 
 
 class TestEditPatient:
@@ -133,7 +143,7 @@ class TestProfessionalCRUD:
         c = _create_and_login(app)
         r = c.get('/agenda/profesionales')
         assert r.status_code == 200
-        assert 'Profesionales' in r.data.decode()
+        assert 'Usuarios' in r.data.decode()
 
     def test_create_profesional(self, app):
         c = _create_and_login(app)
@@ -146,7 +156,112 @@ class TestProfessionalCRUD:
         assert r.status_code == 200
         assert 'Dr. Nuevo' in r.data.decode()
         with app.app_context():
-            assert User.query.filter_by(email='nuevo@test.com').first() is not None
+            u = User.query.filter_by(email='nuevo@test.com').first()
+            assert u is not None
+            assert u.role == 'odontologo'
+
+    def test_create_secretario(self, app):
+        c = _create_and_login(app)
+        r = c.post('/agenda/profesionales/nuevo', data={
+            'full_name': 'Secretaria Nueva',
+            'email': 'secretaria@test.com',
+            'license_number': 'MAT-999',
+            'role': 'secretario',
+            'password': 'TestPass1!',
+        }, follow_redirects=True)
+        assert r.status_code == 200
+        assert 'Secretaria Nueva' in r.data.decode()
+        with app.app_context():
+            u = User.query.filter_by(email='secretaria@test.com').first()
+            assert u is not None
+            assert u.role == 'secretario'
+            assert not u.license_number
+
+    def test_secretary_not_listed_as_agenda_professional(self, app):
+        c = _create_and_login(app)
+        _create_professional(app)
+        _create_secretary(app)
+        r = c.get('/agenda/', follow_redirects=True)
+        assert r.status_code == 200
+        assert 'Secretaria Test' not in r.data.decode()
+
+    def test_secretary_cannot_manage_users(self, app):
+        _create_and_login(app)
+        sec_id = _create_secretary(app)
+        c = _make_client(app)
+        c.post('/auth/login', data={'email': 'secre@test.com', 'password': 'TestPass1!'})
+
+        r = c.get('/agenda/profesionales', follow_redirects=True)
+        assert 'Solo un odontólogo' in r.data.decode()
+
+        r = c.post('/agenda/profesionales/nuevo', data={
+            'full_name': 'Usuario No Permitido',
+            'email': 'nopermitido@test.com',
+            'role': 'odontologo',
+            'password': 'TestPass1!',
+        }, follow_redirects=True)
+        assert 'Solo un odontólogo' in r.data.decode()
+        with app.app_context():
+            assert User.query.filter_by(email='nopermitido@test.com').first() is None
+
+        r = c.post(f'/agenda/profesionales/{sec_id}/editar', data={
+            'full_name': 'Secretaria Test',
+            'email': 'secre@test.com',
+            'role': 'odontologo',
+        }, follow_redirects=True)
+        assert 'Solo un odontólogo' in r.data.decode()
+        with app.app_context():
+            assert _db.session.get(User, sec_id).role == 'secretario'
+
+        r = c.get('/agenda/', follow_redirects=True)
+        assert 'Gestionar usuarios' not in r.data.decode()
+
+    def test_secretary_cannot_have_schedule(self, app):
+        c = _create_and_login(app)
+        sec_id = _create_secretary(app)
+        hoy = date.today()
+        r = c.post('/agenda/horarios/nuevo', data={
+            'user_id': sec_id,
+            'days': ['0'],
+            'start_time': '09:00',
+            'end_time': '17:00',
+            'valid_from': hoy.strftime('%d/%m/%Y'),
+            'valid_to': (hoy + timedelta(days=364)).strftime('%d/%m/%Y'),
+        }, follow_redirects=True)
+        assert r.status_code == 200
+        assert 'Seleccioná un odontólogo' in r.data.decode()
+        with app.app_context():
+            assert WorkSchedule.query.filter_by(user_id=sec_id).count() == 0
+
+    def test_secretary_cannot_be_appointment_professional(self, app):
+        c = _create_and_login(app)
+        pid = _create_patient(app, full_name='Paciente Secretaria', document_id='99999999')
+        sec_id = _create_secretary(app)
+        tomorrow = date.today() + timedelta(days=1)
+        r = c.post('/agenda/nuevo', data={
+            'patient_id': pid,
+            'professional_id': sec_id,
+            'fecha': tomorrow.strftime('%Y-%m-%d'),
+            'hora': '10:00',
+            'status': 'confirmado',
+        }, follow_redirects=True)
+        assert r.status_code == 200
+        assert 'Seleccioná un odontólogo' in r.data.decode()
+        with app.app_context():
+            assert Appointment.query.filter_by(professional_id=sec_id).count() == 0
+
+    def test_change_odontologist_to_secretary_with_schedule_blocked(self, app):
+        c = _create_and_login(app)
+        prof_id = _create_professional(app)
+        r = c.post(f'/agenda/profesionales/{prof_id}/editar', data={
+            'full_name': 'Dr. Agenda',
+            'email': 'agenda@test.com',
+            'role': 'secretario',
+        }, follow_redirects=True)
+        assert r.status_code == 200
+        assert 'horario' in r.data.decode().lower()
+        with app.app_context():
+            assert _db.session.get(User, prof_id).role == 'odontologo'
 
     def test_create_profesional_without_password_fails(self, app):
         c = _create_and_login(app)

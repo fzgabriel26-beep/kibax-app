@@ -62,15 +62,17 @@
         {% endfor %}
       </ul>
       {% else %}
-      <p class="sidebar-empty">Todavía no hay profesionales cargados.</p>
-      <a href="{{ url_for('agenda.nuevo_profesional') }}" class="btn-sidebar">+ Agregar profesional</a>
+      <p class="sidebar-empty">Todavía no hay odontólogos cargados.</p>
+      <a href="{{ url_for('agenda.nuevo_profesional') }}" class="btn-sidebar">+ Agregar odontólogo/a</a>
       {% endif %}
     </div>
 
     <!-- Acciones rápidas -->
     <div class="sidebar-section">
       <a href="{{ url_for('agenda.horarios') }}" class="btn-sidebar">Horarios de profesionales</a>
-      <a href="{{ url_for('agenda.list_profesionales') }}" class="btn-sidebar">Gestionar profesionales</a>
+      {% if current_user.is_odontologo %}
+      <a href="{{ url_for('agenda.list_profesionales') }}" class="btn-sidebar">Gestionar usuarios</a>
+      {% endif %}
       <a href="{{ url_for('agenda.export_ics', profesional=profesional.id if profesional else '') }}" class="btn-sidebar">Exportar .ics</a>
     </div>
 

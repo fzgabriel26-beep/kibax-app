@@ -62,13 +62,19 @@ Targets del Makefile: `make setup | install | run | test | db-upgrade | usuario 
   `csrf` y `limiter`: importalas desde ahí, nunca crees instancias nuevas.
 - Tres blueprints: `auth` (`/auth`), `patients` (`/pacientes`) y `agenda`
   (`/agenda`). Modelos en `models.py`, configuración por variables de entorno en
-  `config.py`. Modelos: `User` (único tipo de usuario = odontólogo/a, sin roles),
+  `config.py`. Modelos: `User` (rol `odontologo` o `secretario`),
   `Patient`, `ToothStatus`, `ProcedureLog`, `Attachment`,
   `TreatmentEvolutionPhoto`, `ConsultationNote`, `Appointment`, `WorkSchedule`,
   `ScheduleException`, `AuditLog`.
 - Todas las rutas de pacientes y agenda están protegidas con `@login_required`; las
   rutas nuevas también deben estarlo (no hay capa de permisos: todos comparten la
   misma base).
+- Solo los usuarios con `role='odontologo'` son profesionales de la agenda: tienen
+  horarios y reciben turnos. Los `role='secretario'` pueden gestionar pacientes y
+  turnos, pero no tienen horarios propios ni se asignan como profesional. Filtrá
+  siempre con `User.role == 'odontologo'` al listar profesionales.
+- La gestión de cuentas (`/agenda/profesionales...`) está reservada a odontólogos
+  con el helper `_solo_odontologo()`; un secretario no puede cambiarse el rol solo.
 - El alta, la edición y la eliminación de pacientes registran auditoría con
   `patients._audit(...)` (→ `AuditLog`). Los cambios en turnos/agenda **no** se
   auditan, aunque el docstring de `AuditLog` diga lo contrario: agregá las llamadas
@@ -119,7 +125,7 @@ Targets del Makefile: `make setup | install | run | test | db-upgrade | usuario 
 - La exportación a PDF usa WeasyPrint si está instalado y, si no, hace un fallback
   silencioso a una vista HTML imprimible (`patients.export_patient`). WeasyPrint es
   opcional y no está en `requirements.txt`.
-- La agenda siempre muestra un solo profesional: `/agenda/` sin `?profesional=<id>`
+- La agenda siempre muestra un solo odontólogo: `/agenda/` sin `?profesional=<id>`
   redirige al primero disponible. No existe la vista "todos los profesionales".
 - Los tests comparan strings literales de la interfaz en castellano (por ejemplo
   `'Todavía no hay pacientes'`, `'incorrectos'`). Si reformulás los mensajes flash,
