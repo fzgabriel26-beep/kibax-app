@@ -108,7 +108,7 @@
     {% if panoramic_is_image %}
     <img src="{{ url_for('patients.download_attachment', patient_id=paciente.id, attachment_id=panoramic.id) }}" alt="Radiografía panorámica">
     {% else %}
-    <div class="panoramic-pdf-placeholder">📄<br>Ver PDF</div>
+    <div class="panoramic-pdf-placeholder">Ver PDF</div>
     {% endif %}
   </a>
   <p class="panoramic-caption">
@@ -266,9 +266,9 @@
       <div class="evo-card-body">
         <p class="evo-card-notes">{{ photo.notes or 'Sin observaciones adicionales.' }}</p>
         <div class="evo-card-footer">
-          <span>📅 {{ photo.created_at.strftime('%d/%m/%Y') }}</span>
+          <span>{{ photo.created_at.strftime('%d/%m/%Y') }}</span>
           {% if photo.dentist %}
-          <span>🩺 Dr/a. {{ photo.dentist.full_name }}</span>
+          <span>Dr/a. {{ photo.dentist.full_name }}</span>
           {% endif %}
         </div>
       </div>
@@ -320,7 +320,7 @@
           <li class="note-item">
             <div class="note-head">
               <span class="note-date">{{ n.visit_date.strftime('%d/%m/%Y') }}</span>
-              {% if n.dentist %}<span class="note-dentist">🩺 Dr/a. {{ n.dentist.full_name }}</span>{% endif %}
+              {% if n.dentist %}<span class="note-dentist">Dr/a. {{ n.dentist.full_name }}</span>{% endif %}
               <form method="post" action="{{ url_for('patients.delete_consultation_note', patient_id=paciente.id, note_id=n.id) }}"
                     onsubmit="return confirm('¿Eliminar esta nota de consulta?');" class="note-delete">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -394,7 +394,6 @@
             <div class="tooth-preview" id="toothPreview">
               <img id="toothPreviewImg" src="" alt="Vista previa del estudio">
               <div id="toothPreviewPdf" class="tooth-preview-pdf" style="display:none;">
-                <span class="tooth-preview-pdf-icon">📄</span>
                 <span id="toothPreviewName" class="tooth-preview-pdf-name"></span>
                 <a id="toothPreviewOpen" href="#" target="_blank" rel="noopener" class="btn-solid">Abrir PDF</a>
               </div>

@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function () {
       previewImg.src = item.url;
       previewImg.style.display = 'block';
       previewPdf.style.display = 'none';
-      previewHint.textContent = '👁 Hacé clic en la imagen para verla en pantalla completa';
+      previewHint.textContent = 'Hacé clic en la imagen para verla en pantalla completa';
     } else {
       previewImg.style.display = 'none';
       previewPdf.style.display = 'flex';

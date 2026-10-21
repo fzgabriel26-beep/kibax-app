@@ -129,7 +129,7 @@
     <div class="date-nav-bar">
       <a class="btn-icon-mini" href="{{ url_for('agenda.index', fecha=prev_day.isoformat(), mes='%04d-%02d'|format(prev_day.year, prev_day.month), profesional=profesional.id if profesional else '') }}" aria-label="Día anterior">‹</a>
       <div class="date-nav-display">
-        📅 {{ (fecha or today)|fecha_larga }}
+        {{ (fecha or today)|fecha_larga }}
       </div>
       <a class="btn-icon-mini" href="{{ url_for('agenda.index', fecha=next_day.isoformat(), mes='%04d-%02d'|format(next_day.year, next_day.month), profesional=profesional.id if profesional else '') }}" aria-label="Día siguiente">›</a>
       <a class="btn-hoy" href="{{ url_for('agenda.index', fecha=today.isoformat(), mes='%04d-%02d'|format(today.year, today.month), profesional=profesional.id if profesional else '') }}">Hoy</a>

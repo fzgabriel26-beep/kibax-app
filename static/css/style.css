@@ -744,7 +744,6 @@ body.dark .auth-logo {
   color: #fff; text-align: center; display: none;
   flex-direction: column; align-items: center; gap: .5rem;
 }
-.tooth-preview-pdf-icon { font-size: 3rem; }
 .tooth-preview-pdf-name {
   font-size: .85rem; color: rgba(255,255,255,.8);
   max-width: 80%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -782,7 +781,6 @@ body.dark .auth-logo {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   background: #FDF0EE; color: #B06060; font-size: .55rem; font-weight: 700;
 }
-.tooth-file-pdf::before { content: '📄'; font-size: 1.15rem; }
 .tooth-file-del {
   position: absolute; top: 2px; right: 2px;
   border: none; background: rgba(164, 54, 43, .92); color: #fff;
