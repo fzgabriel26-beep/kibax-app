@@ -5,7 +5,10 @@
   {% set layout = layouts[n] %}
   {% set st = statuses.get(n, {}) %}
   {% set general = st.get('', 'sano') %}
-  <button type="button" class="tooth-btn size-{{ size }}{% if general != 'sano' %} has-general{% endif %}" data-tooth="{{ n }}">
+  {% set hallazgos = st.values() | reject('equalto', 'sano') | list %}
+  <button type="button" class="tooth-btn size-{{ size }}{% if general != 'sano' %} has-general{% endif %}" data-tooth="{{ n }}"
+          aria-haspopup="dialog"
+          aria-label="Diente {{ n }}: {% if hallazgos %}{{ hallazgos|length }} cara{{ 's' if hallazgos|length != 1 }} con hallazgos{% else %}sano{% endif %}">
     <svg viewBox="0 0 40 40" class="tooth-svg">
       <polygon class="face status-{{ st.get(layout.top, 'sano') }}" data-surface="{{ layout.top }}" points="0,0 40,0 28,12 12,12"></polygon>
       <polygon class="face status-{{ st.get(layout.right, 'sano') }}" data-surface="{{ layout.right }}" points="40,0 40,40 28,28 28,12"></polygon>
@@ -56,20 +59,20 @@
 
   <div class="legend" id="odontogramLegend">
     {% for key, label in status_labels.items() %}
-    <span class="legend-item" data-status="{{ key }}"><i class="tooth-dot status-{{ key }}"></i>{{ label }}</span>
+    <span class="legend-item" data-status="{{ key }}" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-{{ key }}"></i>{{ label }}</span>
     {% endfor %}
   </div>
 
   <div class="arch-wrap">
     <div class="arch-label">Superior · permanente</div>
-    <div class="arch-row">
+    <div class="arch-row" role="group" tabindex="0" aria-label="Arcada superior permanente">
       {% for n in upper_row %}
         {% if loop.index == 9 %}<div class="midline"></div>{% endif %}
         {{ tooth_icon(n) }}
       {% endfor %}
     </div>
     <div class="gum-line"></div>
-    <div class="arch-row">
+    <div class="arch-row" role="group" tabindex="0" aria-label="Arcada inferior permanente">
       {% for n in lower_row %}
         {% if loop.index == 9 %}<div class="midline"></div>{% endif %}
         {{ tooth_icon(n) }}
@@ -80,14 +83,14 @@
 
   <div class="arch-wrap arch-wrap-primary mt-3">
     <div class="arch-label">Superior · de leche</div>
-    <div class="arch-row">
+    <div class="arch-row" role="group" tabindex="0" aria-label="Arcada superior de leche">
       {% for n in primary_upper_row %}
         {% if loop.index == 6 %}<div class="midline"></div>{% endif %}
         {{ tooth_icon(n, size='small') }}
       {% endfor %}
     </div>
     <div class="gum-line"></div>
-    <div class="arch-row">
+    <div class="arch-row" role="group" tabindex="0" aria-label="Arcada inferior de leche">
       {% for n in primary_lower_row %}
         {% if loop.index == 6 %}<div class="midline"></div>{% endif %}
         {{ tooth_icon(n, size='small') }}
@@ -97,6 +100,7 @@
   </div>
 
   <p class="arch-footnote">Numeración FDI · cada diente se divide en 5 caras: vestibular, palatino/lingual, mesial, distal (bordes) y oclusal/incisal (centro)</p>
+  <p class="arch-footnote">Tocá un estado de la leyenda para ver solo los dientes que lo tienen.</p>
 </section>
 
 <section class="panel panoramic-panel">
@@ -129,17 +133,17 @@
 <div class="section-tabs mt-4">
   <ul class="nav nav-tabs" id="patientTabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="tab-estudios" data-bs-toggle="tab" data-bs-target="#pane-estudios" type="button" role="tab" aria-controls="pane-estudios">Estudios y documentación</button>
+      <button class="nav-link active" id="tab-estudios" data-bs-toggle="tab" data-bs-target="#pane-estudios" type="button" role="tab" aria-controls="pane-estudios" aria-selected="true">Estudios y documentación</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="tab-evolucion" data-bs-toggle="tab" data-bs-target="#pane-evolucion" type="button" role="tab" aria-controls="pane-evolucion">Evolución fotográfica</button>
+      <button class="nav-link" id="tab-evolucion" data-bs-toggle="tab" data-bs-target="#pane-evolucion" type="button" role="tab" aria-controls="pane-evolucion" aria-selected="false">Evolución fotográfica</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="tab-notas" data-bs-toggle="tab" data-bs-target="#pane-notas" type="button" role="tab" aria-controls="pane-notas">Notas de consulta</button>
+      <button class="nav-link" id="tab-notas" data-bs-toggle="tab" data-bs-target="#pane-notas" type="button" role="tab" aria-controls="pane-notas" aria-selected="false">Notas de consulta</button>
     </li>
   </ul>
   <div class="tab-content">
-    <div class="tab-pane fade" id="pane-estudios" role="tabpanel" aria-labelledby="tab-estudios">
+    <div class="tab-pane fade show active" id="pane-estudios" role="tabpanel" aria-labelledby="tab-estudios">
       <section class="panel">
         <div class="panel-head">
           <h2>Estudios y documentación</h2>
@@ -353,7 +357,7 @@
 </div>
 
 <!-- Modal diente -->
-<div class="modal fade" id="toothModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="toothModal" tabindex="-1" aria-labelledby="toothModalTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content">
       <div class="modal-header">
@@ -394,7 +398,7 @@
 
           <div class="col-md-6 tooth-files-col">
             <div class="tooth-preview" id="toothPreview">
-              <img id="toothPreviewImg" src="" alt="Vista previa del estudio">
+              <img id="toothPreviewImg" alt="Vista previa del estudio">
               <div id="toothPreviewPdf" class="tooth-preview-pdf" style="display:none;">
                 <span id="toothPreviewName" class="tooth-preview-pdf-name"></span>
                 <a id="toothPreviewOpen" href="#" target="_blank" rel="noopener" class="btn-solid">Abrir PDF</a>
@@ -440,7 +444,7 @@
 
 <!-- Lightbox para estudios del diente -->
 <div id="toothLightbox" class="tooth-lightbox" title="Cerrar">
-  <img id="toothLightboxImg" src="" alt="Estudio">
+  <img id="toothLightboxImg" alt="Estudio">
   <span id="toothLightboxCaption" class="tooth-lightbox-caption"></span>
   <button type="button" class="tooth-lightbox-close" aria-label="Cerrar">✕</button>
 </div>
@@ -560,48 +564,48 @@
 
     // --- Leyenda interactiva del odontograma ---
     var legend = document.getElementById('odontogramLegend');
-    var archWrap = document.querySelector('.arch-wrap');
-    if (!legend || !archWrap) return;
+    var archWraps = document.querySelectorAll('.arch-wrap');
+    if (!legend || !archWraps.length) return;
 
     var legendItems = legend.querySelectorAll('.legend-item');
     var activeStatus = null;
 
-    legendItems.forEach(function (item) {
-      item.addEventListener('click', function () {
-        var status = item.dataset.status;
-
-        // Si se hace clic en el mismo estado, desactivar
-        if (activeStatus === status) {
-          activeStatus = null;
-          item.classList.remove('legend-active');
-          archWrap.classList.remove('odontogram-legend-active');
-          archWrap.querySelectorAll('.tooth-btn').forEach(function (b) {
-            b.classList.remove('legend-highlight');
-          });
-          return;
-        }
-
-        // Activar nuevo filtro
-        activeStatus = status;
-        legendItems.forEach(function (li) { li.classList.remove('legend-active'); });
-        item.classList.add('legend-active');
-        archWrap.classList.add('odontogram-legend-active');
-
-        // Highlight dientes que tienen al menos una cara con ese estado
-        archWrap.querySelectorAll('.tooth-btn').forEach(function (btn) {
-          var toothNum = btn.dataset.tooth;
-          // Leer los estados del SVG: buscar polígonos con clase status-{status}
-          var faces = btn.querySelectorAll('.face');
-          var overlay = btn.querySelector('.tooth-overlay');
+    function applyFilter(status) {
+      activeStatus = status;
+      legendItems.forEach(function (li) {
+        var on = li.dataset.status === status;
+        li.classList.toggle('legend-active', on);
+        li.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      archWraps.forEach(function (wrap) {
+        wrap.classList.toggle('odontogram-legend-active', !!status);
+        wrap.querySelectorAll('.tooth-btn').forEach(function (btn) {
           var match = false;
-
-          faces.forEach(function (f) {
-            if (f.classList.contains('status-' + status)) match = true;
-          });
-          if (overlay && overlay.classList.contains('overlay-' + status)) match = true;
-
+          if (status) {
+            // Leer los estados del SVG: polígonos con clase status-{status}
+            var faces = btn.querySelectorAll('.face');
+            var overlay = btn.querySelector('.tooth-overlay');
+            faces.forEach(function (f) {
+              if (f.classList.contains('status-' + status)) match = true;
+            });
+            if (overlay && overlay.classList.contains('overlay-' + status)) match = true;
+          }
           btn.classList.toggle('legend-highlight', match);
         });
+      });
+    }
+
+    legendItems.forEach(function (item) {
+      function toggle() {
+        // Si se toca el mismo estado, desactivar
+        applyFilter(activeStatus === item.dataset.status ? null : item.dataset.status);
+      }
+      item.addEventListener('click', toggle);
+      item.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          toggle();
+        }
       });
     });
   })();

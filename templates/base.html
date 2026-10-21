@@ -65,7 +65,7 @@
     {% endwith %}
 
     <!-- Toast container para notificaciones persistentes -->
-    <div id="toastContainer" class="toast-container"></div>
+    <div id="toastContainer" class="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
 
     {% block content %}{% endblock %}
   </main>
@@ -95,7 +95,7 @@
       if (!container) return;
       var toast = document.createElement('div');
       toast.className = 'toast-notification toast-' + type;
-      toast.innerHTML = '<span>' + message + '</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>';
+      toast.innerHTML = '<span>' + message + '</span><button class="toast-close" type="button" aria-label="Cerrar notificación" onclick="this.parentElement.remove()">✕</button>';
       container.appendChild(toast);
       setTimeout(function () { toast.classList.add('show'); }, 10);
       setTimeout(function () { toast.remove(); }, 5000);

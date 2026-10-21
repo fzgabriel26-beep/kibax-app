@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function closeLightbox() {
     lightboxEl.classList.remove('open');
-    lightboxImg.src = '';
+    lightboxImg.removeAttribute('src');
     document.body.style.overflow = '';
   }
 
