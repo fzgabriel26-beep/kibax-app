@@ -433,7 +433,7 @@
     <span class="slot-menu-ico" aria-hidden="true"></span> Nuevo sobreturno
   </button>
   <button type="button" class="slot-menu-item danger" data-act="anular" role="menuitem">
-    <span class="slot-menu-ico" aria-hidden="true" id="anularIco">🚫</span><span id="anularLabel"> Anular turno</span>
+    <span class="slot-menu-ico" aria-hidden="true"></span> <span id="anularLabel">Anular turno</span>
   </button>
 </div>
 {% endblock %}
@@ -477,7 +477,6 @@
     var timeEl = document.getElementById('slotMenuTime');
     var closeBtn = document.getElementById('slotMenuClose');
     var anularItem = menu.querySelector('[data-act="anular"]');
-    var anularIco = document.getElementById('anularIco');
     var anularLabel = document.getElementById('anularLabel');
     var slot = { hora: '', fecha: '', apptId: '', excId: '', profId: '' };
 
@@ -496,12 +495,10 @@
       // Si el horario ya está marcado como NO CITAR, la misma opción sirve
       // para habilitarlo de nuevo.
       if (slot.excId) {
-        anularIco.textContent = '✅';
-        anularLabel.textContent = ' Habilitar turno';
+        anularLabel.textContent = 'Habilitar turno';
         anularItem.classList.remove('danger');
       } else {
-        anularIco.textContent = '🚫';
-        anularLabel.textContent = ' Anular turno';
+        anularLabel.textContent = 'Anular turno';
         anularItem.classList.add('danger');
       }
 

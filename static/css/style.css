@@ -163,9 +163,8 @@ body.dark .agenda-cal td .no-schedule { background: #1E2625; border-color: var(-
    oscuro se vuelve invisible. */
 body.dark .btn-close { filter: invert(1) grayscale(100%) brightness(180%); }
 
-/* Placeholders de los campos dentro de los modales. */
-body.dark .form-control::placeholder,
-body.dark .form-select::placeholder { color: var(--ink-soft); opacity: 1; }
+/* Placeholders: ver `body.dark ::placeholder` más arriba (lo agregó otra
+   contribución); acá solo lo específico del input de archivo. */
 
 /* Botón "Elegir archivo": Bootstrap usa un gris claro de fondo. */
 body.dark .form-control::file-selector-button {
