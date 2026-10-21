@@ -1,0 +1,926 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-21T15:55:42Z",
+  "title": "Design System: Kiba X",
+  "extensions": {
+    "colorMeta": {
+      "menta-clinica": {
+        "role": "primary",
+        "displayName": "Menta Clínica",
+        "canonical": "#7EBFB5",
+        "tonalRamp": [
+          "#000F0C",
+          "#002E29",
+          "#035149",
+          "#32736A",
+          "#57978E",
+          "#7CBCB2",
+          "#A1E3D9",
+          "#BBFEF3"
+        ]
+      },
+      "menta-profunda": {
+        "role": "primary",
+        "displayName": "Menta Profunda",
+        "canonical": "#5A9E94",
+        "tonalRamp": [
+          "#000F0C",
+          "#002E29",
+          "#005149",
+          "#2E736A",
+          "#53978E",
+          "#79BDB3",
+          "#9FE4D9",
+          "#B9FFF3"
+        ]
+      },
+      "menta-en-reposo": {
+        "role": "primary",
+        "displayName": "Menta en Reposo",
+        "canonical": "#EDF7F5",
+        "tonalRamp": [
+          "#060D0C",
+          "#212827",
+          "#3F4745",
+          "#606867",
+          "#828B8A",
+          "#A7B0AE",
+          "#CDD7D5",
+          "#E7F1EF"
+        ]
+      },
+      "arena-calida": {
+        "role": "secondary",
+        "displayName": "Arena Cálida",
+        "canonical": "#E8B87A",
+        "tonalRamp": [
+          "#130900",
+          "#372100",
+          "#603D00",
+          "#875C1B",
+          "#AD7F42",
+          "#D3A467",
+          "#FBCB8C",
+          "#FFEBD2"
+        ]
+      },
+      "arena-encendida": {
+        "role": "secondary",
+        "displayName": "Arena Encendida",
+        "canonical": "#F0CB9A",
+        "tonalRamp": [
+          "#130900",
+          "#372100",
+          "#5D3E0B",
+          "#805F31",
+          "#A58254",
+          "#CBA777",
+          "#F3CE9C",
+          "#FFEBD1"
+        ]
+      },
+      "marron-de-sobre": {
+        "role": "secondary",
+        "displayName": "Marrón de Sobre",
+        "canonical": "#5A4530",
+        "tonalRamp": [
+          "#150800",
+          "#35220D",
+          "#55402C",
+          "#78614C",
+          "#9C846E",
+          "#C2A991",
+          "#E9CFB7",
+          "#FFEBD7"
+        ]
+      },
+      "lienzo-consultorio": {
+        "role": "neutral",
+        "displayName": "Lienzo de Consultorio",
+        "canonical": "#F4F6F5",
+        "tonalRamp": [
+          "#0A0B0B",
+          "#252726",
+          "#444545",
+          "#656666",
+          "#888A89",
+          "#ACAEAD",
+          "#D3D5D4",
+          "#EDEFEE"
+        ]
+      },
+      "vidrio-claro": {
+        "role": "neutral",
+        "displayName": "Vidrio Claro",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#AEAEAE",
+          "#D4D4D4",
+          "#EEEEEE"
+        ]
+      },
+      "vidrio-con-sol": {
+        "role": "neutral",
+        "displayName": "Vidrio con Sol",
+        "canonical": "#FAFCFB",
+        "tonalRamp": [
+          "#0A0B0B",
+          "#252726",
+          "#444545",
+          "#656666",
+          "#888A89",
+          "#ACAEAD",
+          "#D3D5D4",
+          "#EDEFEE"
+        ]
+      },
+      "grafito-clinico": {
+        "role": "neutral",
+        "displayName": "Grafito Clínico",
+        "canonical": "#3A4543",
+        "tonalRamp": [
+          "#050D0C",
+          "#1F2927",
+          "#3D4846",
+          "#5D6967",
+          "#808C8A",
+          "#A4B1AF",
+          "#CAD8D5",
+          "#E4F2EF"
+        ]
+      },
+      "grafito-suave": {
+        "role": "neutral",
+        "displayName": "Grafito Suave",
+        "canonical": "#7E8C88",
+        "tonalRamp": [
+          "#040E0B",
+          "#1E2926",
+          "#3C4845",
+          "#5C6966",
+          "#7F8D89",
+          "#A3B2AE",
+          "#C9D8D4",
+          "#E3F3EE"
+        ]
+      },
+      "borde-instrumental": {
+        "role": "neutral",
+        "displayName": "Borde de Instrumental",
+        "canonical": "#E4EAE7",
+        "tonalRamp": [
+          "#080C0A",
+          "#232825",
+          "#414644",
+          "#626765",
+          "#858B88",
+          "#AAAFAD",
+          "#D0D6D3",
+          "#EAF0ED"
+        ]
+      },
+      "borde-tenue": {
+        "role": "neutral",
+        "displayName": "Borde Tenue",
+        "canonical": "#EDF1EF",
+        "tonalRamp": [
+          "#090C0B",
+          "#242726",
+          "#434644",
+          "#646765",
+          "#868A88",
+          "#ABAFAD",
+          "#D1D5D3",
+          "#EBEFED"
+        ]
+      },
+      "terracota-alerta": {
+        "role": "neutral",
+        "displayName": "Terracota de Alerta",
+        "canonical": "#B06060",
+        "tonalRamp": [
+          "#1F0002",
+          "#4D030E",
+          "#72292C",
+          "#994B4C",
+          "#C06E6E",
+          "#E89392",
+          "#FFC3C1",
+          "#FFE8E7"
+        ]
+      },
+      "terracota-reposo": {
+        "role": "neutral",
+        "displayName": "Terracota en Reposo",
+        "canonical": "#FDF0EE",
+        "tonalRamp": [
+          "#110908",
+          "#2D2423",
+          "#4C4241",
+          "#6E6361",
+          "#928684",
+          "#B7ABA9",
+          "#DED1CF",
+          "#F8EBE9"
+        ]
+      },
+      "consultorio-nocturno": {
+        "role": "neutral",
+        "displayName": "Consultorio Nocturno",
+        "canonical": "#1A2020",
+        "tonalRamp": [
+          "#070C0C",
+          "#222828",
+          "#404747",
+          "#616868",
+          "#838B8B",
+          "#A8B0B0",
+          "#CED6D6",
+          "#E8F0F0"
+        ]
+      },
+      "vidrio-nocturno": {
+        "role": "neutral",
+        "displayName": "Vidrio Nocturno",
+        "canonical": "#222C2A",
+        "tonalRamp": [
+          "#050D0C",
+          "#1F2927",
+          "#3D4845",
+          "#5E6967",
+          "#808C8A",
+          "#A5B1AE",
+          "#CBD7D5",
+          "#E5F2EF"
+        ]
+      },
+      "vidrio-nocturno-iluminado": {
+        "role": "neutral",
+        "displayName": "Vidrio Nocturno Iluminado",
+        "canonical": "#2A3532",
+        "tonalRamp": [
+          "#050D0B",
+          "#1E2926",
+          "#3C4845",
+          "#5D6966",
+          "#808C89",
+          "#A4B1AE",
+          "#CAD8D4",
+          "#E4F2EE"
+        ]
+      },
+      "grafito-claro": {
+        "role": "neutral",
+        "displayName": "Grafito Claro",
+        "canonical": "#D8E2DF",
+        "tonalRamp": [
+          "#060D0B",
+          "#212826",
+          "#3F4745",
+          "#606866",
+          "#828B89",
+          "#A7B0AE",
+          "#CDD7D4",
+          "#E7F1EE"
+        ]
+      },
+      "grafito-medio": {
+        "role": "neutral",
+        "displayName": "Grafito Medio",
+        "canonical": "#9AA8A4",
+        "tonalRamp": [
+          "#040D0B",
+          "#1E2926",
+          "#3C4845",
+          "#5C6966",
+          "#7F8D89",
+          "#A3B2AE",
+          "#C9D8D4",
+          "#E3F2EE"
+        ]
+      },
+      "borde-nocturno": {
+        "role": "neutral",
+        "displayName": "Borde Nocturno",
+        "canonical": "#303E3A",
+        "tonalRamp": [
+          "#030E0B",
+          "#1C2A26",
+          "#3A4944",
+          "#5B6A65",
+          "#7D8D89",
+          "#A2B2AD",
+          "#C8D9D4",
+          "#E2F3EE"
+        ]
+      },
+      "menta-nocturna": {
+        "role": "primary",
+        "displayName": "Menta Nocturna",
+        "canonical": "#223532",
+        "tonalRamp": [
+          "#010F0C",
+          "#182B28",
+          "#364A46",
+          "#566B68",
+          "#798E8B",
+          "#9DB3AF",
+          "#C3DAD6",
+          "#DDF4F0"
+        ]
+      },
+      "caries-lavada": {
+        "role": "tertiary",
+        "displayName": "Caries Lavada",
+        "canonical": "#E8A0A0",
+        "tonalRamp": [
+          "#1F0003",
+          "#480E15",
+          "#6C2F32",
+          "#915152",
+          "#B87474",
+          "#DF9898",
+          "#FFC2C2",
+          "#FFE8E8"
+        ]
+      },
+      "azul-obturacion": {
+        "role": "tertiary",
+        "displayName": "Azul de Obturación",
+        "canonical": "#A0C4DE",
+        "tonalRamp": [
+          "#000D18",
+          "#08293E",
+          "#29495F",
+          "#496B82",
+          "#6C8EA7",
+          "#90B3CD",
+          "#B5DAF4",
+          "#DFF1FF"
+        ]
+      },
+      "oro-corona": {
+        "role": "tertiary",
+        "displayName": "Oro de Corona",
+        "canonical": "#E0CC8A",
+        "tonalRamp": [
+          "#100B00",
+          "#302500",
+          "#544300",
+          "#776522",
+          "#9B8848",
+          "#C1AD6C",
+          "#E8D491",
+          "#FFEEB6"
+        ]
+      },
+      "lila-endodoncia": {
+        "role": "tertiary",
+        "displayName": "Lila de Endodoncia",
+        "canonical": "#C4A8D4",
+        "tonalRamp": [
+          "#15011F",
+          "#321B3E",
+          "#523A5F",
+          "#745A82",
+          "#987DA7",
+          "#BDA2CD",
+          "#E4C8F5",
+          "#F7E8FF"
+        ]
+      },
+      "gris-extraccion": {
+        "role": "tertiary",
+        "displayName": "Gris de Extracción",
+        "canonical": "#B8C4C0",
+        "tonalRamp": [
+          "#050D0B",
+          "#1F2926",
+          "#3D4844",
+          "#5E6965",
+          "#818C88",
+          "#A5B1AD",
+          "#CBD7D3",
+          "#E5F2EE"
+        ]
+      },
+      "verde-implante": {
+        "role": "tertiary",
+        "displayName": "Verde de Implante",
+        "canonical": "#8ED4BC",
+        "tonalRamp": [
+          "#000F09",
+          "#002F23",
+          "#00523F",
+          "#2E7560",
+          "#549983",
+          "#79BEA7",
+          "#9FE6CD",
+          "#BDFFE8"
+        ]
+      },
+      "arcilla-protesis": {
+        "role": "tertiary",
+        "displayName": "Arcilla de Prótesis",
+        "canonical": "#D4B098",
+        "tonalRamp": [
+          "#170600",
+          "#3A1F09",
+          "#5B3D28",
+          "#7E5E48",
+          "#A3816A",
+          "#C9A68E",
+          "#F1CCB3",
+          "#FFEADC"
+        ]
+      },
+      "gris-ausencia": {
+        "role": "tertiary",
+        "displayName": "Gris de Ausencia",
+        "canonical": "#A8B4B0",
+        "tonalRamp": [
+          "#050D0B",
+          "#1F2926",
+          "#3D4844",
+          "#5E6965",
+          "#818C88",
+          "#A5B1AD",
+          "#CBD7D3",
+          "#E5F2EE"
+        ]
+      },
+      "turno-confirmado": {
+        "role": "tertiary",
+        "displayName": "Confirmado",
+        "canonical": "#2E9E6B",
+        "tonalRamp": [
+          "#000F06",
+          "#002F1B",
+          "#005333",
+          "#007A4D",
+          "#31A06D",
+          "#5CC691",
+          "#85EEB6",
+          "#C2FFDC"
+        ]
+      },
+      "turno-confirmado-suave": {
+        "role": "tertiary",
+        "displayName": "Confirmado Suave",
+        "canonical": "#E3F4EB",
+        "tonalRamp": [
+          "#040E09",
+          "#1D2A23",
+          "#3B4942",
+          "#5B6A63",
+          "#7E8D85",
+          "#A2B2AA",
+          "#C8D9D0",
+          "#E2F3EA"
+        ]
+      },
+      "turno-presente": {
+        "role": "tertiary",
+        "displayName": "Presente",
+        "canonical": "#2F7FE0",
+        "tonalRamp": [
+          "#000A20",
+          "#002551",
+          "#004389",
+          "#0964C2",
+          "#3A89EB",
+          "#74B0FF",
+          "#B8D7FF",
+          "#E4F0FF"
+        ]
+      },
+      "turno-presente-suave": {
+        "role": "tertiary",
+        "displayName": "Presente Suave",
+        "canonical": "#E4EDFB",
+        "tonalRamp": [
+          "#060B14",
+          "#202731",
+          "#3E4551",
+          "#5F6773",
+          "#828A96",
+          "#A6AFBC",
+          "#CCD5E3",
+          "#E6EFFD"
+        ]
+      },
+      "turno-atendido": {
+        "role": "tertiary",
+        "displayName": "Atendido",
+        "canonical": "#8B5CF6",
+        "tonalRamp": [
+          "#0F002A",
+          "#2E0067",
+          "#5100AB",
+          "#703BD5",
+          "#9264FF",
+          "#B19CFF",
+          "#D5CCFF",
+          "#EFECFF"
+        ]
+      },
+      "turno-atendido-suave": {
+        "role": "tertiary",
+        "displayName": "Atendido Suave",
+        "canonical": "#EDE6FE",
+        "tonalRamp": [
+          "#0D0817",
+          "#292334",
+          "#474155",
+          "#686277",
+          "#8C859B",
+          "#B0AAC0",
+          "#D7D0E7",
+          "#F1EBFF"
+        ]
+      },
+      "turno-ausente-aviso": {
+        "role": "tertiary",
+        "displayName": "Ausente con Aviso",
+        "canonical": "#D9891F",
+        "tonalRamp": [
+          "#150800",
+          "#3A1F00",
+          "#633A00",
+          "#905700",
+          "#C07500",
+          "#EB9937",
+          "#FFC890",
+          "#FFEBD6"
+        ]
+      },
+      "turno-ausente-aviso-suave": {
+        "role": "tertiary",
+        "displayName": "Ausente con Aviso Suave",
+        "canonical": "#FCF0DB",
+        "tonalRamp": [
+          "#120A00",
+          "#2E2515",
+          "#4D4432",
+          "#6F6552",
+          "#938875",
+          "#B8AC99",
+          "#DED3BE",
+          "#F9EDD8"
+        ]
+      },
+      "turno-ausente-sin-aviso": {
+        "role": "tertiary",
+        "displayName": "Ausente sin Aviso",
+        "canonical": "#D64545",
+        "tonalRamp": [
+          "#1F0001",
+          "#4F0007",
+          "#860013",
+          "#B7252C",
+          "#E2504F",
+          "#FF847D",
+          "#FFC3BE",
+          "#FFE8E6"
+        ]
+      },
+      "turno-ausente-sin-aviso-suave": {
+        "role": "tertiary",
+        "displayName": "Ausente sin Aviso Suave",
+        "canonical": "#FBE4E4",
+        "tonalRamp": [
+          "#140707",
+          "#322122",
+          "#524040",
+          "#746161",
+          "#988383",
+          "#BEA8A8",
+          "#E5CECE",
+          "#FFE8E8"
+        ]
+      },
+      "turno-cancelado": {
+        "role": "tertiary",
+        "displayName": "Cancelado",
+        "canonical": "#59636F",
+        "tonalRamp": [
+          "#050C15",
+          "#1F2732",
+          "#3D4651",
+          "#5D6773",
+          "#808A97",
+          "#A4AFBC",
+          "#CAD6E3",
+          "#E4F0FE"
+        ]
+      },
+      "turno-cancelado-suave": {
+        "role": "tertiary",
+        "displayName": "Cancelado Suave",
+        "canonical": "#E8EBEF",
+        "tonalRamp": [
+          "#090B0E",
+          "#24272A",
+          "#434548",
+          "#64666A",
+          "#87898D",
+          "#ABAEB2",
+          "#D1D4D8",
+          "#ECEFF3"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Título de página (h1). Una vez por pantalla."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Encabezados amplios y tarjetas de autenticación."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Títulos de panel, marca y nombre del profesional."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto corriente y valores de formulario."
+      },
+      "body-small": {
+        "displayName": "Body Small",
+        "purpose": "Metadatos, ayudas y pies de tarjeta."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Etiquetas de formulario y botones."
+      },
+      "eyebrow": {
+        "displayName": "Eyebrow",
+        "purpose": "Módulo en mayúsculas sobre el título de página."
+      }
+    },
+    "shadows": [
+      {
+        "name": "reposo",
+        "value": "0 1px 2px rgba(0,0,0,.03)",
+        "purpose": "Tarjetas y alertas en estado normal."
+      },
+      {
+        "name": "superficie",
+        "value": "0 2px 8px rgba(0,0,0,.05)",
+        "purpose": "Paneles y tarjetas de formulario."
+      },
+      {
+        "name": "hover",
+        "value": "0 4px 16px rgba(0,0,0,.06)",
+        "purpose": "Tarjeta de paciente al pasar el mouse."
+      },
+      {
+        "name": "flotante",
+        "value": "0 8px 32px rgba(0,0,0,.08)",
+        "purpose": "Menús, autocompletado, modales y datepicker."
+      },
+      {
+        "name": "halo-menta",
+        "value": "0 0 20px rgba(126,191,181,.1)",
+        "purpose": "Refuerzo de hover sobre superficies menta."
+      },
+      {
+        "name": "navbar",
+        "value": "0 4px 24px rgba(0,0,0,.06)",
+        "purpose": "Sombra propia de la barra de navegación."
+      },
+      {
+        "name": "peligro",
+        "value": "0 2px 6px rgba(212,136,136,.3)",
+        "purpose": "Contador de turnos pendientes en la navbar."
+      }
+    ],
+    "motion": [
+      {
+        "name": "estandar",
+        "value": "0.2s cubic-bezier(.4,0,.2,1)",
+        "purpose": "Transición por defecto de color, borde, sombra y transform."
+      },
+      {
+        "name": "menu-agenda",
+        "value": "0.13s cubic-bezier(.4,0,.2,1)",
+        "purpose": "Entrada del menú contextual de horarios."
+      },
+      {
+        "name": "entrada-pagina",
+        "value": "0.35s ease-out",
+        "purpose": "fadeUp de 8 px al montar el contenido principal."
+      },
+      {
+        "name": "toast",
+        "value": "0.35s cubic-bezier(.4,0,.2,1)",
+        "purpose": "Desplazamiento del toast desde la derecha."
+      },
+      {
+        "name": "diente",
+        "value": "0.12s",
+        "purpose": "Transformación y filtro al pasar sobre un diente."
+      },
+      {
+        "name": "leyenda",
+        "value": "0.2s",
+        "purpose": "Opacidad, filtro y escala al filtrar por estado."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "576px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "ficha",
+        "value": "860px"
+      },
+      {
+        "name": "agenda",
+        "value": "960px"
+      },
+      {
+        "name": "contenedor",
+        "value": "1600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón principal",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acción principal de la pantalla: dar de alta, guardar, cerrar sesión. Arena con texto marrón.",
+      "html": "<button class=\"ds-btn-primary\">Dar de alta paciente</button>",
+      "css": ".ds-btn-primary { background-image: linear-gradient(135deg, var(--arena-calida, #E8B87A) 0%, var(--arena-encendida, #F0CB9A) 100%); color: var(--marron-de-sobre, #5A4530); font-family: 'Inter', system-ui, sans-serif; font-size: .85rem; font-weight: 600; padding: .5rem 1rem; border: 1px solid transparent; border-radius: var(--radius-sm, 10px); box-shadow: 0 2px 8px rgba(232,184,122,.25); cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-btn-primary:hover { box-shadow: 0 4px 16px rgba(232,184,122,.35); transform: translateY(-1px); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(126,191,181,.35); } .ds-btn-primary:active { transform: translateY(0); }"
+    },
+    {
+      "name": "Botón de contorno",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Acción secundaria junto a la principal: editar, importar, imprimir.",
+      "html": "<button class=\"ds-btn-outline\">Importar CSV</button>",
+      "css": ".ds-btn-outline { background: var(--surface, #FFFFFF); color: var(--ink, #3A4543); font-family: 'Inter', system-ui, sans-serif; font-size: .85rem; font-weight: 600; padding: .5rem 1rem; border: 1px solid var(--border, #E4EAE7); border-radius: var(--radius-sm, 10px); cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-btn-outline:hover { border-color: var(--primary, #7EBFB5); color: var(--primary, #7EBFB5); background: var(--primary-tint, #EDF7F5); } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(126,191,181,.35); }"
+    },
+    {
+      "name": "Botón fantasma de navbar",
+      "kind": "button",
+      "refersTo": "button-nav-ghost",
+      "description": "Navegación sobre la barra menta: Pacientes, Agenda, tema.",
+      "html": "<button class=\"ds-btn-ghost\">Agenda</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: rgba(255,255,255,.9); font-family: 'Inter', system-ui, sans-serif; font-size: .85rem; font-weight: 600; padding: .5rem 1rem; border: 1px solid rgba(255,255,255,.3); border-radius: var(--radius-sm, 10px); cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-btn-ghost:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.45); color: #fff; } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(255,255,255,.35); }"
+    },
+    {
+      "name": "Botón de peligro",
+      "kind": "button",
+      "refersTo": "button-danger-ghost",
+      "description": "Acción destructiva de bajo énfasis: eliminar paciente, borrar adjunto.",
+      "html": "<button class=\"ds-btn-danger\">Eliminar</button>",
+      "css": ".ds-btn-danger { background: transparent; color: var(--terracota, #B06060); font-family: 'Inter', system-ui, sans-serif; font-size: .85rem; font-weight: 600; padding: .5rem 1rem; border: 1px solid #E8C4C0; border-radius: var(--radius-sm, 10px); cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-btn-danger:hover { background: #FDF0EE; border-color: #D4A0A0; } .ds-btn-danger:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(176,96,96,.3); }"
+    },
+    {
+      "name": "Campo de texto",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Formularios clínicos y de agenda. Etiqueta arriba, borde de 1.5 px y foco menta.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-label\">Nombre completo</span><input class=\"ds-input\" type=\"text\" placeholder=\"Apellido, Nombre\"></label>",
+      "css": ".ds-field { display: block; font-family: 'Inter', system-ui, sans-serif; } .ds-label { display: block; font-size: .83rem; font-weight: 600; color: var(--ink, #3A4543); letter-spacing: -.01em; margin-bottom: .35rem; } .ds-input { width: 100%; box-sizing: border-box; background: var(--surface, #FFFFFF); color: var(--ink, #3A4543); font-family: inherit; font-size: 1rem; padding: .375rem .75rem; border: 1.5px solid var(--border, #E4EAE7); border-radius: var(--radius-sm, 10px); transition: border-color .2s cubic-bezier(.4,0,.2,1), box-shadow .2s cubic-bezier(.4,0,.2,1); } .ds-input::placeholder { color: #9AA8A4; } .ds-input:focus { outline: none; border-color: var(--primary, #7EBFB5); box-shadow: 0 0 0 3px rgba(126,191,181,.15); }"
+    },
+    {
+      "name": "Búsqueda de pacientes",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Buscador del listado, con lupa SVG embebida a la izquierda.",
+      "html": "<input class=\"ds-search\" type=\"search\" placeholder=\"Buscá por nombre, DNI, teléfono o email…\">",
+      "css": ".ds-search { width: 100%; max-width: 480px; box-sizing: border-box; background-color: var(--surface, #FFFFFF); color: var(--ink, #3A4543); font-family: 'Inter', system-ui, sans-serif; font-size: 1rem; padding: .375rem .75rem .375rem 2.2rem; border: 1.5px solid var(--border, #E4EAE7); border-radius: var(--radius-sm, 10px); background-image: url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239BA8A4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'/%3e%3cline x1='21' y1='21' x2='16.65' y2='16.65'/%3e%3c/svg%3e\"); background-repeat: no-repeat; background-position: .65rem center; background-size: 1rem; transition: border-color .2s, box-shadow .2s; } .ds-search::placeholder { color: #9AA8A4; } .ds-search:focus { outline: none; border-color: var(--primary, #7EBFB5); box-shadow: 0 0 0 3px rgba(126,191,181,.15); }"
+    },
+    {
+      "name": "Panel de contenido",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Contenedor base de odontograma, adjuntos, notas y agenda. Vidrio suave, radio 20 px.",
+      "html": "<section class=\"ds-panel\"><h2 class=\"ds-panel-title\">Odontograma</h2><p class=\"ds-panel-sub\">Tocá una cara del diente para ver su historial.</p></section>",
+      "css": ".ds-panel { background: rgba(255,255,255,.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid #EDF1EF; border-radius: var(--radius-lg, 20px); padding: 1.5rem 1.5rem 1.75rem; box-shadow: 0 2px 8px rgba(0,0,0,.05); font-family: 'Inter', system-ui, sans-serif; } .ds-panel-title { font-family: 'Space Grotesk', 'Inter', sans-serif; font-size: 1.2rem; font-weight: 500; letter-spacing: -.02em; color: var(--ink, #3A4543); margin: 0 0 .2rem; } .ds-panel-sub { font-size: .85rem; color: #7E8C88; margin: 0 0 1.1rem; }"
+    },
+    {
+      "name": "Tarjeta de paciente",
+      "kind": "card",
+      "refersTo": "patient-card",
+      "description": "Elemento del listado: avatar arena, nombre y documento/teléfono. Sube 3 px en hover.",
+      "html": "<a class=\"ds-patient\" href=\"#\"><span class=\"ds-avatar\">M</span><span class=\"ds-patient-body\"><span class=\"ds-patient-name\">Gómez, María</span><span class=\"ds-patient-meta\">Doc. 30.111.222 · 11 5555-1234</span></span></a>",
+      "css": ".ds-patient { display: flex; align-items: center; gap: .85rem; background: rgba(255,255,255,.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid #EDF1EF; border-radius: var(--radius-md, 14px); padding: 1.1rem 1.2rem; text-decoration: none; color: var(--ink, #3A4543); box-shadow: 0 1px 2px rgba(0,0,0,.03); transition: all .2s cubic-bezier(.4,0,.2,1); font-family: 'Inter', system-ui, sans-serif; } .ds-patient:hover { border-color: var(--primary, #7EBFB5); box-shadow: 0 4px 16px rgba(0,0,0,.06), 0 0 20px rgba(126,191,181,.1); transform: translateY(-3px); } .ds-avatar { width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #5A4530; background-image: linear-gradient(135deg, #E8B87A 0%, #F0CB9A 100%); box-shadow: 0 2px 8px rgba(232,184,122,.2); } .ds-patient-body { display: flex; flex-direction: column; min-width: 0; } .ds-patient-name { font-size: 1rem; font-weight: 600; } .ds-patient-meta { font-size: .8rem; color: #7E8C88; }"
+    },
+    {
+      "name": "Pestaña de sección",
+      "kind": "nav",
+      "refersTo": "tab-active",
+      "description": "Pestañas de la ficha clínica: odontograma, estudios, evolución, notas.",
+      "html": "<div class=\"ds-tabs\"><button class=\"ds-tab is-active\">Odontograma</button><button class=\"ds-tab\">Notas</button></div>",
+      "css": ".ds-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--border, #E4EAE7); font-family: 'Inter', system-ui, sans-serif; } .ds-tab { font-size: .875rem; font-weight: 600; color: #7E8C88; background: transparent; border: 1px solid var(--border, #E4EAE7); border-bottom: none; border-radius: 10px 10px 0 0; padding: .55rem 1.1rem; cursor: pointer; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-tab:hover { color: var(--primary, #7EBFB5); background: var(--primary-tint, #EDF7F5); } .ds-tab.is-active { color: var(--primary-dark, #5A9E94); background: #fff; font-weight: 700; } .ds-tab:focus-visible { outline: none; box-shadow: inset 0 0 0 2px rgba(126,191,181,.5); }"
+    },
+    {
+      "name": "Selector de estado de turno",
+      "kind": "chip",
+      "refersTo": "status-select",
+      "description": "Select de la agenda: cada estado trae tinta y tinte propios, y cancelado se tacha.",
+      "html": "<select class=\"ds-status\"><option>Confirmado</option><option>Presente</option><option>Atendido</option><option>Cancelado</option></select>",
+      "css": ".ds-status { font-family: 'Inter', system-ui, sans-serif; font-size: .78rem; font-weight: 600; padding: .25rem .5rem; border-radius: 6px; border: 1px solid rgba(46,158,107,.35); background-color: #E3F4EB; color: #2E9E6B; cursor: pointer; max-width: 100%; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-status:focus-visible { outline: none; border-color: var(--primary, #7EBFB5); box-shadow: 0 0 0 3px rgba(126,191,181,.15); }"
+    },
+    {
+      "name": "Diente del odontograma",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Componente firma: cinco caras SVG, número FDI debajo y estado por cara.",
+      "html": "<button class=\"ds-tooth\" type=\"button\" aria-label=\"Diente 16\"><svg viewBox=\"0 0 40 40\" class=\"ds-tooth-svg\"><polygon class=\"f f-sano\" points=\"0,0 40,0 28,12 12,12\"></polygon><polygon class=\"f f-caries\" points=\"40,0 40,40 28,28 28,12\"></polygon><polygon class=\"f f-sano\" points=\"40,40 0,40 12,28 28,28\"></polygon><polygon class=\"f f-sano\" points=\"0,40 0,0 12,12 12,28\"></polygon><polygon class=\"f f-sano\" points=\"12,12 28,12 28,28 12,28\"></polygon></svg><span class=\"ds-tooth-num\">16</span></button>",
+      "css": ".ds-tooth { width: 44px; height: 56px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 2px; background: transparent; border: none; border-radius: 8px; cursor: pointer; font-family: 'Inter', system-ui, sans-serif; transition: all .2s cubic-bezier(.4,0,.2,1); } .ds-tooth:hover { background: var(--primary-tint, #EDF7F5); transform: scale(1.08); } .ds-tooth:active { transform: scale(.95); } .ds-tooth:focus-visible { outline: 2px solid var(--primary, #7EBFB5); outline-offset: 1px; } .ds-tooth-svg { width: 40px; height: 40px; border-radius: 4px; overflow: visible; transition: transform .12s, filter .12s; } .ds-tooth:hover .ds-tooth-svg { transform: translateY(-3px); filter: drop-shadow(0 4px 8px rgba(20,63,59,.18)); } .f { stroke: #E4EAE7; stroke-width: 1.4; } .f-sano { fill: #FFFFFF; } .f-caries { fill: #E8A0A0; } .ds-tooth-num { font-size: .78rem; font-weight: 700; line-height: 1; color: var(--ink, #3A4543); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El Gabinete de Menta",
+    "overview": "Kiba X se ve como el gabinete de un consultorio ordenado: superficies de vidrio apenas lechoso, instrumentos alineados, una menta clínica que tiñe la navegación y un acento arena que marca lo que hay que tocar. La interfaz es clínica y aireada: mucho blanco entre bloques, bordes de un píxel, radios generosos y jerarquía tipográfica corta. Nada compite con el dato del paciente, y el odontograma —con sus nueve colores de estado— es el único lugar donde la paleta se permite saturación.",
+    "keyCharacteristics": [
+      "Vidrio suave: superficies blancas translúcidas con desenfoque de fondo (8–20 px) y sombras ambientales muy bajas.",
+      "Menta clínica como color de estructura (navbar, enlaces, foco) y arena cálida como color de acción.",
+      "Aire: densidad baja, padding generoso, separación por espacio antes que por líneas.",
+      "Semántica cromática reservada: estados de diente y de turno tienen su propia escala, ajena a la marca.",
+      "Tipografía en dos voces: Space Grotesk para títulos y marca, Inter para todo lo demás."
+    ],
+    "rules": [
+      {
+        "name": "La Regla del Diente Manda",
+        "body": "Los colores de estado del odontograma y de los turnos no se reutilizan como color de marca, fondo de página ni decoración. Si un tono ya significa \"caries\" o \"cancelado\", no puede significar otra cosa.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla del Acento Escaso",
+        "body": "La arena ocupa menos del 10% de cualquier pantalla: una acción principal, los avatares y los contadores. Su rareza es lo que la vuelve una señal.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla del Par de Estado",
+        "body": "Todo estado se comunica con tinta + tinte de fondo + texto, nunca con color solo. Si se imprime en blanco y negro o se mira con daltonismo, la etiqueta tiene que seguir siendo legible.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla de las Dos Voces",
+        "body": "Space Grotesk solo en h1, h2, h3 y la marca. Inter en todo lo demás, incluidos los números FDI del odontograma, las horas de turno y los contadores: son datos, no titulares.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla del Título Corto",
+        "body": "Los títulos no pasan de dos líneas. Si hace falta más contexto, va en el párrafo de apoyo del panel con Grafito Suave, no en el título.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla del Aire Antes que la Línea",
+        "body": "Para separar bloques, primero espacio; después borde tenue; el borde fuerte queda para tablas y encabezados de columna.",
+        "section": "layout"
+      },
+      {
+        "name": "La Regla del Vidrio Discreto",
+        "body": "El desenfoque de fondo se reserva para lo que flota o cubre: navbar, modales, menús, autocompletado, toasts y tarjetas de autenticación. Un panel de contenido quieto no lleva backdrop-filter.",
+        "section": "elevation"
+      },
+      {
+        "name": "La Regla de una Sola Elevación",
+        "body": "Una tarjeta en reposo tiene una sombra; en hover puede sumar halo, pero no cambia de nivel dos veces. Los menús y modales son los únicos que llegan al nivel flotante.",
+        "section": "elevation"
+      },
+      {
+        "name": "La Regla de la Esquina Suave",
+        "body": "Ningún contenedor nuevo baja de 10 px de radio, salvo controles en línea de menos de 32 px de alto, que usan 6 px. Nada de esquinas rectas en superficies.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do usar los tokens de :root y su contraparte body.dark para todo color, radio y sombra nuevos; si falta un valor, agregalo a ambos bloques.",
+      "Do reservar la arena para una sola acción principal por pantalla y para los avatares.",
+      "Do acompañar cada estado de turno con su par tinta + tinte suave y con texto legible.",
+      "Do mantener Space Grotesk en títulos y marca, e Inter en datos, horas y números FDI.",
+      "Do usar el halo menta como anillo de foco de 3 px en todo control interactivo.",
+      "Do verificar cada pantalla nueva en modo claro y oscuro antes de darla por terminada.",
+      "Do preferir espacio y borde tenue antes que líneas divisorias fuertes."
+    ],
+    "donts": [
+      "Don't introducir azul corporativo, violeta de marca o degradados fríos: es la anti-referencia confirmada del sistema.",
+      "Don't reutilizar los colores de estado del odontograma o de los turnos como decoración o color de marca.",
+      "Don't poner texto blanco sobre la arena; usá marrón de sobre.",
+      "Don't aplicar backdrop-filter a paneles de contenido quietos ni apilar más de un nivel de elevación en una tarjeta.",
+      "Don't crear esquinas rectas en superficies ni radios menores a 10 px fuera de controles en línea.",
+      "Don't agregar un framework CSS, un paso de build o una fuente nueva: el sistema se resuelve con Bootstrap, este stylesheet y JS vanilla.",
+      "Don't dar por cumplida la accesibilidad: el objetivo es WCAG 2.1 AA y la auditoría sigue pendiente."
+    ]
+  }
+}
