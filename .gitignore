@@ -34,5 +34,8 @@ Thumbs.db
 # Scripts y referencias se suben; la biblioteca de assets pesada se deja local.
 skills/*/assets/
 
+# Documentos internos (no se publican en el repositorio)
+docs/
+
 # Migrations that shouldn't be committed (optional, comment out if you DO commit migrations)
 # migrations/
