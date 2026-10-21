@@ -10,6 +10,7 @@ target_fingerprint: "sha256:7eac296812ac361d76ba71195c153ec873cc9f505135e2c25527
 target_path: /home/kuro/Proyectos/repos/test/kibax-app/templates/patients/detail.html
 timestamp: 2026-10-21T16-16-09Z
 slug: templates-patients-detail-html
+closed: true
 ---
 ## Design Health Score
 

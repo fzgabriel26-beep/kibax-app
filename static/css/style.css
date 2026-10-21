@@ -47,18 +47,19 @@
   --c-protesis: #D4B098;
   --c-ausente: #A8B4B0;
 
-  /* Colores por estado de turno */
-  --st-confirmado: #2E9E6B;
+  /* Colores por estado de turno. La tinta de cada par se lee sobre su
+     propio tinte (≥4.5:1): antes el ámbar daba 2.47:1 y el azul 3.4:1. */
+  --st-confirmado: #17704A;
   --st-confirmado-bg: #E3F4EB;
-  --st-presente: #2F7FE0;
+  --st-presente: #1F5FB0;
   --st-presente-bg: #E4EDFB;
-  --st-atendido: #8B5CF6;
+  --st-atendido: #6B3FC4;
   --st-atendido-bg: #EDE6FE;
-  --st-ausente-aviso: #D9891F;
+  --st-ausente-aviso: #8A5410;
   --st-ausente-aviso-bg: #FCF0DB;
-  --st-ausente-sin-aviso: #D64545;
+  --st-ausente-sin-aviso: #A82A2A;
   --st-ausente-sin-aviso-bg: #FBE4E4;
-  --st-cancelado: #59636F;
+  --st-cancelado: #4A535E;
   --st-cancelado-bg: #E8EBEF;
 }
 
@@ -146,7 +147,7 @@ body.dark .panel { background: rgba(34,44,42,.7); backdrop-filter: blur(12px); -
 body.dark .notice-card { background: var(--primary-tint); border-color: var(--border); color: #7EBFB5; }
 body.dark .patient-card { background: rgba(34,44,42,.7); border-color: var(--border); color: #D8E2DF; }
 body.dark .patient-card:hover { border-color: #7EBFB5; box-shadow: var(--shadow-glow); }
-body.dark .patient-card p { color: #9AA8A4; }
+body.dark .patient-card p, body.dark .patient-card-meta { color: #9AA8A4; }
 body.dark .patient-card-avatar { background: var(--primary-tint); color: #7EBFB5; }
 body.dark .empty-state, body.dark .empty-inline { background: rgba(34,44,42,.5); border-color: var(--border); color: #9AA8A4; }
 body.dark .arch-wrap { background: linear-gradient(180deg, rgba(34,44,42,.8) 0%, #1A2020 100%); border-color: var(--border); }
@@ -449,8 +450,18 @@ body.dark .auth-logo {
   transform: translateY(-3px);
   color: var(--ink);
 }
-.patient-card h3 { font-size: 1rem; margin: 0; font-weight: 600; }
-.patient-card p { margin: 0; font-size: .8rem; color: var(--ink-soft); }
+.patient-card h2 { font-size: 1rem; margin: 0; font-weight: 600; line-height: 1.25; }
+/* El documento y el teléfono van uno por línea y nunca se parten al medio:
+   en una tarjeta de 240 px "11 7777-" / "9900" era el resultado anterior. */
+.patient-card-meta {
+  margin: .15rem 0 0; font-size: .8rem; color: var(--ink-soft);
+  display: flex; flex-direction: column; gap: .05rem;
+}
+.patient-card-meta span { white-space: nowrap; }
+.patient-card:focus-visible {
+  outline: 2px solid var(--primary-dark); outline-offset: 2px;
+  border-color: var(--primary-dark);
+}
 .patient-card-avatar {
   width: 44px; height: 44px; border-radius: 12px;
   background: var(--accent-gradient); color: var(--accent-ink);
@@ -614,10 +625,20 @@ body.dark .auth-logo {
   max-width: 100%;
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.arch-row::-webkit-scrollbar { display: none; }
 .arch-row:focus-visible { outline: 2px solid var(--primary-dark); outline-offset: 2px; }
+/* La arcada scrollea en horizontal cuando no entra: el aviso de abajo evita
+   que el corte parezca contenido faltante. */
+.arch-scroll-hint {
+  margin: .6rem 0 0;
+  text-align: center;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
 .arch-footnote { text-align: center; color: var(--ink-soft); font-size: .72rem; margin: .75rem 0 0; }
 .midline {
   width: 1.5px;
@@ -724,6 +745,13 @@ body.dark .auth-logo {
 .attachment-delete button {
   border: none; background: transparent; color: var(--danger);
   font-size: .95rem; cursor: pointer; padding: 0 .25rem;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+/* Icono de borrado dibujado, no un glifo de texto. Hereda el color del botón. */
+.icon-x {
+  width: 14px; height: 14px; display: block;
+  fill: none; stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round;
 }
 
 /* ---------- Tooth modal history ---------- */
@@ -847,6 +875,7 @@ body.dark .auth-logo {
   background: rgba(255, 255, 255, .15); color: #fff; border: none;
   font-size: 1.1rem; width: 40px; height: 40px; border-radius: 50%;
   cursor: pointer; transition: background .15s;
+  display: inline-flex; align-items: center; justify-content: center;
 }
 .tooth-lightbox-close:hover { background: rgba(255, 255, 255, .3); }
 
@@ -904,8 +933,18 @@ body.dark .btn-check:checked + .btn-outline-secondary:hover {
   margin: -1rem -1.5rem 0;
 }
 @media (max-width: 960px) {
-  .agenda-new-layout { grid-template-columns: 1fr; margin: 0; }
-  .agenda-sidebar { position: static; width: 100%; border-right: none; border-bottom: 1px solid var(--border-light); }
+  .agenda-new-layout { grid-template-columns: minmax(0, 1fr); margin: 0; }
+  /* El día es la tarea: va primero y el calendario, los accesos y la lista
+     de espera quedan debajo. Antes había que scrollear la sidebar entera
+     antes de llegar a los turnos. */
+  .agenda-main { order: 1; min-width: 0; }
+  .agenda-sidebar {
+    order: 2; position: static; width: 100%; max-height: none;
+    border-right: none; border-bottom: none;
+    border-top: 1px solid var(--border-light);
+  }
+  .mini-cal-header, .mini-cal { max-width: 380px; margin-left: 0; margin-right: auto; }
+  .mini-cal-header { margin-bottom: .5rem; }
 }
 
 /* --- Sidebar --- */
@@ -936,13 +975,13 @@ body.dark .btn-check:checked + .btn-outline-secondary:hover {
 
 .mini-cal { width: 100%; border-collapse: collapse; }
 .mini-cal th {
-  font-size: .65rem; font-weight: 600; color: var(--ink-soft);
+  font-size: .7rem; font-weight: 600; color: var(--ink-soft);
   padding: 2px; text-align: center; text-transform: lowercase;
 }
 .mini-cal td { text-align: center; padding: 1px; }
 .mini-day {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  width: 32px; height: 32px; border-radius: 8px;
+  width: 32px; height: 32px; border-radius: 8px; margin: 0 auto;
   font-size: .8rem; font-weight: 500; text-decoration: none;
   color: var(--ink); position: relative;
   transition: all var(--transition);
@@ -953,9 +992,9 @@ body.dark .btn-check:checked + .btn-outline-secondary:hover {
 .mini-day.mini-selected { background: var(--primary); color: var(--ink-on-light); font-weight: 700; border: none; }
 .mini-dot {
   position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
-  width: 5px; height: 5px; border-radius: 50%; background: var(--primary);
+  width: 5px; height: 5px; border-radius: 50%; background: var(--primary-dark);
 }
-.mini-day.mini-selected .mini-dot { background: #fff; }
+.mini-day.mini-selected .mini-dot { background: var(--ink-on-light); }
 
 /* Lista de profesionales */
 .sidebar-section { margin-top: 1.25rem; }
@@ -1030,9 +1069,9 @@ body.dark .btn-check:checked + .btn-outline-secondary:hover {
 .waitlist-name:hover { color: var(--primary-dark); text-decoration: underline; }
 
 .waitlist-shift {
-  flex-shrink: 0; font-size: .62rem; font-weight: 700; line-height: 1.5;
+  flex-shrink: 0; font-size: .7rem; font-weight: 700; line-height: 1.5;
   padding: .05rem .45rem; border-radius: 999px;
-  text-transform: uppercase; letter-spacing: .03em;
+  text-transform: uppercase; letter-spacing: .02em;
 }
 .shift-manana { background: var(--st-ausente-aviso-bg); color: var(--st-ausente-aviso); }
 .shift-tarde  { background: var(--st-presente-bg); color: var(--st-presente); }
@@ -1046,14 +1085,15 @@ body.dark .btn-check:checked + .btn-outline-secondary:hover {
 }
 .waitlist-note { font-style: italic; max-width: 100%; }
 
-.waitlist-actions { display: none; gap: .35rem; margin-top: .4rem; align-items: stretch; }
-.waitlist-item:hover .waitlist-actions,
-.waitlist-item:focus-within .waitlist-actions { display: flex; }
+/* Las dos acciones de la lista de espera están siempre a la vista: esconder
+   "→ Turno" detrás del hover dejaba sin acción descubrible al tacto y hacía
+   saltar la tarjeta al pasar el mouse. */
+.waitlist-actions { display: flex; gap: .35rem; margin-top: .4rem; align-items: stretch; }
 .waitlist-actions form { display: flex; gap: .35rem; margin: 0; flex: 1; }
 
 .waitlist-btn {
   border: 1px solid var(--border); background: var(--surface);
-  border-radius: 6px; font-size: .7rem; font-weight: 600;
+  border-radius: 6px; font-size: .72rem; font-weight: 600;
   padding: .22rem .4rem; cursor: pointer; color: var(--ink);
   transition: all var(--transition); line-height: 1.4;
 }
@@ -1067,11 +1107,7 @@ body.dark .btn-check:checked + .btn-outline-secondary:hover {
   border-color: var(--st-ausente-sin-aviso);
   color: var(--st-ausente-sin-aviso);
 }
-
-/* Tocá sin hover (celular): las acciones siempre visibles */
-@media (hover: none) {
-  .waitlist-actions { display: flex; }
-}
+.waitlist-btn:focus-visible { outline-offset: 2px; }
 body.dark .shift-manana { background: var(--st-ausente-aviso-bg); color: var(--st-ausente-aviso); }
 body.dark .shift-tarde { background: var(--st-presente-bg); color: var(--st-presente); }
 
@@ -1084,15 +1120,21 @@ body.dark .shift-tarde { background: var(--st-presente-bg); color: var(--st-pres
   padding: .75rem 0; margin-bottom: .75rem;
   border-bottom: 1px solid var(--border-light);
 }
+.date-nav-bar .btn-icon-mini {
+  width: 34px; height: 34px; border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
 .date-nav-display {
   font-size: .9rem; font-weight: 600; color: var(--ink);
   padding: .4rem .75rem; background: var(--surface);
   border: 1px solid var(--border); border-radius: var(--radius-sm);
-  min-width: 220px; text-align: center;
+  min-width: 220px; text-align: center; line-height: 1.3;
 }
 .btn-hoy {
-  padding: .4rem .9rem; border-radius: var(--radius-sm);
-  border: 1px solid var(--primary); color: var(--primary-dark);
+  display: inline-flex; align-items: center;
+  min-height: 34px; padding: .3rem .9rem; border-radius: var(--radius-sm);
+  border: 1px solid var(--primary); background: var(--surface);
+  color: var(--primary-dark);
   font-size: .82rem; font-weight: 600; text-decoration: none;
   transition: all var(--transition);
 }
@@ -1135,10 +1177,9 @@ body.dark .shift-tarde { background: var(--st-presente-bg); color: var(--st-pres
   color: var(--ink-soft); padding: .6rem .75rem;
   border-bottom: 2px solid var(--border); text-align: left;
 }
-.col-hora { width: 80px; }
-.col-estado { width: 160px; }
-.col-paciente { min-width: 180px; }
-.col-obs { flex: 1; }
+.slots-table th.col-hora { width: 80px; }
+.slots-table th.col-estado { width: 170px; }
+.slots-table th.col-paciente { width: 34%; }
 
 .slot-row td {
   padding: .5rem .75rem; border-bottom: 1px solid var(--border-light);
@@ -1150,14 +1191,23 @@ body.dark .shift-tarde { background: var(--st-presente-bg); color: var(--st-pres
 .slot-row.blocked { background: #FDF5F4; }
 body.dark .slot-row.blocked { background: #2A2222; }
 
+/* Un color por estado. La fila expone --st para que el lado izquierdo y el
+   resto de las marcas lo compartan sin repetir el hex. */
+.slot-row.has-appt.status-confirmado { --st: var(--st-confirmado); }
+.slot-row.has-appt.status-presente { --st: var(--st-presente); }
+.slot-row.has-appt.status-atendido { --st: var(--st-atendido); }
+.slot-row.has-appt.status-ausente_aviso { --st: var(--st-ausente-aviso); }
+.slot-row.has-appt.status-ausente_sin_aviso { --st: var(--st-ausente-sin-aviso); }
+.slot-row.has-appt.status-cancelado { --st: var(--st-cancelado); }
+
 /* Tinte de fila según el estado del turno (sutil: solo el lado izquierdo) */
 .slot-row.has-appt td:first-child { position: relative; }
-.slot-row.has-appt.status-confirmado td:first-child { box-shadow: inset 3px 0 0 var(--st-confirmado); }
-.slot-row.has-appt.status-presente td:first-child { box-shadow: inset 3px 0 0 var(--st-presente); }
-.slot-row.has-appt.status-atendido td:first-child { box-shadow: inset 3px 0 0 var(--st-atendido); opacity: .7; }
-.slot-row.has-appt.status-ausente_aviso td:first-child { box-shadow: inset 3px 0 0 var(--st-ausente-aviso); }
-.slot-row.has-appt.status-ausente_sin_aviso td:first-child { box-shadow: inset 3px 0 0 var(--st-ausente-sin-aviso); }
-.slot-row.has-appt.status-cancelado td:first-child { box-shadow: inset 3px 0 0 var(--st-cancelado); }
+.slot-row.has-appt td:first-child { box-shadow: inset 3px 0 0 var(--st); }
+/* Atendido se apaga con un velo de su propio tinte, no bajando la opacidad
+   del texto: con opacity .7 la hora quedaba en 3:1. */
+.slot-row.has-appt.status-atendido {
+  background: color-mix(in srgb, var(--st-atendido-bg) 55%, var(--surface));
+}
 .slot-row.has-appt.status-ausente_aviso .patient-link,
 .slot-row.has-appt.status-ausente_sin_aviso .patient-link,
 .slot-row.has-appt.status-cancelado .patient-link {
@@ -1220,16 +1270,25 @@ body.dark .slot-row.blocked { background: #2A2222; }
   font-size: .8rem; cursor: pointer; padding: 0 .2rem; opacity: 0;
   transition: opacity var(--transition);
 }
-.slot-row:hover .del-btn { opacity: 1; }
+.slot-row:hover .del-btn,
+.del-btn:focus-visible { opacity: 1; }
 .del-btn:hover { color: var(--danger); }
 
 .slot-book-btn {
   background: none; border: 1px dashed var(--border);
   color: var(--ink-soft); font-size: .78rem; font-weight: 500;
   padding: .2rem .6rem; border-radius: 6px; cursor: pointer;
-  transition: all var(--transition); opacity: 0;
+  white-space: nowrap;
+  transition: all var(--transition);
 }
-.slot-row.available:hover .slot-book-btn { opacity: 1; border-color: var(--primary-dark); color: var(--primary-dark); }
+/* Cada hueco libre se anuncia como tal: esconderlo hasta el hover dejaba la
+   tabla vacía sin ninguna pista de que se puede agendar. */
+.slot-row.available:hover .slot-book-btn,
+.slot-book-btn:focus-visible { border-color: var(--primary-dark); color: var(--primary-dark); }
+/* Sin puntero fino (celular, tablet) el hover no existe: el borrado se ve. */
+@media (hover: none) {
+  .del-btn { opacity: 1; }
+}
 
 /* Clic en una fila de horario: abre el menú contextual */
 .slot-row { cursor: pointer; }
@@ -1289,7 +1348,13 @@ body.dark .slot-row.blocked { background: #2A2222; }
   border-radius: var(--radius-sm);
 }
 
-.blocked-text { color: var(--danger); font-weight: 600; font-size: .82rem; }
+.blocked-text {
+  display: inline-block;
+  color: var(--danger); font-weight: 700; font-size: .72rem;
+  letter-spacing: .03em; line-height: 1.4;
+  padding: .12rem .45rem; border-radius: 6px;
+  background: var(--danger-tint); border: 1px solid var(--danger-border);
+}
 .agenda-month { display: flex; align-items: center; gap: .75rem; font-size: 1.05rem; }
 .btn-icon {
   display: inline-flex; align-items: center; justify-content: center;
@@ -1333,7 +1398,14 @@ body.dark .slot-row.blocked { background: #2A2222; }
 .days-picker { display: flex; gap: .4rem; flex-wrap: wrap; }
 .day-check { cursor: pointer; font-size: .85rem; }
 .day-check input { margin-right: .25rem; }
-.agenda-table th, .agenda-table td { font-size: .85rem; vertical-align: middle; }
+.agenda-table th, .agenda-table td { font-size: .85rem; vertical-align: middle; padding: .5rem .6rem; }
+/* En pantallas angostas la tabla de horarios scrollea dentro de su panel:
+   cinco columnas no entran a 375 px y desbordaban la página entera. */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-scroll .agenda-table { min-width: 520px; }
+/* Eliminar no es la acción de la pantalla: se mantiene visible pero callada. */
+.agenda-table .btn-danger-ghost { border-color: transparent; color: var(--ink-soft); font-size: .8rem; }
+.agenda-table .btn-danger-ghost:hover { color: var(--danger); background: var(--danger-tint); border-color: var(--danger-border); }
 .agenda-dot {
   margin-top: 2px; min-width: 18px; padding: 0 .3rem;
   background: var(--accent); color: var(--accent-ink); border-radius: 999px;
@@ -1357,7 +1429,9 @@ body.dark .slot-row.blocked { background: #2A2222; }
 .agenda-item-meta { color: var(--ink-soft); font-size: .78rem; }
 .agenda-item-actions { display: flex; align-items: center; gap: .4rem; flex-shrink: 0; }
 .agenda-status-form select { width: auto; min-width: 110px; }
-.agenda-item.status-atendido { opacity: .62; }
+.agenda-item.status-atendido {
+  background: color-mix(in srgb, var(--st-atendido-bg) 55%, var(--surface));
+}
 .agenda-item.status-ausente_aviso,
 .agenda-item.status-ausente_sin_aviso,
 .agenda-item.status-cancelado {
@@ -1379,6 +1453,120 @@ body.dark .slot-row.blocked { background: #2A2222; }
   display: inline-block; margin: .2rem .4rem .2rem 0;
   padding: .15rem .6rem; border-radius: 999px;
   background: #fff; border: 1px solid #cfe1dd; font-size: .8rem;
+}
+
+/* ---------- Agenda en el celular ----------
+   Debajo de 700 px la tabla del día se lee como una lista: los turnos son
+   tarjetas con su estado y los huecos libres, renglones finos con la acción
+   a la vista. La tabla seguía siendo una tabla de cuatro columnas y a 390 px
+   empujaba la página a 594 px. */
+@media (max-width: 700px) {
+  .slots-table-wrap { background: none; border: 0; border-radius: 0; overflow: visible; }
+  .slots-table { display: block; }
+  /* La cabecera se oculta visualmente pero sigue anunciándose. */
+  .slots-table thead {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .slots-table tbody { display: block; }
+  .slot-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: .6rem;
+  }
+  .slot-row td { display: block; padding: 0; border: 0; min-width: 0; }
+  .slot-row .col-hora { grid-column: 1; grid-row: 1; }
+  .slot-row .col-estado { grid-column: 2; grid-row: 1; justify-self: end; }
+  .slot-row .col-paciente { grid-column: 1 / -1; grid-row: 2; }
+  .slot-row .col-obs { grid-column: 1 / -1; grid-row: 3; }
+
+  /* Turno con paciente: tarjeta */
+  .slot-row.has-appt {
+    margin-bottom: .5rem; padding: .65rem .8rem .6rem;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-left: 3px solid var(--st, var(--border));
+    border-radius: var(--radius-md);
+    row-gap: .1rem;
+  }
+  .slot-row.has-appt td:first-child { box-shadow: none; }
+  .slot-row.has-appt.status-atendido {
+    background: color-mix(in srgb, var(--st-atendido-bg) 55%, var(--surface));
+  }
+  .slot-row .slot-time { font-size: .85rem; color: var(--ink); }
+  .slot-row .patient-link { font-size: .95rem; }
+  .slot-row .col-paciente { margin-top: .1rem; }
+  .slot-row .prof-tag { display: inline-block; margin-left: .1rem; }
+  .slot-row .col-obs {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: .5rem; margin-top: .3rem;
+    font-size: .8rem; color: var(--ink-soft);
+  }
+  .slot-row .del-form { margin-left: auto; }
+  .slot-row .del-btn {
+    opacity: 1; font-size: 1rem; line-height: 1;
+    min-width: 32px; min-height: 32px; padding: .1rem .3rem;
+  }
+  .slot-book-btn { padding: .35rem .7rem; }
+
+  /* Hueco libre: renglón fino con la acción a la vista */
+  .slot-row.available {
+    padding: .5rem .2rem;
+    background: transparent;
+    border: 0; border-bottom: 1px dashed var(--border-light);
+  }
+  .slot-row.available .col-estado,
+  .slot-row.available .col-obs { display: none; }
+  .slot-row.available .col-paciente {
+    grid-column: 2; grid-row: 1; justify-self: end; margin: 0;
+  }
+  .slot-row.available .slot-time { color: var(--ink-soft); }
+
+  /* Horario bloqueado */
+  .slot-row.blocked {
+    margin-bottom: .5rem; padding: .65rem .8rem;
+    background: var(--danger-tint);
+    border: 1px solid var(--danger-border);
+    border-radius: var(--radius-md);
+    row-gap: .2rem;
+  }
+  .slot-row.blocked .col-estado { display: none; }
+  .slot-row.blocked .col-paciente { grid-column: 1 / -1; grid-row: 2; }
+  .slot-row.blocked .col-obs {
+    grid-column: 1 / -1; grid-row: 3;
+    font-size: .78rem; color: var(--ink-soft);
+  }
+}
+
+@media (max-width: 560px) {
+  .agenda-main { padding: 0 1rem 1rem; }
+  .date-nav-bar { gap: .35rem; }
+  .date-nav-bar .btn-icon-mini { width: 32px; height: 32px; }
+  .date-nav-display {
+    flex: 1; min-width: 0;
+    font-size: .8rem; padding: .35rem .45rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .btn-hoy { min-height: 32px; padding: .25rem .55rem; font-size: .78rem; }
+
+  /* Profesional: nombre y acción en la primera línea, contadores debajo. */
+  .prof-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .45rem .6rem;
+  }
+  .prof-avatar { grid-column: 1; grid-row: 1; }
+  .prof-info { grid-column: 2; grid-row: 1; }
+  .prof-header .btn-solid { grid-column: 3; grid-row: 1; }
+  .prof-stats { grid-column: 1 / -1; grid-row: 2; margin-left: 0; gap: .9rem; }
+
+  .mini-cal { max-width: 300px; }
+  .mini-cal-header { max-width: 300px; }
+  .mini-day { width: 36px; height: 36px; }
+  .waitlist-btn.remove { flex: 0 0 32px; min-height: 32px; }
+  .waitlist-btn.assign { min-height: 32px; }
 }
 
 /* ---------- Vista de turnos (listado) ---------- */
@@ -1462,6 +1650,7 @@ body.dark .slot-row.blocked { background: #2A2222; }
 .note-delete button {
   border: none; background: transparent; color: var(--danger);
   cursor: pointer; font-size: .95rem; padding: .1rem .3rem;
+  display: inline-flex; align-items: center; justify-content: center;
 }
 
 @media (max-width: 576px) {
@@ -1469,6 +1658,12 @@ body.dark .slot-row.blocked { background: #2A2222; }
      el target táctil. La arcada ya scrollea en horizontal. */
   .tooth-btn.size-small { width: 38px; height: 50px; }
   .upload-row { flex-direction: column; }
+  /* El nombre del archivo manda: la metadata baja a su propia línea y el
+     borrado queda a la derecha, en vez de comprimirse todo en una fila. */
+  .attachment-list li { flex-wrap: wrap; row-gap: .1rem; }
+  .attachment-list li > a { order: 1; min-width: 0; overflow-wrap: anywhere; }
+  .attachment-delete { order: 2; margin-left: auto; }
+  .attachment-meta { order: 3; flex-basis: 100%; margin-left: 0; }
 }
 
 /* ---------- Navbar responsive (hamburger en mobile) ---------- */
@@ -1599,6 +1794,7 @@ body.dark .nav-dropdown .dropdown-item:hover { background: #1C2E2A; color: #3AAE
 .evo-delete-btn {
   background: transparent; border: none; color: var(--danger);
   font-weight: bold; cursor: pointer; font-size: .9rem; padding: 2px 6px;
+  display: inline-flex; align-items: center; justify-content: center;
 }
 .evo-card-img {
   background: #111; height: 180px; display: flex;
@@ -1671,14 +1867,9 @@ body.dark .search-bar .form-control {
   box-shadow: var(--shadow-xs);
 }
 
-/* ---------- Transiciones de página ---------- */
-main.container {
-  animation: fadeUp .35s ease-out;
-}
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* ---------- Transiciones de página ----------
+   Sin animación de entrada: es una app de trabajo, cada navegación no debe
+   hacer esperar a que la página termine de aparecer. */
 
 /* ---------- Toast notifications ---------- */
 .toast-container {
@@ -1734,7 +1925,11 @@ img[data-src].loaded { opacity: 1; }
 /* ---------- Empty states mejorados ---------- */
 .empty-state h3 { margin-bottom: .5rem; color: var(--ink); }
 .empty-state p { color: var(--ink-soft); margin-bottom: 1rem; }
-.empty-state .empty-icon { font-size: 3rem; margin-bottom: .75rem; }
+.empty-icon {
+  width: 44px; height: 44px; margin: 0 auto .85rem;
+  color: var(--primary-dark); opacity: .5;
+}
+.empty-icon svg { display: block; width: 100%; height: 100%; }
 
 /* ---------- Zona de peligro ---------- */
 .danger-zone {

@@ -35,17 +35,21 @@
      data-email="{{ (p.email or '')|lower }}">
     <div class="patient-card-avatar">{{ p.full_name[:1]|upper }}</div>
     <div>
-      <h3>{{ p.full_name }}</h3>
-      <p>
-        {% if p.document_id %}Doc. {{ p.document_id }}{% endif %}
-        {% if p.phone %} · {{ p.phone }}{% endif %}
+      <h2>{{ p.full_name }}</h2>
+      {% if p.document_id or p.phone %}
+      <p class="patient-card-meta">
+        {% if p.document_id %}<span>Doc. {{ p.document_id }}</span>{% endif %}
+        {% if p.phone %}<span>{{ p.phone }}</span>{% endif %}
       </p>
+      {% endif %}
     </div>
   </a>
   {% endfor %}
 </div>
 <div id="patientNoResults" class="empty-state" style="display:none;">
-  <div class="empty-icon"></div>
+  <div class="empty-icon" aria-hidden="true">
+    <svg viewBox="0 0 240 225" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"><path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"/></svg>
+  </div>
   <h3>No se encontraron pacientes</h3>
   <p>Probá con otros términos de búsqueda.</p>
   <button type="button" class="btn-ghost" onclick="document.getElementById('patientSearch').value='';var e=new Event('input',{bubbles:true});document.getElementById('patientSearch').dispatchEvent(e);">Limpiar búsqueda</button>
@@ -80,7 +84,9 @@
 {% endif %}
 {% else %}
 <div class="empty-state">
-  <div class="empty-icon"></div>
+  <div class="empty-icon" aria-hidden="true">
+    <svg viewBox="0 0 240 225" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"><path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"/></svg>
+  </div>
   <h3>Todavía no hay pacientes cargados</h3>
   <p>Dar de alta tu primer paciente para comenzar a usar el odontograma.</p>
   <a href="{{ url_for('patients.new_patient') }}" class="btn-solid">+ Dar de alta paciente</a>

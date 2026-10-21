@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maqueta · cambios en la ficha</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+  <style>
+    /* ---------- Solo de la maqueta ---------- */
+    .m-wrap { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+    .m-head h1 { font-size: clamp(1.7rem, 3vw, 2.3rem); margin: .2rem 0 .6rem; }
+    .m-lead { color: var(--ink-soft); max-width: 74ch; font-size: .95rem; }
+    .m-lead strong { color: var(--ink); }
+    .m-resumen { display: grid; grid-template-columns: repeat(auto-fit, minmax(205px, 1fr)); gap: .75rem; margin: 1.6rem 0 1.2rem; }
+    .m-dato { background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: .85rem 1rem; box-shadow: var(--shadow-xs); }
+    .m-et { font-size: .68rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); }
+    .m-val { font-family: 'Space Grotesk', 'Inter', sans-serif; font-size: 1.4rem; font-weight: 700; line-height: 1.25; margin: .1rem 0; }
+    .m-viejo { color: var(--ink-soft); font-weight: 500; font-size: 1.02rem; }
+    .m-flecha { color: var(--ink-soft); font-weight: 400; font-size: 1rem; }
+    .m-pie { font-size: .76rem; color: var(--ink-soft); }
+    .m-acciones { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+    .m-sec { margin-top: 3.2rem; }
+    .m-sec > h2 { font-size: 1.25rem; margin: 0 0 .2rem; display: flex; gap: .6rem; align-items: baseline; }
+    .m-sec > h2 .m-num { font-size: .8rem; color: var(--primary-dark); letter-spacing: .06em; }
+    .m-que { color: var(--ink-soft); font-size: .9rem; margin: 0 0 1rem; max-width: 84ch; }
+    .m-par { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+    @media (max-width: 880px) { .m-par { grid-template-columns: 1fr; } }
+    .m-col { min-width: 0; }
+    .m-tag { display: inline-flex; align-items: center; gap: .3rem; font-size: .66rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; padding: .2rem .55rem; border-radius: 999px; margin-bottom: .45rem; }
+    .m-tag-antes { background: var(--danger-tint); color: var(--danger); border: 1px solid var(--danger-border); }
+    .m-tag-despues { background: var(--primary-tint); color: var(--primary-dark); border: 1px solid var(--primary); }
+    .m-caja { background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .m-pad { padding: 1.1rem 1.25rem 1.3rem; }
+    .m-nota { font-size: .78rem; color: var(--ink-soft); margin: .5rem 0 0; display: flex; gap: .4rem; align-items: baseline; }
+    .m-ratio { font-weight: 700; font-size: .72rem; padding: .1rem .4rem; border-radius: 5px; white-space: nowrap; }
+    .m-ratio-mal { background: var(--danger-tint); color: var(--danger); }
+    .m-ratio-ok { background: var(--primary-tint); color: var(--primary-dark); }
+    .m-hueco { border: 1.5px dashed var(--border); border-radius: var(--radius-lg); padding: 2.3rem 1rem; text-align: center; color: var(--ink-soft); font-size: .82rem; margin-top: .75rem; }
+    /* Pantalla de celular */
+    .m-pantalla { width: 390px; max-width: 100%; margin: 0 auto; border: 2px solid var(--ink-soft); border-radius: 16px; background: var(--bg); overflow: hidden; box-shadow: var(--shadow-md); }
+    .m-barra-ventana { display: flex; align-items: center; gap: .25rem; padding: .4rem .6rem; background: #26302E; }
+    .m-punto { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.32); }
+    .m-url { margin-left: .45rem; font-size: .58rem; color: rgba(255,255,255,.62); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .m-viewport { overflow: hidden; }
+    .m-interior { padding: .9rem .8rem 1rem; }
+    .m-pantalla h3 { font-size: .95rem; margin: 0 0 .1rem; }
+    .m-pantalla .m-sub { font-size: .7rem; color: var(--ink-soft); margin: 0 0 .2rem; }
+    .m-pantalla .arch-wrap { padding: 1rem .6rem .7rem; }
+    .m-ancho-viejo { width: 814px; }
+    /* Regla de ancho de página */
+    .m-regla { display: flex; height: 9px; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; background: var(--border-light); margin-top: .6rem; }
+    .m-regla-mal { background: var(--danger); }
+    .m-regla-ok { background: var(--primary-dark); }
+    .m-regla-fuera { flex: 1; background: repeating-linear-gradient(45deg, var(--danger-tint), var(--danger-tint) 4px, var(--border) 4px, var(--border) 8px); }
+    /* Reproducción del comportamiento viejo (antes del commit) */
+    .odontograma-viejo .tooth-btn { width: 38px; height: 50px; flex-shrink: 1; }
+    .odontograma-viejo .tooth-btn.size-small { width: 30px; height: 42px; }
+    .odontograma-viejo .arch-row { overflow: visible; max-width: none; justify-content: flex-start; }
+    /* ---------- Valores previos al commit db9b17b ---------- */
+    .antes {
+      --ink-soft: #7E8C88;
+      --primary-dark: #5A9E94;
+      --danger: #B06060;
+      --danger-border: #E8C4C0;
+      --danger-tint: #FDF0EE;
+      --accent-ink: #5A4530;
+      --ink-on-light: #FFFFFF;
+      --nav-ink: #FFFFFF;
+      --nav-ink-soft: rgba(255,255,255,.68);
+      --nav-border: rgba(255,255,255,.3);
+      --nav-hover: rgba(255,255,255,.18);
+    }
+    .antes .agenda-badge { color: #fff; }
+    /* El ícono del menú también era claro sobre la menta */
+    .antes .navbar-toggler-icon { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23FFFFFF' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"); }
+    body.dark .antes .navbar-toggler-icon { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23E4EDEA' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"); }
+    .antes .toast-close { color: rgba(255,255,255,.7); }
+    body.dark .antes {
+      --ink-soft: #9AA8A4;
+      --nav-ink: #D8E2DF;
+      --nav-ink-soft: rgba(216,226,223,.5);
+      --nav-border: rgba(216,226,223,.2);
+      --nav-hover: rgba(216,226,223,.08);
+    }
+  </style>
+</head>
+<body>
+<div class="m-wrap">
+
+  <header class="m-head">
+    <p class="eyebrow">Maqueta · Kiba X</p>
+    <h1>Qué cambió en la ficha del paciente</h1>
+    <p class="m-lead">
+      Esta página carga el <strong>stylesheet real</strong> de la app. Cada comparación pone el
+      <strong>antes</strong> (los valores que tenía el archivo antes del commit <code>db9b17b</code>) al lado del
+      <strong>después</strong>. Los números de contraste y de ancho salen de medir el render en Chrome; los contrastes indicados son del tema claro.
+      El botón de tema cambia las dos columnas a la vez.
+    </p>
+
+    <div class="m-resumen">
+      <div class="m-dato">
+        <div class="m-et">Navbar</div>
+        <div class="m-val"><span class="m-viejo">1.76:1</span> <span class="m-flecha">&rarr;</span> 7.73:1</div>
+        <div class="m-pie">texto blanco → tinta profunda</div>
+      </div>
+      <div class="m-dato">
+        <div class="m-et">Enlaces y texto secundario</div>
+        <div class="m-val"><span class="m-viejo">2.1:1</span> <span class="m-flecha">&rarr;</span> 5.85:1</div>
+        <div class="m-pie">menta clínica → menta profunda y grafito</div>
+      </div>
+      <div class="m-dato">
+        <div class="m-et">Ficha a 390 px</div>
+        <div class="m-val"><span class="m-viejo">814 px</span> <span class="m-flecha">&rarr;</span> 375 px</div>
+        <div class="m-pie">la página ya no desborda</div>
+      </div>
+      <div class="m-dato">
+        <div class="m-et">Diente en mobile</div>
+        <div class="m-val"><span class="m-viejo">18 px</span> <span class="m-flecha">&rarr;</span> 44 px</div>
+        <div class="m-pie">target táctil conservado</div>
+      </div>
+    </div>
+
+    <div class="m-acciones">
+      <button type="button" class="btn-outline" id="btnTema">Ver en modo oscuro</button>
+      <a class="btn-solid" href="/pacientes/1">Abrir la ficha real</a>
+      <a class="btn-ghost" style="color:var(--ink);border-color:var(--border)" href="/pacientes/">Lista de pacientes</a>
+    </div>
+  </header>
+
+  <section class="m-sec" id="s01">
+    <h2><span class="m-num">01</span> La navbar</h2>
+    <p class="m-que">
+      El texto blanco sobre la menta clínica daba 1.76:1: ilegible. Ahora la barra mantiene su color y el texto pasa a
+      tinta profunda. Los enlaces fantasma usan borde de tinta translúcida en vez de blanco.
+      En tema oscuro la barra ya era oscura con texto claro, así que este cambio se nota sobre todo en claro.
+    </p>
+    <div class="m-col" style="margin-bottom:1.1rem">
+      <span class="m-tag m-tag-antes">Antes</span>
+      <div class="m-caja antes">
+      <nav class="app-navbar">
+        <div class="container d-flex align-items-center justify-content-between py-2">
+          <a class="brand" href="#">
+            <svg class="brand-tooth" viewBox="0 0 240 225" aria-hidden="true" focusable="false">
+              <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z" fill="none" stroke="currentColor" stroke-width="16"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="brand-text">Kiba<span class="brand-x">X</span></span>
+          </a>
+          <button class="navbar-toggler d-md-none" type="button" aria-label="Menú">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="d-none d-md-flex align-items-center gap-3 navbar-inner">
+            <span class="navbar-user d-none d-md-inline">Dr/a. Gabriel Fernandez</span>
+            <a class="btn-ghost" href="#">Pacientes</a>
+            <a class="btn-ghost nav-agenda-link" href="#">Agenda <span class="agenda-badge">3</span></a>
+            <button type="button" class="btn-ghost theme-toggle" aria-label="Cambiar modo oscuro" title="Modo oscuro">&#9790;</button>
+            <a class="btn-solid" href="#">Cerrar sesión</a>
+          </div>
+        </div>
+      </nav></div>
+      <p class="m-nota"><span class="m-ratio m-ratio-mal">1.76:1</span> blanco sobre menta</p>
+    </div>
+    <div class="m-col">
+      <span class="m-tag m-tag-despues">Después</span>
+      <div class="m-caja">
+      <nav class="app-navbar">
+        <div class="container d-flex align-items-center justify-content-between py-2">
+          <a class="brand" href="#">
+            <svg class="brand-tooth" viewBox="0 0 240 225" aria-hidden="true" focusable="false">
+              <path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z" fill="none" stroke="currentColor" stroke-width="16"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="brand-text">Kiba<span class="brand-x">X</span></span>
+          </a>
+          <button class="navbar-toggler d-md-none" type="button" aria-label="Menú">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="d-none d-md-flex align-items-center gap-3 navbar-inner">
+            <span class="navbar-user d-none d-md-inline">Dr/a. Gabriel Fernandez</span>
+            <a class="btn-ghost" href="#">Pacientes</a>
+            <a class="btn-ghost nav-agenda-link" href="#">Agenda <span class="agenda-badge">3</span></a>
+            <button type="button" class="btn-ghost theme-toggle" aria-label="Cambiar modo oscuro" title="Modo oscuro">&#9790;</button>
+            <a class="btn-solid" href="#">Cerrar sesión</a>
+          </div>
+        </div>
+      </nav></div>
+      <p class="m-nota"><span class="m-ratio m-ratio-ok">7.73:1</span> tinta <code>#14332F</code> sobre menta</p>
+    </div>
+  </section>
+
+  <section class="m-sec" id="s02">
+    <h2><span class="m-num">02</span> Enlaces y texto secundario</h2>
+    <p class="m-que">
+      Los enlaces usaban la menta clínica como color de texto (2.1:1) y el texto secundario un gris demasiado claro.
+      Ahora los enlaces y las pestañas usan menta profunda, y los metadatos y ayudas usan grafito suave.
+    </p>
+    <div class="m-par">
+      <div class="m-col">
+        <span class="m-tag m-tag-antes">Antes</span>
+        <div class="m-caja antes"><div class="m-pad">
+        <div class="panel">
+          <p class="eyebrow">Odontograma</p>
+          <div class="panel-head">
+            <h2>Odontograma</h2>
+            <p>Estado actual de cada cara del diente. Tocá un diente para registrar hallazgos.</p>
+          </div>
+          <p class="patient-meta">Doc. 30.111.222 · Nacimiento 12/04/1988 (38 años) · Femenino · 11 5555-1234</p>
+          <p style="margin:.6rem 0 0">La evolución se registra por separado: <a href="#">ver las notas de consulta</a>.</p>
+          <p class="arch-footnote">Numeración FDI · cada diente se divide en 5 caras</p>
+        </div></div></div>
+        <p class="m-nota"><span class="m-ratio m-ratio-mal">2.1:1</span> enlace · <span class="m-ratio m-ratio-mal">3.1:1</span> texto secundario</p>
+      </div>
+      <div class="m-col">
+        <span class="m-tag m-tag-despues">Después</span>
+        <div class="m-caja"><div class="m-pad">
+        <div class="panel">
+          <p class="eyebrow">Odontograma</p>
+          <div class="panel-head">
+            <h2>Odontograma</h2>
+            <p>Estado actual de cada cara del diente. Tocá un diente para registrar hallazgos.</p>
+          </div>
+          <p class="patient-meta">Doc. 30.111.222 · Nacimiento 12/04/1988 (38 años) · Femenino · 11 5555-1234</p>
+          <p style="margin:.6rem 0 0">La evolución se registra por separado: <a href="#">ver las notas de consulta</a>.</p>
+          <p class="arch-footnote">Numeración FDI · cada diente se divide en 5 caras</p>
+        </div></div></div>
+        <p class="m-nota"><span class="m-ratio m-ratio-ok">5.85:1</span> enlace · <span class="m-ratio m-ratio-ok">5.59:1</span> texto secundario</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="m-sec" id="s03">
+    <h2><span class="m-num">03</span> Las pestañas de la ficha (el bug de la P0)</h2>
+    <p class="m-que">
+      El marcado no le ponía <code>active</code> a ninguna pestaña, así que la ficha abría con las tres pestañas
+      apagadas y el panel de abajo vacío. Ahora la primera nace activa. Además los rótulos son cortos
+      ("Estudios", "Evolución", "Notas"): con los nombres completos no entraban en una fila a 390 px y partían
+      la pestaña en dos renglones. El nombre completo sigue en el título de cada panel.
+    </p>
+    <div class="m-par">
+      <div class="m-col">
+        <span class="m-tag m-tag-antes">Antes</span>
+        <div class="m-caja antes"><div class="m-pad">
+    <div class="section-tabs">
+      <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item" role="presentation"><button class="nav-link" id="tab-estudios" type="button" role="tab" aria-selected="false">Estudios y documentación</button></li><li class="nav-item" role="presentation"><button class="nav-link" id="tab-evolucion" type="button" role="tab" aria-selected="false">Evolución fotográfica</button></li><li class="nav-item" role="presentation"><button class="nav-link" id="tab-notas" type="button" role="tab" aria-selected="false">Notas de consulta</button></li>
+      </ul>
+      
+      <div class="m-hueco">El panel queda vacío: ninguna pestaña nace activa, así que no se muestra ningún contenido.</div>
+    </div></div></div>
+        <p class="m-nota"><span class="m-ratio m-ratio-mal">vacío</span> no se veía ningún contenido</p>
+      </div>
+      <div class="m-col">
+        <span class="m-tag m-tag-despues">Después</span>
+        <div class="m-caja"><div class="m-pad">
+    <div class="section-tabs">
+      <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item" role="presentation"><button class="nav-link active" id="tab-estudios" type="button" role="tab" aria-selected="true">Estudios</button></li><li class="nav-item" role="presentation"><button class="nav-link" id="tab-evolucion" type="button" role="tab" aria-selected="false">Evolución</button></li><li class="nav-item" role="presentation"><button class="nav-link" id="tab-notas" type="button" role="tab" aria-selected="false">Notas</button></li>
+      </ul>
+      
+      <div class="tab-content">
+        <div class="tab-pane fade show active" role="tabpanel">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Estudios y documentación</h2>
+            <p>Radiografías, fotos y PDF del paciente.</p>
+          </div>
+          <ul class="attachment-list">
+            <li>
+              <a href="#">panoramica-2026.pdf</a>
+              <span class="attachment-meta">Panorámica · 2,4 MB</span>
+            </li>
+            <li>
+              <a href="#">periapical-26.jpg</a>
+              <span class="attachment-meta">Periapical · 840 KB</span>
+            </li>
+          </ul>
+        </div></div>
+      </div>
+    </div></div></div>
+        <p class="m-nota"><span class="m-ratio m-ratio-ok">activa</span> la primera pestaña muestra su panel</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="m-sec" id="s04">
+    <h2><span class="m-num">04</span> El odontograma en el celular</h2>
+    <p class="m-que">
+      A 390 px la página entera se ensanchaba a 814 px y había que arrastrar toda la pantalla. Ahora la página
+      respeta el ancho y el scroll horizontal queda dentro de la arcada, con el diente a tamaño completo y un
+      aviso que aparece solo cuando la arcada no entra.
+    </p>
+    <div class="m-par">
+      <div class="m-col">
+        <span class="m-tag m-tag-antes">Antes</span>
+        <div class="m-caja antes"><div class="m-pad" style="padding:.75rem">
+          
+          <div class="m-pantalla">
+            <div class="m-barra-ventana">
+              <span class="m-punto"></span><span class="m-punto"></span><span class="m-punto"></span>
+              <span class="m-url">localhost:5000/pacientes/1</span>
+            </div>
+            <div class="m-viewport">
+              <div class="m-ancho-viejo">
+                <div class="m-interior">
+                  <div class="page-head" style="margin-bottom:.6rem">
+                    <div>
+                      <h3>Lucía Martínez</h3>
+                      <p class="m-sub">Doc. 30.111.222 · 38 años</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <span class="btn btn-outline btn-sm">Exportar</span>
+                      <span class="btn btn-solid btn-sm">Editar</span>
+                    </div>
+                  </div>
+                  <div class="arch-wrap ">
+          <div class="arch-label">Superior · permanente</div>
+          <div class="arch-row" role="group" tabindex="0"><button type="button" class="tooth-btn size-normal has-general" data-tooth="18" aria-haspopup="dialog" aria-label="Diente 18: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon><rect class="tooth-overlay overlay-ausente" x="0" y="0" width="40" height="40"></rect></svg><span class="tooth-num">18</span></button><button type="button" class="tooth-btn size-normal" data-tooth="17" aria-haspopup="dialog" aria-label="Diente 17: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">17</span></button><button type="button" class="tooth-btn size-normal" data-tooth="16" aria-haspopup="dialog" aria-label="Diente 16: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-obturado" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">16</span></button><button type="button" class="tooth-btn size-normal" data-tooth="15" aria-haspopup="dialog" aria-label="Diente 15: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">15</span></button><button type="button" class="tooth-btn size-normal" data-tooth="14" aria-haspopup="dialog" aria-label="Diente 14: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">14</span></button><button type="button" class="tooth-btn size-normal" data-tooth="13" aria-haspopup="dialog" aria-label="Diente 13: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">13</span></button><button type="button" class="tooth-btn size-normal" data-tooth="12" aria-haspopup="dialog" aria-label="Diente 12: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">12</span></button><button type="button" class="tooth-btn size-normal" data-tooth="11" aria-haspopup="dialog" aria-label="Diente 11: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-caries" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">11</span></button><div class="midline"></div><button type="button" class="tooth-btn size-normal" data-tooth="21" aria-haspopup="dialog" aria-label="Diente 21: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-caries" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">21</span></button><button type="button" class="tooth-btn size-normal" data-tooth="22" aria-haspopup="dialog" aria-label="Diente 22: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">22</span></button><button type="button" class="tooth-btn size-normal" data-tooth="23" aria-haspopup="dialog" aria-label="Diente 23: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">23</span></button><button type="button" class="tooth-btn size-normal has-general" data-tooth="24" aria-haspopup="dialog" aria-label="Diente 24: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon><rect class="tooth-overlay overlay-implante" x="0" y="0" width="40" height="40"></rect></svg><span class="tooth-num">24</span></button><button type="button" class="tooth-btn size-normal" data-tooth="25" aria-haspopup="dialog" aria-label="Diente 25: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">25</span></button><button type="button" class="tooth-btn size-normal" data-tooth="26" aria-haspopup="dialog" aria-label="Diente 26: 2 caras con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-caries" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-obturado" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">26</span></button><button type="button" class="tooth-btn size-normal" data-tooth="27" aria-haspopup="dialog" aria-label="Diente 27: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">27</span></button><button type="button" class="tooth-btn size-normal" data-tooth="28" aria-haspopup="dialog" aria-label="Diente 28: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">28</span></button></div>
+        </div>
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+        <div class="m-regla" aria-hidden="true">
+          <div class="m-regla-mal" style="width:47.9%"></div><div class="m-regla-fuera"></div>
+        </div>
+        <p class="m-nota"><span class="m-ratio m-ratio-mal">814 px</span> de ancho de página: la pantalla de 390 px muestra menos de la mitad</p>
+      </div>
+      <div class="m-col">
+        <span class="m-tag m-tag-despues">Después</span>
+        <div class="m-caja"><div class="m-pad" style="padding:.75rem">
+          
+          <div class="m-pantalla">
+            <div class="m-barra-ventana">
+              <span class="m-punto"></span><span class="m-punto"></span><span class="m-punto"></span>
+              <span class="m-url">localhost:5000/pacientes/1</span>
+            </div>
+            <div class="m-viewport">
+              <div class="m-ancho-actual">
+                <div class="m-interior">
+                  <div class="page-head" style="margin-bottom:.6rem">
+                    <div>
+                      <h3>Lucía Martínez</h3>
+                      <p class="m-sub">Doc. 30.111.222 · 38 años</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <span class="btn btn-outline btn-sm">Exportar</span>
+                      <span class="btn btn-solid btn-sm">Editar</span>
+                    </div>
+                  </div>
+                  <div class="arch-wrap ">
+          <div class="arch-label">Superior · permanente</div>
+          <div class="arch-row" role="group" tabindex="0"><button type="button" class="tooth-btn size-normal has-general" data-tooth="18" aria-haspopup="dialog" aria-label="Diente 18: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon><rect class="tooth-overlay overlay-ausente" x="0" y="0" width="40" height="40"></rect></svg><span class="tooth-num">18</span></button><button type="button" class="tooth-btn size-normal" data-tooth="17" aria-haspopup="dialog" aria-label="Diente 17: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">17</span></button><button type="button" class="tooth-btn size-normal" data-tooth="16" aria-haspopup="dialog" aria-label="Diente 16: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-obturado" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">16</span></button><button type="button" class="tooth-btn size-normal" data-tooth="15" aria-haspopup="dialog" aria-label="Diente 15: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">15</span></button><button type="button" class="tooth-btn size-normal" data-tooth="14" aria-haspopup="dialog" aria-label="Diente 14: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">14</span></button><button type="button" class="tooth-btn size-normal" data-tooth="13" aria-haspopup="dialog" aria-label="Diente 13: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">13</span></button><button type="button" class="tooth-btn size-normal" data-tooth="12" aria-haspopup="dialog" aria-label="Diente 12: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">12</span></button><button type="button" class="tooth-btn size-normal" data-tooth="11" aria-haspopup="dialog" aria-label="Diente 11: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-caries" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">11</span></button><div class="midline"></div><button type="button" class="tooth-btn size-normal" data-tooth="21" aria-haspopup="dialog" aria-label="Diente 21: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-caries" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">21</span></button><button type="button" class="tooth-btn size-normal" data-tooth="22" aria-haspopup="dialog" aria-label="Diente 22: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">22</span></button><button type="button" class="tooth-btn size-normal" data-tooth="23" aria-haspopup="dialog" aria-label="Diente 23: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">23</span></button><button type="button" class="tooth-btn size-normal has-general" data-tooth="24" aria-haspopup="dialog" aria-label="Diente 24: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon><rect class="tooth-overlay overlay-implante" x="0" y="0" width="40" height="40"></rect></svg><span class="tooth-num">24</span></button><button type="button" class="tooth-btn size-normal" data-tooth="25" aria-haspopup="dialog" aria-label="Diente 25: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">25</span></button><button type="button" class="tooth-btn size-normal" data-tooth="26" aria-haspopup="dialog" aria-label="Diente 26: 2 caras con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-caries" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-obturado" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">26</span></button><button type="button" class="tooth-btn size-normal" data-tooth="27" aria-haspopup="dialog" aria-label="Diente 27: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">27</span></button><button type="button" class="tooth-btn size-normal" data-tooth="28" aria-haspopup="dialog" aria-label="Diente 28: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">28</span></button></div>
+        </div>
+                  <p class="arch-scroll-hint">Deslizá en horizontal para ver todos los dientes.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+        <div class="m-regla" aria-hidden="true"><div class="m-regla-ok" style="width:100%"></div></div>
+        <p class="m-nota"><span class="m-ratio m-ratio-ok">375 px</span> de página: entra completa y solo scrollea la arcada</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="m-sec" id="s05">
+    <h2><span class="m-num">05</span> La leyenda filtra las dos arcadas</h2>
+    <p class="m-que">
+      Al elegir un estado en la leyenda, el filtro se aplicaba solo a la primera arcada: la dentición de leche
+      quedaba sin atenuar. Ahora el filtro recorre las dos, y la leyenda responde al teclado con
+      <code>aria-pressed</code>.
+    </p>
+    <div class="m-par">
+      <div class="m-col">
+        <span class="m-tag m-tag-antes">Antes</span>
+        <div class="m-caja antes"><div class="m-pad">
+          <div class="legend"><span class="legend-item" data-status="sano" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-sano"></i>Sano</span><span class="legend-item legend-active" data-status="caries" role="button" tabindex="0" aria-pressed="true"><i class="tooth-dot status-caries"></i>Caries</span><span class="legend-item" data-status="obturado" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-obturado"></i>Obturado / restaurado</span><span class="legend-item" data-status="corona" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-corona"></i>Corona</span><span class="legend-item" data-status="endodoncia" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-endodoncia"></i>Endodoncia</span><span class="legend-item" data-status="extraido" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-extraido"></i>Extraído</span><span class="legend-item" data-status="implante" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-implante"></i>Implante</span><span class="legend-item" data-status="protesis" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-protesis"></i>Prótesis</span><span class="legend-item" data-status="ausente" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-ausente"></i>Ausente</span></div>
+          <div class="arch-wrap odontogram-legend-active">
+          <div class="arch-label">Superior · permanente</div>
+          <div class="arch-row" role="group" tabindex="0"><button type="button" class="tooth-btn size-normal has-general" data-tooth="18" aria-haspopup="dialog" aria-label="Diente 18: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon><rect class="tooth-overlay overlay-ausente" x="0" y="0" width="40" height="40"></rect></svg><span class="tooth-num">18</span></button><button type="button" class="tooth-btn size-normal" data-tooth="17" aria-haspopup="dialog" aria-label="Diente 17: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">17</span></button><button type="button" class="tooth-btn size-normal" data-tooth="16" aria-haspopup="dialog" aria-label="Diente 16: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-obturado" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">16</span></button><button type="button" class="tooth-btn size-normal" data-tooth="15" aria-haspopup="dialog" aria-label="Diente 15: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">15</span></button><button type="button" class="tooth-btn size-normal" data-tooth="14" aria-haspopup="dialog" aria-label="Diente 14: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">14</span></button><button type="button" class="tooth-btn size-normal" data-tooth="13" aria-haspopup="dialog" aria-label="Diente 13: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">13</span></button><button type="button" class="tooth-btn size-normal" data-tooth="12" aria-haspopup="dialog" aria-label="Diente 12: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">12</span></button><button type="button" class="tooth-btn size-normal" data-tooth="11" aria-haspopup="dialog" aria-label="Diente 11: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-caries" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">11</span></button><div class="midline"></div><button type="button" class="tooth-btn size-normal" data-tooth="21" aria-haspopup="dialog" aria-label="Diente 21: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-caries" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">21</span></button><button type="button" class="tooth-btn size-normal" data-tooth="22" aria-haspopup="dialog" aria-label="Diente 22: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">22</span></button><button type="button" class="tooth-btn size-normal" data-tooth="23" aria-haspopup="dialog" aria-label="Diente 23: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">23</span></button><button type="button" class="tooth-btn size-normal has-general" data-tooth="24" aria-haspopup="dialog" aria-label="Diente 24: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon><rect class="tooth-overlay overlay-implante" x="0" y="0" width="40" height="40"></rect></svg><span class="tooth-num">24</span></button><button type="button" class="tooth-btn size-normal" data-tooth="25" aria-haspopup="dialog" aria-label="Diente 25: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">25</span></button><button type="button" class="tooth-btn size-normal" data-tooth="26" aria-haspopup="dialog" aria-label="Diente 26: 2 caras con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-caries" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-obturado" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">26</span></button><button type="button" class="tooth-btn size-normal" data-tooth="27" aria-haspopup="dialog" aria-label="Diente 27: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">27</span></button><button type="button" class="tooth-btn size-normal" data-tooth="28" aria-haspopup="dialog" aria-label="Diente 28: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">28</span></button></div>
+        </div>
+          <div style="height:.6rem"></div>
+          <div class="arch-wrap ">
+          <div class="arch-label">Superior · de leche</div>
+          <div class="arch-row" role="group" tabindex="0"><button type="button" class="tooth-btn size-small" data-tooth="55" aria-haspopup="dialog" aria-label="Diente 55: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-caries" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">55</span></button><button type="button" class="tooth-btn size-small" data-tooth="54" aria-haspopup="dialog" aria-label="Diente 54: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">54</span></button><button type="button" class="tooth-btn size-small" data-tooth="53" aria-haspopup="dialog" aria-label="Diente 53: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">53</span></button><button type="button" class="tooth-btn size-small" data-tooth="52" aria-haspopup="dialog" aria-label="Diente 52: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">52</span></button><button type="button" class="tooth-btn size-small" data-tooth="51" aria-haspopup="dialog" aria-label="Diente 51: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">51</span></button><div class="midline"></div><button type="button" class="tooth-btn size-small" data-tooth="61" aria-haspopup="dialog" aria-label="Diente 61: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">61</span></button><button type="button" class="tooth-btn size-small" data-tooth="62" aria-haspopup="dialog" aria-label="Diente 62: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">62</span></button><button type="button" class="tooth-btn size-small" data-tooth="63" aria-haspopup="dialog" aria-label="Diente 63: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">63</span></button><button type="button" class="tooth-btn size-small" data-tooth="64" aria-haspopup="dialog" aria-label="Diente 64: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">64</span></button><button type="button" class="tooth-btn size-small" data-tooth="65" aria-haspopup="dialog" aria-label="Diente 65: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">65</span></button></div>
+        </div>
+        </div></div>
+        <p class="m-nota"><span class="m-ratio m-ratio-mal">solo una</span> la arcada de leche queda sin filtrar</p>
+      </div>
+      <div class="m-col">
+        <span class="m-tag m-tag-despues">Después</span>
+        <div class="m-caja"><div class="m-pad">
+          <div class="legend"><span class="legend-item" data-status="sano" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-sano"></i>Sano</span><span class="legend-item legend-active" data-status="caries" role="button" tabindex="0" aria-pressed="true"><i class="tooth-dot status-caries"></i>Caries</span><span class="legend-item" data-status="obturado" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-obturado"></i>Obturado / restaurado</span><span class="legend-item" data-status="corona" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-corona"></i>Corona</span><span class="legend-item" data-status="endodoncia" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-endodoncia"></i>Endodoncia</span><span class="legend-item" data-status="extraido" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-extraido"></i>Extraído</span><span class="legend-item" data-status="implante" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-implante"></i>Implante</span><span class="legend-item" data-status="protesis" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-protesis"></i>Prótesis</span><span class="legend-item" data-status="ausente" role="button" tabindex="0" aria-pressed="false"><i class="tooth-dot status-ausente"></i>Ausente</span></div>
+          <div class="arch-wrap odontogram-legend-active">
+          <div class="arch-label">Superior · permanente</div>
+          <div class="arch-row" role="group" tabindex="0"><button type="button" class="tooth-btn size-normal has-general" data-tooth="18" aria-haspopup="dialog" aria-label="Diente 18: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon><rect class="tooth-overlay overlay-ausente" x="0" y="0" width="40" height="40"></rect></svg><span class="tooth-num">18</span></button><button type="button" class="tooth-btn size-normal" data-tooth="17" aria-haspopup="dialog" aria-label="Diente 17: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">17</span></button><button type="button" class="tooth-btn size-normal" data-tooth="16" aria-haspopup="dialog" aria-label="Diente 16: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-obturado" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">16</span></button><button type="button" class="tooth-btn size-normal" data-tooth="15" aria-haspopup="dialog" aria-label="Diente 15: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">15</span></button><button type="button" class="tooth-btn size-normal" data-tooth="14" aria-haspopup="dialog" aria-label="Diente 14: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">14</span></button><button type="button" class="tooth-btn size-normal" data-tooth="13" aria-haspopup="dialog" aria-label="Diente 13: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">13</span></button><button type="button" class="tooth-btn size-normal" data-tooth="12" aria-haspopup="dialog" aria-label="Diente 12: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">12</span></button><button type="button" class="tooth-btn size-normal" data-tooth="11" aria-haspopup="dialog" aria-label="Diente 11: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-caries" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">11</span></button><div class="midline"></div><button type="button" class="tooth-btn size-normal" data-tooth="21" aria-haspopup="dialog" aria-label="Diente 21: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-caries" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">21</span></button><button type="button" class="tooth-btn size-normal" data-tooth="22" aria-haspopup="dialog" aria-label="Diente 22: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">22</span></button><button type="button" class="tooth-btn size-normal" data-tooth="23" aria-haspopup="dialog" aria-label="Diente 23: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">23</span></button><button type="button" class="tooth-btn size-normal has-general" data-tooth="24" aria-haspopup="dialog" aria-label="Diente 24: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon><rect class="tooth-overlay overlay-implante" x="0" y="0" width="40" height="40"></rect></svg><span class="tooth-num">24</span></button><button type="button" class="tooth-btn size-normal" data-tooth="25" aria-haspopup="dialog" aria-label="Diente 25: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">25</span></button><button type="button" class="tooth-btn size-normal" data-tooth="26" aria-haspopup="dialog" aria-label="Diente 26: 2 caras con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-caries" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-obturado" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">26</span></button><button type="button" class="tooth-btn size-normal" data-tooth="27" aria-haspopup="dialog" aria-label="Diente 27: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">27</span></button><button type="button" class="tooth-btn size-normal" data-tooth="28" aria-haspopup="dialog" aria-label="Diente 28: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">28</span></button></div>
+        </div>
+          <div style="height:.6rem"></div>
+          <div class="arch-wrap odontogram-legend-active">
+          <div class="arch-label">Superior · de leche</div>
+          <div class="arch-row" role="group" tabindex="0"><button type="button" class="tooth-btn size-small" data-tooth="55" aria-haspopup="dialog" aria-label="Diente 55: 1 cara con hallazgos"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-caries" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">55</span></button><button type="button" class="tooth-btn size-small" data-tooth="54" aria-haspopup="dialog" aria-label="Diente 54: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">54</span></button><button type="button" class="tooth-btn size-small" data-tooth="53" aria-haspopup="dialog" aria-label="Diente 53: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">53</span></button><button type="button" class="tooth-btn size-small" data-tooth="52" aria-haspopup="dialog" aria-label="Diente 52: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">52</span></button><button type="button" class="tooth-btn size-small" data-tooth="51" aria-haspopup="dialog" aria-label="Diente 51: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">51</span></button><div class="midline"></div><button type="button" class="tooth-btn size-small" data-tooth="61" aria-haspopup="dialog" aria-label="Diente 61: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">61</span></button><button type="button" class="tooth-btn size-small" data-tooth="62" aria-haspopup="dialog" aria-label="Diente 62: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">62</span></button><button type="button" class="tooth-btn size-small" data-tooth="63" aria-haspopup="dialog" aria-label="Diente 63: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">63</span></button><button type="button" class="tooth-btn size-small" data-tooth="64" aria-haspopup="dialog" aria-label="Diente 64: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">64</span></button><button type="button" class="tooth-btn size-small" data-tooth="65" aria-haspopup="dialog" aria-label="Diente 65: sano"><svg viewBox="0 0 40 40" class="tooth-svg"><polygon class="face status-sano" points="0,0 40,0 28,12 12,12"></polygon><polygon class="face status-sano" points="40,0 40,40 28,28 28,12"></polygon><polygon class="face status-sano" points="40,40 0,40 12,28 28,28"></polygon><polygon class="face status-sano" points="0,40 0,0 12,12 12,28"></polygon><polygon class="face status-sano" points="12,12 28,12 28,28 12,28"></polygon></svg><span class="tooth-num">65</span></button></div>
+        </div>
+        </div></div>
+        <p class="m-nota"><span class="m-ratio m-ratio-ok">las dos</span> ambas arcadas atenúan los dientes que no coinciden</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="m-sec" id="s06">
+    <h2><span class="m-num">06</span> Toasts y contadores</h2>
+    <p class="m-que">
+      El blanco sobre los pasteles de los avisos daba entre 1.7 y 3:1, y los contadores arena repetían el problema.
+      Ahora todos usan una tinta oscura que funciona en los dos temas.
+    </p>
+    <div class="m-par">
+      <div class="m-col">
+        <span class="m-tag m-tag-antes">Antes</span>
+        <div class="m-caja antes"><div class="m-pad" style="display:flex;flex-direction:column;gap:.5rem">
+          <div class="toast-notification toast-success show"><span>Paciente guardado correctamente.</span><button class="toast-close" type="button" aria-label="Cerrar notificación">&#10005;</button></div>
+          <div class="toast-notification toast-danger show"><span>No se pudo eliminar el archivo.</span><button class="toast-close" type="button" aria-label="Cerrar notificación">&#10005;</button></div>
+          <div class="toast-notification toast-warning show"><span>Esperá unos minutos antes de reintentar.</span><button class="toast-close" type="button" aria-label="Cerrar notificación">&#10005;</button></div>
+          <div class="toast-notification toast-info show"><span>Los cambios se guardaron.</span><button class="toast-close" type="button" aria-label="Cerrar notificación">&#10005;</button></div>
+          <div style="display:flex;gap:.5rem;align-items:center;margin-top:.35rem">
+            <span class="agenda-badge">3</span>
+            <span class="turno-chip-hoy">Hoy</span>
+            <a class="btn-solid" href="#">Guardar</a>
+          </div>
+        </div></div>
+        <p class="m-nota"><span class="m-ratio m-ratio-mal">1.7 a 3:1</span> blanco sobre pastel</p>
+      </div>
+      <div class="m-col">
+        <span class="m-tag m-tag-despues">Después</span>
+        <div class="m-caja"><div class="m-pad" style="display:flex;flex-direction:column;gap:.5rem">
+          <div class="toast-notification toast-success show"><span>Paciente guardado correctamente.</span><button class="toast-close" type="button" aria-label="Cerrar notificación">&#10005;</button></div>
+          <div class="toast-notification toast-danger show"><span>No se pudo eliminar el archivo.</span><button class="toast-close" type="button" aria-label="Cerrar notificación">&#10005;</button></div>
+          <div class="toast-notification toast-warning show"><span>Esperá unos minutos antes de reintentar.</span><button class="toast-close" type="button" aria-label="Cerrar notificación">&#10005;</button></div>
+          <div class="toast-notification toast-info show"><span>Los cambios se guardaron.</span><button class="toast-close" type="button" aria-label="Cerrar notificación">&#10005;</button></div>
+          <div style="display:flex;gap:.5rem;align-items:center;margin-top:.35rem">
+            <span class="agenda-badge">3</span>
+            <span class="turno-chip-hoy">Hoy</span>
+            <a class="btn-solid" href="#">Guardar</a>
+          </div>
+        </div></div>
+        <p class="m-nota"><span class="m-ratio m-ratio-ok">4.99 a 8.7:1</span> tinta oscura sobre pastel</p>
+      </div>
+    </div>
+  </section>
+
+  <p class="m-pie" style="margin-top:3.5rem;max-width:80ch">
+    Cómo leerla: la columna izquierda reproduce el CSS anterior con los mismos tokens viejos, no es una captura.
+    Si movés la ventana por debajo de 880 px las comparaciones se apilan. El botón de tema guarda la preferencia
+    en el mismo <code>localStorage</code> que usa la app.
+  </p>
+</div>
+
+<script>
+  (function () {
+    var boton = document.getElementById('btnTema');
+    function pintar(tema) {
+      document.body.classList.toggle('dark', tema === 'dark');
+      boton.textContent = tema === 'dark' ? 'Ver en modo claro' : 'Ver en modo oscuro';
+    }
+    var parametro = new URLSearchParams(location.search).get('tema');
+    if (parametro === 'oscuro') parametro = 'dark';
+    if (parametro === 'claro') parametro = 'light';
+    var guardado = localStorage.getItem('theme');
+    var inicial = parametro || guardado || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    pintar(inicial);
+    boton.addEventListener('click', function () {
+      var nuevo = document.body.classList.contains('dark') ? 'light' : 'dark';
+      localStorage.setItem('theme', nuevo);
+      pintar(nuevo);
+    });
+  })();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

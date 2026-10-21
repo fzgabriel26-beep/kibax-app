@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{{ paciente.full_name }}{% endblock %}
 
+{% macro icon_x() %}
+<svg class="icon-x" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>
+{% endmacro %}
+
 {% macro tooth_icon(n, size='normal') %}
   {% set layout = layouts[n] %}
   {% set st = statuses.get(n, {}) %}
@@ -31,7 +35,7 @@
     <h1>{{ paciente.full_name }}</h1>
     <p class="patient-meta">
       {% if paciente.document_id %}Doc. {{ paciente.document_id }} · {% endif %}
-      {% if paciente.birth_date %}Nace {{ paciente.birth_date.strftime('%d/%m/%Y') }}{% if paciente.age is not none %} ({{ paciente.age }} años){% endif %} · {% endif %}
+      {% if paciente.birth_date %}Nacimiento {{ paciente.birth_date.strftime('%d/%m/%Y') }}{% if paciente.age is not none %} ({{ paciente.age }} años){% endif %} · {% endif %}
       {% if paciente.gender %}{{ paciente.gender }} · {% endif %}
       {% if paciente.phone %}{{ paciente.phone }} · {% endif %}
       {% if paciente.email %}{{ paciente.email }}{% endif %}
@@ -99,6 +103,7 @@
     <div class="arch-label">Inferior · de leche</div>
   </div>
 
+  <p class="arch-scroll-hint" id="archScrollHint" hidden>Deslizá en horizontal para ver todos los dientes.</p>
   <p class="arch-footnote">Numeración FDI · cada diente se divide en 5 caras: vestibular, palatino/lingual, mesial, distal (bordes) y oclusal/incisal (centro)</p>
   <p class="arch-footnote">Tocá un estado de la leyenda para ver solo los dientes que lo tienen.</p>
 </section>
@@ -120,7 +125,7 @@
   <p class="panoramic-caption">
     Radiografía panorámica · {{ panoramic.uploaded_at.strftime('%d/%m/%Y') }}
   </p>
-  <p class="arch-footnote">Click para ver en tamaño completo</p>
+  <p class="arch-footnote">Tocá para ver en tamaño completo</p>
   {% else %}
   <div class="empty-inline">
     Todavía no hay ninguna panorámica cargada. Subí un archivo abajo y marcalo como tipo de estudio <strong>"Panorámica"</strong> para que aparezca acá.
@@ -133,13 +138,13 @@
 <div class="section-tabs mt-4">
   <ul class="nav nav-tabs" id="patientTabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="tab-estudios" data-bs-toggle="tab" data-bs-target="#pane-estudios" type="button" role="tab" aria-controls="pane-estudios" aria-selected="true">Estudios y documentación</button>
+      <button class="nav-link active" id="tab-estudios" data-bs-toggle="tab" data-bs-target="#pane-estudios" type="button" role="tab" aria-controls="pane-estudios" aria-selected="true">Estudios</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="tab-evolucion" data-bs-toggle="tab" data-bs-target="#pane-evolucion" type="button" role="tab" aria-controls="pane-evolucion" aria-selected="false">Evolución fotográfica</button>
+      <button class="nav-link" id="tab-evolucion" data-bs-toggle="tab" data-bs-target="#pane-evolucion" type="button" role="tab" aria-controls="pane-evolucion" aria-selected="false">Evolución</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="tab-notas" data-bs-toggle="tab" data-bs-target="#pane-notas" type="button" role="tab" aria-controls="pane-notas" aria-selected="false">Notas de consulta</button>
+      <button class="nav-link" id="tab-notas" data-bs-toggle="tab" data-bs-target="#pane-notas" type="button" role="tab" aria-controls="pane-notas" aria-selected="false">Notas</button>
     </li>
   </ul>
   <div class="tab-content">
@@ -187,7 +192,7 @@
       <form method="post" action="{{ url_for('patients.delete_attachment', patient_id=paciente.id, attachment_id=a.id) }}"
             onsubmit="return confirm('¿Eliminar este archivo?');" class="attachment-delete">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" aria-label="Eliminar archivo">✕</button>
+        <button type="submit" aria-label="Eliminar archivo">{{ icon_x() }}</button>
       </form>
     </li>
     {% endfor %}
@@ -261,7 +266,7 @@
               onsubmit="return confirm('¿Seguro que querés eliminar esta fotografía del historial de evolución? Esta acción no se puede deshacer.');" 
               class="evo-delete-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="evo-delete-btn" aria-label="Eliminar fotografía">✕</button>
+          <button type="submit" class="evo-delete-btn" aria-label="Eliminar fotografía">{{ icon_x() }}</button>
         </form>
       </div>
       
@@ -330,7 +335,7 @@
               <form method="post" action="{{ url_for('patients.delete_consultation_note', patient_id=paciente.id, note_id=n.id) }}"
                     onsubmit="return confirm('¿Eliminar esta nota de consulta?');" class="note-delete">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" aria-label="Eliminar nota">✕</button>
+                <button type="submit" aria-label="Eliminar nota">{{ icon_x() }}</button>
               </form>
             </div>
             {% if n.reason %}<p><strong>Motivo:</strong> {{ n.reason }}</p>{% endif %}
@@ -446,7 +451,7 @@
 <div id="toothLightbox" class="tooth-lightbox" title="Cerrar">
   <img id="toothLightboxImg" alt="Estudio">
   <span id="toothLightboxCaption" class="tooth-lightbox-caption"></span>
-  <button type="button" class="tooth-lightbox-close" aria-label="Cerrar">✕</button>
+  <button type="button" class="tooth-lightbox-close" aria-label="Cerrar">{{ icon_x() }}</button>
 </div>
 {% endblock %}
 
@@ -540,6 +545,24 @@
 </script>
 <script>
   (function () {
+    // --- Indicador de arcada con scroll horizontal ---
+    var archRows = document.querySelectorAll('.arch-row');
+    var archHint = document.getElementById('archScrollHint');
+
+    function updateArchOverflow() {
+      var overflowing = false;
+      archRows.forEach(function (row) {
+        if (row.scrollWidth > row.clientWidth + 1) overflowing = true;
+      });
+      if (archHint) archHint.hidden = !overflowing;
+    }
+
+    updateArchOverflow();
+    window.addEventListener('resize', updateArchOverflow);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(updateArchOverflow);
+    }
+
     // --- Tabs: estado vía URL hash en vez de localStorage ---
     var tabBtns = document.querySelectorAll('#patientTabs [data-bs-toggle="tab"]');
 

@@ -2,6 +2,8 @@
 {% block title %}Agenda{% endblock %}
 {% block content %}
 
+<h1 class="visually-hidden">Agenda</h1>
+
 <div class="agenda-new-layout">
   <!-- ===== SIDEBAR ===== -->
   <aside class="agenda-sidebar">
@@ -28,6 +30,8 @@
               {% set is_today = iso == today.isoformat() %}
               {% set is_selected = fecha and iso == fecha.isoformat() %}
               <a class="mini-day {{ 'mini-today' if is_today }} {{ 'mini-selected' if is_selected }}"
+                 {% if is_selected %}aria-current="page"{% elif is_today %}aria-current="date"{% endif %}
+                 aria-label="{{ day }} de {{ month_name|lower }} de {{ year }}{% if counts.get(iso) %}, con turnos{% endif %}"
                  href="{{ url_for('agenda.index', fecha=iso, mes='%04d-%02d'|format(year, month), profesional=profesional.id if profesional else '') }}">
                 {{ day }}
                 {% if counts.get(iso) %}
@@ -154,7 +158,9 @@
     </div>
     {% else %}
     <div class="empty-state">
-      <div class="empty-icon"></div>
+      <div class="empty-icon" aria-hidden="true">
+        <svg viewBox="0 0 240 225" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"><path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"/></svg>
+      </div>
       <h3>No hay profesionales cargados</h3>
       <p>Altá un profesional para empezar a usar la agenda.</p>
       <a href="{{ url_for('agenda.nuevo_profesional') }}" class="btn-solid mt-2">+ Agregar profesional</a>
@@ -164,40 +170,40 @@
     <!-- Tabla de turnos del día -->
     {% if profesional and fecha and day_slots %}
     <div class="slots-table-wrap">
-      <table class="slots-table" data-prof="{{ profesional.id }}">
+      <table class="slots-table" data-prof="{{ profesional.id }}" role="table">
         <thead>
           <tr>
-            <th class="col-hora">Hora</th>
-            <th class="col-estado">Asistencia</th>
-            <th class="col-paciente">Paciente</th>
-            <th class="col-obs">Observación</th>
+            <th class="col-hora" role="columnheader">Hora</th>
+            <th class="col-estado" role="columnheader">Asistencia</th>
+            <th class="col-paciente" role="columnheader">Paciente</th>
+            <th class="col-obs" role="columnheader">Observación</th>
           </tr>
         </thead>
         <tbody>
           {% for slot in day_slots %}
           {% if slot.appointment %}
-          <tr class="slot-row has-appt status-{{ slot.appointment.status }}"
+          <tr class="slot-row has-appt status-{{ slot.appointment.status }}" role="row"
               data-hora="{{ slot.appointment|turno_hora }}"
               data-fecha="{{ fecha.isoformat() }}"
               data-appt-id="{{ slot.appointment.id }}"
               data-exc-id="">
-            <td class="col-hora">
+            <td class="col-hora" role="cell">
               <span class="slot-time">{{ slot.time }}</span>
               {% if slot.appointment.status == 'pendiente' %}<span class="slot-dot dot-pendiente"></span>{% endif %}
               {% if slot.appointment.status in no_show_statuses %}<span class="slot-dot dot-ausente"></span>{% endif %}
             </td>
-            <td class="col-estado">
+            <td class="col-estado" role="cell">
               <form method="post" action="{{ url_for('agenda.estado', appt_id=slot.appointment.id) }}" class="agenda-status-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="next" value="{{ url_for('agenda.index', fecha=fecha.isoformat(), mes='%04d-%02d'|format(year, month), profesional=profesional.id if profesional else '') }}">
-                <select name="status" class="status-select agenda-status-select {{ slot.appointment.status|estado_clase }}" aria-label="Estado del turno">
+                <select name="status" class="status-select agenda-status-select {{ slot.appointment.status|estado_clase }}" aria-label="Estado del turno de {{ slot.appointment.patient.full_name }}">
                   {% for key, label in statuses.items() %}
                   <option value="{{ key }}" class="{{ key|estado_clase }}"{% if slot.appointment.status == key %} selected{% endif %}>{{ label }}</option>
                   {% endfor %}
                 </select>
               </form>
             </td>
-            <td class="col-paciente">
+            <td class="col-paciente" role="cell">
               <a href="{{ url_for('patients.patient_detail', patient_id=slot.appointment.patient_id) }}" class="patient-link">
                 {{ slot.appointment.patient.full_name }}
               </a>
@@ -205,41 +211,42 @@
               <span class="prof-tag">- {{ slot.appointment.professional.full_name }}</span>
               {% endif %}
             </td>
-            <td class="col-obs">
-              {{ slot.appointment.reason or '-' }}
+            <td class="col-obs" role="cell">
+              {% if slot.appointment.reason %}<span class="slot-reason">{{ slot.appointment.reason }}</span>{% endif %}
               <form method="post" action="{{ url_for('agenda.eliminar', appt_id=slot.appointment.id) }}"
                     class="del-form" onsubmit="return confirm('¿Eliminar este turno?');">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="del-btn" aria-label="Eliminar turno">✕</button>
+                <button type="submit" class="del-btn" aria-label="Eliminar turno de {{ slot.appointment.patient.full_name }}">✕</button>
               </form>
             </td>
           </tr>
           {% elif slot.available %}
-          <tr class="slot-row available"
+          <tr class="slot-row available" role="row"
               data-hora="{{ slot.time }}" data-fecha="{{ fecha.isoformat() }}"
               data-exc-id="">
-            <td class="col-hora"><span class="slot-time">{{ slot.time }}</span></td>
-            <td class="col-estado"></td>
-            <td class="col-paciente">
+            <td class="col-hora" role="cell"><span class="slot-time">{{ slot.time }}</span></td>
+            <td class="col-estado" role="cell"></td>
+            <td class="col-paciente" role="cell">
               <button type="button" class="slot-book-btn" data-bs-toggle="modal" data-bs-target="#turnoModal"
                       data-fecha="{{ fecha.isoformat() }}" data-hora="{{ slot.time }}"
-                      data-prof="{{ profesional.id if profesional else '' }}">
+                      data-prof="{{ profesional.id if profesional else '' }}"
+                      aria-label="Agendar un turno a las {{ slot.time }}">
                 + Agendar
               </button>
             </td>
-            <td class="col-obs"></td>
+            <td class="col-obs" role="cell"></td>
           </tr>
           {% else %}
-          <tr class="slot-row blocked"
+          <tr class="slot-row blocked" role="row"
               data-hora="{{ slot.time }}" data-fecha="{{ fecha.isoformat() }}"
               data-exc-id="{{ slot.suspension.id if slot.suspension else '' }}">
-            <td class="col-hora">
+            <td class="col-hora" role="cell">
               <span class="slot-time">{{ slot.time }}</span>
               <span class="slot-dot dot-blocked"></span>
             </td>
-            <td class="col-estado"></td>
-            <td class="col-paciente blocked-text">NO CITAR ESTE TURNO</td>
-            <td class="col-obs">{{ slot.suspension.reason if slot.suspension and slot.suspension.reason else '-' }}</td>
+            <td class="col-estado" role="cell"></td>
+            <td class="col-paciente" role="cell"><span class="blocked-text">NO CITAR ESTE TURNO</span></td>
+            <td class="col-obs" role="cell">{{ slot.suspension.reason if slot.suspension and slot.suspension.reason else '' }}</td>
           </tr>
           {% endif %}
           {% endfor %}
@@ -284,7 +291,9 @@
 
     {% else %}
     <div class="empty-state">
-      <div class="empty-icon"></div>
+      <div class="empty-icon" aria-hidden="true">
+        <svg viewBox="0 0 240 225" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"><path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"/></svg>
+      </div>
       <h3>No hay turnos para mostrar</h3>
       <p>Hacé clic en un día del mini calendario para ver los horarios disponibles de {{ profesional.full_name }}.</p>
     </div>
@@ -293,11 +302,11 @@
 </div>
 
 <!-- Modal: nuevo turno -->
-<div class="modal fade" id="turnoModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="turnoModal" tabindex="-1" aria-hidden="true" aria-labelledby="a-titulo">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="a-titulo">Agendar turno</h5>
+        <h2 class="modal-title" id="a-titulo">Agendar turno</h2>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
@@ -362,13 +371,13 @@
 </div>
 
 <!-- Modal: agregar a la lista de espera -->
-<div class="modal fade" id="waitlistModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="waitlistModal" tabindex="-1" aria-hidden="true" aria-labelledby="w-titulo">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content glass-panel">
+    <div class="modal-content">
       <div class="modal-header border-0 pb-0">
         <div>
           <p class="eyebrow">Sin hueco disponible</p>
-          <h5 class="mb-0">Agregar a la lista de espera</h5>
+          <h2 class="mb-0 modal-title" id="w-titulo">Agregar a la lista de espera</h2>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>

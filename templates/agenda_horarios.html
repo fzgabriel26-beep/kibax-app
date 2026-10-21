@@ -132,9 +132,10 @@
   </div>
 
   {% if schedules %}
+  <div class="table-scroll">
   <table class="table table-sm agenda-table mt-2">
     <thead>
-      <tr><th>Profesional</th><th>Día</th><th>Franja</th><th>Vigencia</th><th></th></tr>
+      <tr><th scope="col">Profesional</th><th scope="col">Día</th><th scope="col">Franja</th><th scope="col">Vigencia</th><th scope="col" aria-label="Acciones"></th></tr>
     </thead>
     <tbody>
       {% for s in schedules %}
@@ -154,6 +155,7 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
   {% else %}
   <p class="empty-inline">Todavía no hay horarios asignados.</p>
   {% endif %}
