@@ -174,7 +174,7 @@ porque la app lee el `.env` solo al arrancar.
 Todos se ejecutan con el Python del entorno virtual activado, p. ej.:
 `source venv/bin/activate && python reset_password.py`.
 
-## Darle acceso a otra persona (ej. que el profesor pruebe la página)
+## Darle acceso a otra persona
 
 ### 1. Crearle la cuenta (una sola vez)
 
@@ -211,7 +211,7 @@ y pacientes que crees siguen ahí mientras no borres la carpeta `instance/`. Lo
 que NO persiste es un clon nuevo del repo, porque `instance/` está en
 `.gitignore` (cada máquina tiene su propia base). Por eso:
 
-- La cuenta del profesor se crea **en la PC donde corre la app** (la tuya, si
+- La cuenta del tester se crea **en la PC donde corre la app** (la tuya, si
   entra por la red).
 - Si en algún momento llevás la base a otra máquina, copiá la carpeta
   `instance/` completa (base + archivos subidos) o usá el backup de
