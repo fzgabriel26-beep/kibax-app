@@ -87,7 +87,7 @@ class TestRegister:
             'registration_code': 'testcode',
         }, follow_redirects=True)
         assert r.status_code == 200
-        assert 'odontólogo' in r.data.decode().lower()
+        assert 'No se pudo crear la cuenta, datos faltantes o erróneos.' in r.data.decode()
         with app.app_context():
             assert User.query.filter_by(email='rol@test.com').first() is None
 
@@ -98,7 +98,10 @@ class TestRegister:
             'registration_code': 'wrongcode',
         }, follow_redirects=True)
         assert r.status_code == 200
-        assert 'inválido' in r.data.decode()
+        assert ('Código de registro inválido. Consultá con quien administra el consultorio.'
+                in r.data.decode())
+        with app.app_context():
+            assert User.query.filter_by(email='test@test.com').first() is None
 
     def test_register_password_mismatch(self, app):
         with app.app_context():
@@ -109,7 +112,20 @@ class TestRegister:
             'registration_code': 'testcode',
         }, follow_redirects=True)
         assert r.status_code == 200
-        assert 'no coinciden' in r.data.decode()
+        assert 'Las contraseñas no coinciden.' in r.data.decode()
+        with app.app_context():
+            assert User.query.filter_by(email='test@test.com').first() is None
+
+    def test_register_password_mismatch_wins_over_wrong_code(self, app):
+        r = _make_client(app).post('/auth/register', data={
+            'full_name': 'Dr. Test', 'email': 'test@test.com',
+            'password': 'TestPass1!', 'password2': 'DifferentPass1!',
+            'registration_code': 'wrongcode',
+        }, follow_redirects=True)
+        assert r.status_code == 200
+        body = r.data.decode()
+        assert 'Las contraseñas no coinciden.' in body
+        assert 'Código de registro inválido' not in body
 
     def test_register_weak_password(self, app):
         with app.app_context():
@@ -120,8 +136,29 @@ class TestRegister:
             'registration_code': 'testcode',
         }, follow_redirects=True)
         assert r.status_code == 200
+        assert 'No se pudo crear la cuenta, datos faltantes o erróneos.' in r.data.decode()
+        with app.app_context():
+            assert User.query.filter_by(email='test@test.com').first() is None
+
+    def test_register_empty_fields_uses_generic_error(self, app):
+        r = _make_client(app).post('/auth/register', data={
+            'registration_code': 'wrongcode',
+        }, follow_redirects=True)
+        assert r.status_code == 200
         body = r.data.decode()
-        assert 'caracteres' in body or 'mayúscula' in body or 'número' in body
+        assert 'No se pudo crear la cuenta, datos faltantes o erróneos.' in body
+        assert 'Código de registro inválido' not in body
+
+    def test_register_invalid_email_uses_generic_error(self, app):
+        with app.app_context():
+            app.config['REGISTRATION_CODE'] = 'testcode'
+        r = _make_client(app).post('/auth/register', data={
+            'full_name': 'Dr. Test', 'email': 'no-es-un-email',
+            'password': 'TestPass1!', 'password2': 'TestPass1!',
+            'registration_code': 'testcode',
+        }, follow_redirects=True)
+        assert r.status_code == 200
+        assert 'No se pudo crear la cuenta, datos faltantes o erróneos.' in r.data.decode()
 
     def test_register_duplicate_email(self, app):
         with app.app_context():
@@ -136,7 +173,28 @@ class TestRegister:
             'registration_code': 'testcode',
         }, follow_redirects=True)
         assert r.status_code == 200
-        assert 'Ya existe' in r.data.decode()
+        assert 'Ya existe una cuenta con ese email asociado.' in r.data.decode()
+        with app.app_context():
+            assert User.query.filter_by(email='dup@test.com').count() == 1
+
+    def test_register_duplicate_email_wins_over_wrong_code(self, app):
+        with app.app_context():
+            app.config['REGISTRATION_CODE'] = 'testcode'
+            u = User(full_name='Existente', email='dup2@test.com')
+            u.set_password('TestPass1!')
+            _db.session.add(u)
+            _db.session.commit()
+        r = _make_client(app).post('/auth/register', data={
+            'full_name': 'Otro', 'email': 'dup2@test.com',
+            'password': 'TestPass1!', 'password2': 'TestPass1!',
+            'registration_code': 'wrongcode',
+        }, follow_redirects=True)
+        assert r.status_code == 200
+        body = r.data.decode()
+        assert 'Ya existe una cuenta con ese email asociado.' in body
+        assert 'Código de registro inválido' not in body
+        with app.app_context():
+            assert User.query.filter_by(email='dup2@test.com').count() == 1
 
 
 class TestLogout:

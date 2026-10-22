@@ -9,6 +9,13 @@ from models import User, ROLES
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+MSG_REGISTRO_GENERICO = 'No se pudo crear la cuenta, datos faltantes o erróneos.'
+MSG_REGISTRO_CODIGO_INVALIDO = (
+    'Código de registro inválido. Consultá con quien administra el consultorio.'
+)
+MSG_REGISTRO_EMAIL_EXISTENTE = 'Ya existe una cuenta con ese email asociado.'
+MSG_REGISTRO_PASSWORD_DISTINTA = 'Las contraseñas no coinciden.'
+
 
 def _password_strength(password):
     """Valida que la contraseña tenga al menos 8 caracteres, una mayúscula,
@@ -50,18 +57,30 @@ def register():
         role = (request.form.get('role') or 'odontologo').strip().lower()
         code = request.form.get('registration_code', '')
 
+        # Los datos faltantes se informan de forma genérica antes de revisar
+        # el código, para que un código incorrecto no oculte el problema real.
+        if not full_name or not email or not password or not password2:
+            flash(MSG_REGISTRO_GENERICO, 'danger')
+            return render_template('auth/register.html', form=request.form)
+
+        if password != password2:
+            flash(MSG_REGISTRO_PASSWORD_DISTINTA, 'danger')
+            return render_template('auth/register.html', form=request.form)
+
+        # El email duplicado se informa aunque el código no sea válido: la
+        # persona necesita saber que ya tiene una cuenta asociada.
+        if User.query.filter_by(email=email).first():
+            flash(MSG_REGISTRO_EMAIL_EXISTENTE, 'danger')
+            return render_template('auth/register.html', form=request.form)
+
         # El código de registro evita que cualquier visitante anónimo pueda
         # crearse una cuenta y acceder a los datos de los pacientes.
         if code != current_app.config['REGISTRATION_CODE']:
-            flash('Código de registro inválido. Consultá con quien administra el consultorio.', 'danger')
-            return render_template('auth/register.html', form=request.form)
-
-        if not full_name or not email or not password:
-            flash('Completá todos los campos obligatorios.', 'danger')
+            flash(MSG_REGISTRO_CODIGO_INVALIDO, 'danger')
             return render_template('auth/register.html', form=request.form)
 
         if role not in ROLES:
-            flash('Elegí si la cuenta es de odontólogo/a o de secretario/a.', 'danger')
+            flash(MSG_REGISTRO_GENERICO, 'danger')
             return render_template('auth/register.html', form=request.form)
 
         # El secretario/a no tiene matrícula profesional: si el campo llegó
@@ -69,22 +88,12 @@ def register():
         if role == 'secretario':
             license_number = ''
 
-        email_error = _validate_email(email)
-        if email_error:
-            flash(email_error, 'danger')
+        if _validate_email(email):
+            flash(MSG_REGISTRO_GENERICO, 'danger')
             return render_template('auth/register.html', form=request.form)
 
-        if password != password2:
-            flash('Las contraseñas no coinciden.', 'danger')
-            return render_template('auth/register.html', form=request.form)
-
-        error = _password_strength(password)
-        if error:
-            flash(error, 'danger')
-            return render_template('auth/register.html', form=request.form)
-
-        if User.query.filter_by(email=email).first():
-            flash('Ya existe una cuenta con ese email.', 'danger')
+        if _password_strength(password):
+            flash(MSG_REGISTRO_GENERICO, 'danger')
             return render_template('auth/register.html', form=request.form)
 
         user = User(full_name=full_name, email=email,
