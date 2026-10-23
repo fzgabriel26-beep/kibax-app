@@ -12,7 +12,7 @@ from logging.handlers import RotatingFileHandler
 from dotenv import load_dotenv
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'))
 
-from flask import Flask, redirect, url_for, request, flash, send_file, jsonify
+from flask import Flask, redirect, url_for, request, flash, send_file, jsonify, render_template
 from flask_login import current_user, login_required
 
 from config import Config
@@ -95,7 +95,13 @@ def create_app():
     def index():
         if current_user.is_authenticated:
             return redirect(url_for('patients.list_patients'))
-        return redirect(url_for('auth.login'))
+        # Landing pública: muestra el producto sin exponer datos de pacientes.
+        return render_template(
+            'landing.html',
+            demo_upper=patients.UPPER_ROW,
+            demo_lower=patients.LOWER_ROW,
+            demo_layouts=patients.TOOTH_LAYOUTS,
+        )
 
     # --- Backup de la base de datos ---
     @app.route('/admin/backup')
@@ -134,7 +140,6 @@ def create_app():
         return render_error('Error interno del servidor', 500)
 
     def render_error(message, code):
-        from flask import render_template
         return render_template('errors/error.html', message=message, code=code), code
 
     @app.errorhandler(413)
