@@ -84,7 +84,7 @@ horarios ni turnos propios). El rol se puede cambiar después desde
 | Base de datos | `flask db upgrade` (aplica las migraciones del repo) |
 | Servidor | `python app.py` |
 
-Si preferís hacerlo a mano (modo tradicional), el orden es el mismo:
+Modo tradicional, el orden es el mismo:
 
 ```bash
 python3 -m venv venv
@@ -188,7 +188,7 @@ python create_user.py                      # te pregunta email, nombre y contras
 Después le pasás el email y la contraseña, y entra en `/auth/login`. No necesita
 saber el `REGISTRATION_CODE` ni registrarse.
 
-### 2. Que entre sin instalar nada: exponer la app en tu red
+### 2. Entrar sin instalar nada: exponer la app en tu red
 
 ```bash
 HOST=0.0.0.0 ./run.sh        # escucha en todas las interfaces de tu red
@@ -247,26 +247,3 @@ que NO persiste es un clon nuevo del repo, porque `instance/` está en
   cuenta.
 - Las contraseñas se guardan con hash (`werkzeug.security`), nunca en
   texto plano.
-
-## Antes de llevarlo a producción
-
-Esto es una base sólida y funcional, pero para producción real conviene:
-
-1. Servir por **HTTPS** (obligatorio si vas a manejar datos de salud).
-2. Reemplazar SQLite por **PostgreSQL** si vas a tener uso concurrente.
-3. Agregar protección **CSRF** (por ejemplo con `Flask-WTF`).
-4. Definir `SECRET_KEY` y `REGISTRATION_CODE` como variables de entorno
-   reales (no los valores por defecto del código).
-5. Hacer **backups periódicos** de `instance/` (base de datos + archivos).
-6. Si va a haber más de un odontólogo, pensar si cada uno debe ver solo
-   sus propios pacientes o todos comparten la base (hoy comparten todo).
-7. Revisar la normativa local de protección de datos de salud (en
-   Argentina, Ley 25.326 de Protección de Datos Personales) para el
-   almacenamiento y retención de historias clínicas.
-
-## Posibles próximos pasos
-
-- Exportar la ficha del paciente a PDF.
-- Permitir varios odontólogos con distintos niveles de permiso.
-- Búsqueda y filtro de pacientes por estado de tratamiento.
-- Notificaciones/recordatorios de turnos.
