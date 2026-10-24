@@ -13,85 +13,98 @@
 </div>
 
 <div class="list-toolbar mb-3">
-  <form method="get" class="search-bar" onsubmit="return false;">
+  <form method="get" class="search-bar" role="search" id="patientSearchForm" autocomplete="off">
     <input type="search" id="patientSearch" name="q" value="{{ q }}" class="form-control"
-           placeholder="Buscá por nombre, DNI, teléfono o email…">
+           placeholder="Buscá por nombre, DNI, teléfono o email…" aria-label="Buscar pacientes">
   </form>
   <select id="patientSort" class="form-select sort-select" aria-label="Ordenar pacientes">
     <option value="nombre">Ordenar por nombre</option>
     <option value="apellido">Ordenar por apellido</option>
   </select>
 </div>
-<div id="patientCount" class="list-count">Mostrando {{ pacientes|length }} paciente{{ 's' if pacientes|length != 1 }}{% if pagination and pagination.pages > 1 %} (página {{ pagination.page }} de {{ pagination.pages }}){% endif %}</div>
 
-{% if pacientes %}
-<div id="patientGrid" class="patient-grid">
-  {% for p in pacientes %}
-  <a href="{{ url_for('patients.patient_detail', patient_id=p.id) }}" class="patient-card"
-     data-name="{{ p.full_name|lower }}"
-     data-last="{{ (p.full_name.split()|last)|lower }}"
-     data-dni="{{ (p.document_id or '')|lower }}"
-     data-phone="{{ (p.phone or '')|lower }}"
-     data-email="{{ (p.email or '')|lower }}">
-    <div class="patient-card-avatar">{{ p.full_name[:1]|upper }}</div>
-    <div>
-      <h2>{{ p.full_name }}</h2>
-      {% if p.document_id or p.phone %}
-      <p class="patient-card-meta">
-        {% if p.document_id %}<span>Doc. {{ p.document_id }}</span>{% endif %}
-        {% if p.phone %}<span>{{ p.phone }}</span>{% endif %}
-      </p>
-      {% endif %}
-    </div>
-  </a>
-  {% endfor %}
-</div>
-<div id="patientNoResults" class="empty-state" style="display:none;">
-  <div class="empty-icon" aria-hidden="true">
-    <svg viewBox="0 0 240 225" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"><path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"/></svg>
+<div id="patientResults">
+  <div id="patientCount" class="list-count">
+    {%- if q -%}
+      {{ pagination.total }} resultado{{ 's' if pagination.total != 1 }} para «{{ q }}»
+    {%- else -%}
+      Mostrando {{ pacientes|length }} paciente{{ 's' if pacientes|length != 1 }}
+    {%- endif -%}
+    {%- if pagination.pages > 1 %} (página {{ pagination.page }} de {{ pagination.pages }}){% endif -%}
   </div>
-  <h3>No se encontraron pacientes</h3>
-  <p>Probá con otros términos de búsqueda.</p>
-  <button type="button" class="btn-ghost" onclick="document.getElementById('patientSearch').value='';var e=new Event('input',{bubbles:true});document.getElementById('patientSearch').dispatchEvent(e);">Limpiar búsqueda</button>
-</div>
 
-{% if pagination and pagination.pages > 1 %}
-<nav class="pagination" aria-label="Paginación de pacientes">
-  {% if pagination.has_prev %}
-  <a href="{{ url_for('patients.list_patients', page=pagination.prev_num, q=q) }}">‹ Anterior</a>
-  {% else %}
-  <span class="disabled">‹ Anterior</span>
-  {% endif %}
+  {% if pacientes %}
+  <div id="patientGrid" class="patient-grid">
+    {% for p in pacientes %}
+    <a href="{{ url_for('patients.patient_detail', patient_id=p.id) }}" class="patient-card"
+       data-name="{{ p.full_name|lower }}"
+       data-last="{{ (p.full_name.split()|last)|lower }}"
+       data-dni="{{ (p.document_id or '')|lower }}"
+       data-phone="{{ (p.phone or '')|lower }}"
+       data-email="{{ (p.email or '')|lower }}">
+      <div class="patient-card-avatar">{{ p.full_name[:1]|upper }}</div>
+      <div>
+        <h2>{{ p.full_name }}</h2>
+        {% if p.document_id or p.phone %}
+        <p class="patient-card-meta">
+          {% if p.document_id %}<span>Doc. {{ p.document_id }}</span>{% endif %}
+          {% if p.phone %}<span>{{ p.phone }}</span>{% endif %}
+        </p>
+        {% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
 
-  {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-    {% if p %}
-      {% if p == pagination.page %}
-      <span class="active">{{ p }}</span>
-      {% else %}
-      <a href="{{ url_for('patients.list_patients', page=p, q=q) }}">{{ p }}</a>
-      {% endif %}
+  {% if pagination.pages > 1 %}
+  <nav class="pagination" aria-label="Paginación de pacientes">
+    {% if pagination.has_prev %}
+    <a href="{{ url_for('patients.list_patients', page=pagination.prev_num, q=q) }}">‹ Anterior</a>
     {% else %}
-      <span class="disabled">…</span>
+    <span class="disabled">‹ Anterior</span>
     {% endif %}
-  {% endfor %}
 
-  {% if pagination.has_next %}
-  <a href="{{ url_for('patients.list_patients', page=pagination.next_num, q=q) }}">Siguiente ›</a>
-  {% else %}
-  <span class="disabled">Siguiente ›</span>
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if p %}
+        {% if p == pagination.page %}
+        <span class="active">{{ p }}</span>
+        {% else %}
+        <a href="{{ url_for('patients.list_patients', page=p, q=q) }}">{{ p }}</a>
+        {% endif %}
+      {% else %}
+        <span class="disabled">…</span>
+      {% endif %}
+    {% endfor %}
+
+    {% if pagination.has_next %}
+    <a href="{{ url_for('patients.list_patients', page=pagination.next_num, q=q) }}">Siguiente ›</a>
+    {% else %}
+    <span class="disabled">Siguiente ›</span>
+    {% endif %}
+  </nav>
   {% endif %}
-</nav>
-{% endif %}
-{% else %}
-<div class="empty-state">
-  <div class="empty-icon" aria-hidden="true">
-    <svg viewBox="0 0 240 225" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"><path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"/></svg>
+
+  {% elif q %}
+  <div class="empty-state">
+    <div class="empty-icon" aria-hidden="true">
+      <svg viewBox="0 0 240 225" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"><path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"/></svg>
+    </div>
+    <h3>No se encontraron pacientes</h3>
+    <p>Ningún paciente coincide con «{{ q }}». Probá con otro nombre, con el DNI sin puntos o con el teléfono.</p>
+    <a href="{{ url_for('patients.list_patients') }}" class="btn-ghost">Limpiar búsqueda</a>
   </div>
-  <h3>Todavía no hay pacientes cargados</h3>
-  <p>Dar de alta tu primer paciente para comenzar a usar el odontograma.</p>
-  <a href="{{ url_for('patients.new_patient') }}" class="btn-solid">+ Dar de alta paciente</a>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon" aria-hidden="true">
+      <svg viewBox="0 0 240 225" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"><path d="M120 42 C138 24 162 18 180 32 C202 48 216 66 218 90 C220 122 208 160 188 186 C178 199 166 208 158 199 C148 187 134 172 122 172 C110 172 96 187 86 199 C78 208 66 199 56 186 C36 160 24 122 26 90 C28 66 42 48 64 32 C82 18 102 24 120 42 Z"/></svg>
+    </div>
+    <h3>Todavía no hay pacientes cargados</h3>
+    <p>Dar de alta tu primer paciente para comenzar a usar el odontograma.</p>
+    <a href="{{ url_for('patients.new_patient') }}" class="btn-solid">+ Dar de alta paciente</a>
+  </div>
+  {% endif %}
 </div>
-{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -99,51 +112,61 @@
   (function () {
     var input = document.getElementById('patientSearch');
     var sort = document.getElementById('patientSort');
-    var grid = document.getElementById('patientGrid');
-    var count = document.getElementById('patientCount');
-    var empty = document.getElementById('patientNoResults');
-    if (!grid || !count) return;
-    var cards = Array.prototype.slice.call(grid.querySelectorAll('.patient-card'));
+    var results = document.getElementById('patientResults');
+    if (!input || !results) return;
 
-    var searchTimer = null;
+    var timer = null;
+    var ultima = (input.value || '').trim();
+    var pedido = 0;
 
-    function applyLocal() {
-      var q = (input.value || '').trim().toLowerCase();
+    // El servidor devuelve la página ordenada por nombre; "por apellido" se
+    // resuelve reordenando las tarjetas ya cargadas.
+    function ordenar() {
+      var grid = document.getElementById('patientGrid');
+      if (!grid) return;
       var by = sort ? sort.value : 'nombre';
-
-      var visible = cards.filter(function (card) {
-        if (!q) return true;
-        return (card.dataset.name || '').indexOf(q) !== -1 ||
-               (card.dataset.last || '').indexOf(q) !== -1 ||
-               (card.dataset.dni || '').indexOf(q) !== -1 ||
-               (card.dataset.phone || '').indexOf(q) !== -1 ||
-               (card.dataset.email || '').indexOf(q) !== -1;
-      });
-
-      visible.sort(function (a, b) {
+      var cards = Array.prototype.slice.call(grid.querySelectorAll('.patient-card'));
+      cards.sort(function (a, b) {
         var ka = by === 'apellido' ? (a.dataset.last || '') : (a.dataset.name || '');
         var kb = by === 'apellido' ? (b.dataset.last || '') : (b.dataset.name || '');
         return ka.localeCompare(kb, 'es');
       });
+      cards.forEach(function (card) { grid.appendChild(card); });
+    }
 
-      visible.forEach(function (card) { grid.appendChild(card); });
+    function buscar() {
+      var q = (input.value || '').trim();
+      if (q === ultima) return;
+      ultima = q;
 
-      cards.forEach(function (card) {
-        card.style.display = visible.indexOf(card) === -1 ? 'none' : '';
-      });
+      var url = new URL(window.location.href);
+      if (q) { url.searchParams.set('q', q); } else { url.searchParams.delete('q'); }
+      url.searchParams.delete('page');
 
-      var total = cards.length;
-      count.textContent = 'Mostrando ' + visible.length + (visible.length !== total ? ' de ' + total : '') + ' pacientes';
-      if (empty) empty.style.display = cards.length && !visible.length ? '' : 'none';
+      var mio = ++pedido;
+      fetch(url.toString())
+        .then(function (r) { return r.ok ? r.text() : Promise.reject(r.status); })
+        .then(function (html) {
+          if (mio !== pedido) return;   // llegó tarde: hay una búsqueda más nueva
+          var doc = new DOMParser().parseFromString(html, 'text/html');
+          var nuevo = doc.getElementById('patientResults');
+          if (!nuevo) return;
+          results.innerHTML = nuevo.innerHTML;
+          ordenar();
+          window.history.replaceState(null, '', url.toString());
+        })
+        .catch(function () {
+          // Si el fetch falla, Enter sigue haciendo el GET normal del formulario.
+        });
     }
 
     input.addEventListener('input', function () {
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(applyLocal, 150);
+      clearTimeout(timer);
+      timer = setTimeout(buscar, 250);
     });
 
-    if (sort) sort.addEventListener('change', applyLocal);
-    applyLocal();
+    if (sort) sort.addEventListener('change', ordenar);
+    ordenar();
   })();
 </script>
 {% endblock %}

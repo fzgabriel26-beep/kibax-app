@@ -156,3 +156,75 @@ class TestToothOperations:
         })
         assert r.status_code == 400
         assert r.get_json()['ok'] is False
+
+class TestPatientSearch:
+    """El buscador tiene que encontrar en TODA la base, sin acentos ni puntos."""
+
+    def test_busca_nombre_sin_acentos(self, app):
+        c = _create_and_login(app)
+        _create_patient(app, full_name='María Fernández', document_id='30111222')
+        html = c.get('/pacientes/?q=fernandez').data.decode()
+        assert 'María Fernández' in html
+        assert 'No se encontraron pacientes' not in html
+
+    def test_busca_nombre_con_mayusculas(self, app):
+        c = _create_and_login(app)
+        _create_patient(app, full_name='Ciro Acosta', document_id='40315455')
+        html = c.get('/pacientes/?q=CIRO').data.decode()
+        assert 'Ciro Acosta' in html
+
+    def test_busca_dni_sin_puntos(self, app):
+        c = _create_and_login(app)
+        _create_patient(app, full_name='Ciro Acosta', document_id='21.588.825')
+        html = c.get('/pacientes/?q=21588825').data.decode()
+        assert 'Ciro Acosta' in html
+
+    def test_busca_por_palabras_en_otro_orden(self, app):
+        c = _create_and_login(app)
+        _create_patient(app, full_name='Julieta Silva', document_id='36617308')
+        html = c.get('/pacientes/?q=silva julieta').data.decode()
+        assert 'Julieta Silva' in html
+
+    def test_busca_en_todas_las_paginas(self, app):
+        """Antes solo filtraba las 50 tarjetas de la página actual."""
+        c = _create_and_login(app)
+        for i in range(55):
+            _create_patient(app, full_name='Paciente %02d' % i,
+                            document_id='90%06d' % i)
+
+        html = c.get('/pacientes/?q=Paciente 54').data.decode()
+        assert 'Paciente 54' in html
+
+        html = c.get('/pacientes/?q=90000054').data.decode()
+        assert 'Paciente 54' in html
+
+    def test_sin_resultados_no_dice_que_no_hay_pacientes(self, app):
+        c = _create_and_login(app)
+        _create_patient(app, full_name='Juan Pérez', document_id='12345678')
+        html = c.get('/pacientes/?q=zzzzzz').data.decode()
+        assert 'No se encontraron pacientes' in html
+        assert 'Todavía no hay pacientes' not in html
+
+    def test_limpiar_busqueda_vuelve_al_listado(self, app):
+        c = _create_and_login(app)
+        _create_patient(app, full_name='Juan Pérez', document_id='12345678')
+        html = c.get('/pacientes/?q=zzzzzz').data.decode()
+        assert '/pacientes/' in html
+        assert 'Limpiar búsqueda' in html
+
+
+class TestAgendaPatientSearch:
+    def test_autocompletado_sin_acentos(self, app):
+        c = _create_and_login(app)
+        _create_patient(app, full_name='María Fernández', document_id='30111222')
+        r = c.get('/agenda/pacientes?q=fernandez')
+        assert r.status_code == 200
+        nombres = [p['full_name'] for p in r.get_json()['results']]
+        assert 'María Fernández' in nombres
+
+    def test_autocompletado_por_dni_sin_puntos(self, app):
+        c = _create_and_login(app)
+        _create_patient(app, full_name='Ciro Acosta', document_id='21.588.825')
+        r = c.get('/agenda/pacientes?q=21588825')
+        nombres = [p['full_name'] for p in r.get_json()['results']]
+        assert 'Ciro Acosta' in nombres

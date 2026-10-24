@@ -6,6 +6,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import login_required, current_user
 
 from audit import audit
+from busqueda import condiciones as condiciones_busqueda
 from extensions import db
 from models import (
     Appointment, Patient, User, WorkSchedule, ScheduleException,
@@ -445,10 +446,9 @@ def turnos():
     if estado:
         query = query.filter(Appointment.status == estado)
     if q:
-        query = query.join(Patient).filter(db.or_(
-            Patient.full_name.ilike(f'%{q}%'),
-            Patient.document_id.ilike(f'%{q}%'),
-        ))
+        query = query.join(Patient)
+        for condicion in condiciones_busqueda(q, (Patient.full_name, Patient.document_id)):
+            query = query.filter(condicion)
 
     if fecha:
         query = query.filter(Appointment.planned_date == fecha)
@@ -506,10 +506,8 @@ def pacientes_json():
     q = request.args.get('q', '').strip()
     query = Patient.query
     if q:
-        query = query.filter(db.or_(
-            Patient.full_name.ilike(f'%{q}%'),
-            Patient.document_id.ilike(f'%{q}%'),
-        ))
+        for condicion in condiciones_busqueda(q, (Patient.full_name, Patient.document_id)):
+            query = query.filter(condicion)
     results = query.order_by(Patient.full_name).limit(20).all()
     return jsonify({
         'ok': True,

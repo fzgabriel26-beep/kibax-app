@@ -66,6 +66,13 @@ Targets del Makefile: `make setup | install | run | test | db-upgrade | usuario 
   `Patient`, `ToothStatus`, `ProcedureLog`, `Attachment`,
   `TreatmentEvolutionPhoto`, `ConsultationNote`, `Appointment`, `WorkSchedule`,
   `ScheduleException`, `AuditLog`.
+- La búsqueda de pacientes (listado, autocompletado de turnos y filtro de la lista
+  de turnos) vive en `busqueda.py`: compara **sin acentos, sin mayúsculas y sin
+  puntuación** (`fernandez` encuentra a "Fernández", `21588825` a "21.588.825") y
+  exige que aparezca cada palabra, en cualquier orden. En SQLite se apoya en la
+  función `normalizar` registrada en cada conexión; en otro motor cae a `ilike`.
+  El listado pagina de a 50, así que **el filtro tiene que ir en el servidor**: un
+  filtro en JavaScript solo ve la página actual y "pierde" pacientes.
 - Todas las rutas de pacientes y agenda están protegidas con `@login_required`; las
   rutas nuevas también deben estarlo (no hay capa de permisos: todos comparten la
   misma base).

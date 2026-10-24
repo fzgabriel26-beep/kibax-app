@@ -14,6 +14,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 
 from audit import audit as _audit
+from busqueda import condiciones
 from extensions import db
 from models import (
     Patient, ToothStatus, ProcedureLog, Attachment,
@@ -138,13 +139,10 @@ def list_patients():
 
     query = Patient.query.order_by(Patient.full_name)
     if q:
-        like = f'%{q}%'
-        query = query.filter(db.or_(
-            Patient.full_name.ilike(like),
-            Patient.document_id.ilike(like),
-            Patient.phone.ilike(like),
-            Patient.email.ilike(like),
-        ))
+        for condicion in condiciones(q, (
+                Patient.full_name, Patient.document_id,
+                Patient.phone, Patient.email)):
+            query = query.filter(condicion)
 
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     return render_template('patients/list.html',
