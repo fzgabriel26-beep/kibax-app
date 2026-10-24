@@ -76,6 +76,28 @@ cat .env       # copiate el REGISTRATION_CODE: es el código para registrar cuen
 a la gente para que se registre (o les creás cuentas vos con
 `python create_user.py`, ver más abajo).
 
+### Correo para "¿Olvidaste tu contraseña?"
+
+Para que el enlace de restablecimiento llegue por email, agregá al `.env`:
+
+```bash
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=consultorio@gmail.com
+MAIL_PASSWORD=clave-de-aplicacion
+MAIL_USE_TLS=true
+MAIL_DEFAULT_SENDER=consultorio@gmail.com
+```
+
+Con Gmail hay que generar una **contraseña de aplicación** (no sirve la del
+usuario). Ojo: las cuentas gratuitas de PythonAnywhere tienen el SMTP saliente
+bloqueado; si el envío falla, el enlace queda en
+`instance/enlaces-restablecer.log` del servidor (nunca en `logs/consultorio.log`)
+y desde ahí lo podés pasar a mano.
+
+Si `MAIL_SERVER` queda vacío, la app funciona igual: el enlace se escribe en ese
+mismo archivo. Sirve para probar en un equipo de desarrollo.
+
 ## Paso 5 — Crear la base de datos
 
 ```bash

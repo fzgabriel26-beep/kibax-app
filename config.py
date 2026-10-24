@@ -29,6 +29,21 @@ class Config:
     # Rate limiting: desactivar en tests con RATELIMIT_ENABLED=false
     RATELIMIT_ENABLED = os.environ.get('RATELIMIT_ENABLED', 'true').lower() == 'true'
 
+    # --- Correo saliente (enlace de "olvidé mi contraseña") ---
+    # Si MAIL_SERVER queda vacío, la app no envía correos: escribe el enlace
+    # en logs/consultorio.log para poder probar el circuito en desarrollo.
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', '')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() == 'true'
+    MAIL_DEFAULT_SENDER = os.environ.get(
+        'MAIL_DEFAULT_SENDER', MAIL_USERNAME or 'no-responder@kibax.local')
+    MAIL_TIMEOUT = int(os.environ.get('MAIL_TIMEOUT', '15'))
+
+    # Cuánto dura el enlace para restablecer la contraseña (en segundos).
+    PASSWORD_RESET_MAX_AGE = int(os.environ.get('PASSWORD_RESET_MAX_AGE', '3600'))
+
     # --- Seguridad ---
 
     # La sesión expira después de 8 horas de inactividad.

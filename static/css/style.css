@@ -374,6 +374,7 @@ body.dark .auth-logo {
 .auth-card h1 { font-size: 1.6rem; margin-bottom: .35rem; letter-spacing: -.02em; }
 .auth-sub { color: var(--ink-soft); font-size: .9rem; margin-bottom: 1.5rem; }
 .auth-foot { text-align: center; font-size: .85rem; color: var(--ink-soft); margin-top: 1rem; }
+.auth-foot + .auth-foot { margin-top: .35rem; }
 
 /* ---------- Search + patient grid ---------- */
 .search-bar { display: flex; gap: .5rem; max-width: 480px; position: relative; }

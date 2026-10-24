@@ -203,3 +203,156 @@ class TestLogout:
         r = c.get('/auth/logout', follow_redirects=True)
         assert r.status_code == 200
         assert 'Sesión cerrada' in r.data.decode()
+
+
+def _crear_usuario(app, email='reset@test.com', password='TestPass1!'):
+    """Crea un usuario suelto (sin loguearse) y devuelve su id."""
+    with app.app_context():
+        u = User(full_name='Dr. Reset', email=email)
+        u.set_password(password)
+        _db.session.add(u)
+        _db.session.commit()
+        return u.id
+
+
+def _token_para(app, email='reset@test.com'):
+    import auth as auth_module
+    with app.app_context():
+        u = User.query.filter_by(email=email).first()
+        return auth_module.generar_token_reset(u)
+
+
+class TestPasswordReset:
+    """Circuito de "¿Olvidaste tu contraseña?"."""
+
+    def test_forgot_page_loads(self, app):
+        r = _make_client(app).get('/auth/olvide-password')
+        assert r.status_code == 200
+        html = r.data.decode()
+        assert 'Restablecer contraseña' in html
+        assert 'Enviarme el enlace' in html
+
+    def test_login_page_has_forgot_link(self, app):
+        html = _make_client(app).get('/auth/login').data.decode()
+        assert '¿Olvidaste tu contraseña?' in html
+        assert '/auth/olvide-password' in html
+
+    def test_register_page_has_forgot_link(self, app):
+        html = _make_client(app).get('/auth/register').data.decode()
+        assert '¿Olvidaste tu contraseña?' in html
+        assert '/auth/olvide-password' in html
+
+    def test_forgot_existing_email_sends_link(self, app, monkeypatch):
+        _crear_usuario(app)
+        import auth as auth_module
+        enviados = []
+
+        def falso(destinatario, enlace, nombre):
+            enviados.append((destinatario, enlace))
+            return True
+
+        monkeypatch.setattr(auth_module, '_enviar_email_reset', falso)
+
+        r = _make_client(app).post(
+            '/auth/olvide-password',
+            data={'email': 'reset@test.com'}, follow_redirects=True)
+
+        assert r.status_code == 200
+        assert 'Si ese email está asociado a una cuenta' in r.data.decode()
+        assert len(enviados) == 1
+        assert enviados[0][0] == 'reset@test.com'
+        assert '/auth/restablecer/' in enviados[0][1]
+
+    def test_forgot_unknown_email_same_message(self, app, monkeypatch):
+        import auth as auth_module
+        enviados = []
+        monkeypatch.setattr(
+            auth_module, '_enviar_email_reset',
+            lambda d, e, n: enviados.append(d) or True)
+
+        r = _make_client(app).post(
+            '/auth/olvide-password',
+            data={'email': 'noexiste@test.com'}, follow_redirects=True)
+
+        assert r.status_code == 200
+        assert 'Si ese email está asociado a una cuenta' in r.data.decode()
+        assert enviados == []
+
+    def test_forgot_without_mail_server_warns(self, app, tmp_path):
+        with app.app_context():
+            app.config['MAIL_SERVER'] = ''
+            app.instance_path = str(tmp_path)
+        _crear_usuario(app)
+
+        r = _make_client(app).post(
+            '/auth/olvide-password',
+            data={'email': 'reset@test.com'}, follow_redirects=True)
+
+        body = r.data.decode()
+        assert 'el enlace quedó guardado en el registro del servidor' in body
+        assert 'Si ese email está asociado a una cuenta' in body
+
+        # El enlace queda en instance/ (ignorado por git), no en el log trackeado.
+        archivo = tmp_path / 'enlaces-restablecer.log'
+        assert archivo.exists()
+        contenido = archivo.read_text(encoding='utf-8')
+        assert 'reset@test.com' in contenido
+        assert '/auth/restablecer/' in contenido
+
+    def test_reset_changes_password(self, app):
+        _crear_usuario(app)
+        token = _token_para(app)
+
+        c = _make_client(app)
+        r = c.post(f'/auth/restablecer/{token}', data={
+            'password': 'NuevaClave1!', 'password2': 'NuevaClave1!',
+        }, follow_redirects=True)
+        assert r.status_code == 200
+        assert 'Contraseña actualizada' in r.data.decode()
+
+        r = _make_client(app).post('/auth/login', data={
+            'email': 'reset@test.com', 'password': 'NuevaClave1!',
+        })
+        assert r.status_code == 302
+        assert '/pacientes' in r.headers['Location']
+
+    def test_reset_rejects_weak_password(self, app):
+        _crear_usuario(app)
+        token = _token_para(app)
+
+        r = _make_client(app).post(f'/auth/restablecer/{token}', data={
+            'password': 'debil', 'password2': 'debil',
+        }, follow_redirects=True)
+        assert 'al menos 8 caracteres' in r.data.decode()
+
+        with app.app_context():
+            assert User.query.filter_by(email='reset@test.com').first() \
+                .check_password('TestPass1!')
+
+    def test_reset_rejects_mismatch(self, app):
+        _crear_usuario(app)
+        token = _token_para(app)
+
+        r = _make_client(app).post(f'/auth/restablecer/{token}', data={
+            'password': 'NuevaClave1!', 'password2': 'OtraClave1!',
+        }, follow_redirects=True)
+        assert 'Las contraseñas no coinciden.' in r.data.decode()
+
+    def test_reset_invalid_token(self, app):
+        r = _make_client(app).get('/auth/restablecer/token-inventado',
+                                  follow_redirects=True)
+        assert r.status_code == 200
+        assert 'El enlace no es válido o ya venció' in r.data.decode()
+
+    def test_reset_token_dies_after_password_change(self, app):
+        _crear_usuario(app)
+        token = _token_para(app)
+
+        with app.app_context():
+            u = User.query.filter_by(email='reset@test.com').first()
+            u.set_password('OtraClaveDistinta1!')
+            _db.session.commit()
+
+        r = _make_client(app).get(f'/auth/restablecer/{token}',
+                                  follow_redirects=True)
+        assert 'El enlace no es válido o ya venció' in r.data.decode()

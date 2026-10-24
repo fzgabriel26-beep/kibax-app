@@ -106,9 +106,20 @@ Targets del Makefile: `make setup | install | run | test | db-upgrade | usuario 
   POST por JS/AJAX deben pasar por `csrfFetch()` en `static/js/odontogram.js`, que
   lee el tag `meta[name="csrf-token"]` de `templates/base.html`.
 - **El rate limiting está activo** a nivel global (`200/day`, `50/hour` por IP,
-  almacenamiento en memoria) y por ruta en auth (`register` 5/min, `login` 10/min).
+  almacenamiento en memoria) y por ruta en auth (`register` 5/min, `login` 10/min,
+  `olvide-password` 5/min, `restablecer` 10/min).
   Se prende/apaga con la variable de entorno `RATELIMIT_ENABLED`; un 429 muestra el
   mensaje "esperá unos minutos".
+- **Restablecer contraseña** (`auth.forgot_password` → `auth.reset_password`): el
+  token es un `itsdangerous.URLSafeTimedSerializer` firmado con `SECRET_KEY` (salt
+  `restablecer-password`) que vence según `PASSWORD_RESET_MAX_AGE` (1 h por defecto)
+  y además lleva una huella del hash: si la contraseña cambia, el enlace viejo deja
+  de servir. El POST responde **siempre el mismo mensaje** exista o no la cuenta, a
+  propósito, para no filtrar qué emails están registrados. El correo sale por SMTP
+  (`MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_USE_TLS`,
+  `MAIL_DEFAULT_SENDER`); si `MAIL_SERVER` está vacío o el envío falla, el enlace se
+  escribe en `instance/enlaces-restablecer.log` — **nunca** en
+  `logs/consultorio.log`, que sí está trackeado en git.
 - La política de contraseñas (≥8 caracteres, mayúscula, número y carácter especial)
   está duplicada en `auth._password_strength` y `create_user.password_error`: si la
   cambiás, cambiá las dos.
