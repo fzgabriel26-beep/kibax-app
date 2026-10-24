@@ -208,7 +208,10 @@ class Appointment(db.Model):
     created_at = db.Column(db.DateTime, default=_utcnow)
     created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    patient = db.relationship('Patient', backref='appointments')
+    patient = db.relationship(
+        'Patient',
+        backref=db.backref('appointments', cascade='all, delete-orphan'),
+    )
     professional = db.relationship('User', foreign_keys=[professional_id])
     dentist = db.relationship('User', foreign_keys=[created_by_id])
 
@@ -232,7 +235,10 @@ class WaitingListEntry(db.Model):
     created_at = db.Column(db.DateTime, default=_utcnow, index=True)
     created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    patient = db.relationship('Patient', backref='waiting_entries')
+    patient = db.relationship(
+        'Patient',
+        backref=db.backref('waiting_entries', cascade='all, delete-orphan'),
+    )
     professional = db.relationship('User', foreign_keys=[professional_id])
 
     @property

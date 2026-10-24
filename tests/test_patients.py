@@ -114,6 +114,30 @@ class TestDeletePatient:
             from extensions import db as _db2
             assert _db2.session.get(Patient, pid) is None
 
+    def test_delete_patient_with_appointments(self, app):
+        """Un paciente con turnos y en lista de espera también se tiene que poder borrar."""
+        from datetime import date
+
+        from extensions import db as _db
+        from models import Appointment, WaitingListEntry
+
+        c = _create_and_login(app)
+        pid = _create_patient(app)
+        with app.app_context():
+            _db.session.add(Appointment(patient_id=pid, planned_date=date(2026, 10, 24),
+                                        time='10:00'))
+            _db.session.add(WaitingListEntry(patient_id=pid, shift='manana'))
+            _db.session.commit()
+
+        r = c.post(f'/pacientes/{pid}/eliminar', follow_redirects=True)
+        assert r.status_code == 200
+        assert 'eliminados' in r.data.decode()
+        with app.app_context():
+            assert _db.session.get(Patient, pid) is None
+            assert Appointment.query.filter_by(patient_id=pid).count() == 0
+            assert WaitingListEntry.query.filter_by(patient_id=pid).count() == 0
+            assert WaitingListEntry.query.filter_by(patient_id=pid).count() == 0
+
 
 class TestToothOperations:
     def test_tooth_info(self, app):
